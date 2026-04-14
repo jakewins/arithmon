@@ -1,6 +1,7 @@
 import { AUTO, Game } from "phaser";
 import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
+import { MathProblemScene } from "./scenes/MathProblemScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
@@ -18,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
       gravity: { x: 0, y: 0 },
     },
   },
-  scene: [OverworldScene, CombatScene],
+  scene: [OverworldScene, CombatScene, MathProblemScene],
 };
 
 const StartGame = (parent: string) => {

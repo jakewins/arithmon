@@ -96,6 +96,11 @@ export class OverworldScene extends Scene {
     this.input.keyboard!.on("keydown-C", () => {
       if (!this.inCombat) this.startCombat();
     });
+
+    // Debug: press P to launch a math problem
+    this.input.keyboard!.on("keydown-P", () => {
+      if (!this.inCombat) this.startMathProblem();
+    });
   }
 
   private createWalkAnimation(key: string, row: number) {
@@ -151,6 +156,19 @@ export class OverworldScene extends Scene {
     if (Math.random() >= ENCOUNTER_RATE) return;
 
     this.startCombat();
+  }
+
+  private startMathProblem() {
+    this.inCombat = true; // reuse flag to block other interactions
+    this.player.setVelocity(0);
+    this.player.anims.stop();
+
+    this.scene.pause();
+    this.scene.launch("MathProblemScene");
+
+    this.scene.get("MathProblemScene").events.once("shutdown", () => {
+      this.inCombat = false;
+    });
   }
 
   private startCombat() {
