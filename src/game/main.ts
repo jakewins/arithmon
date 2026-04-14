@@ -1,13 +1,23 @@
 import { AUTO, Game } from "phaser";
-import { HelloScene } from "./scenes/HelloScene";
+import { OverworldScene } from "./scenes/OverworldScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
-  width: 800,
-  height: 600,
+  width: 320,
+  height: 240,
   parent: "game-container",
   backgroundColor: "#1a1a2e",
-  scene: [HelloScene],
+  pixelArt: true,
+  scale: {
+    zoom: 3,
+  },
+  physics: {
+    default: "arcade",
+    arcade: {
+      gravity: { x: 0, y: 0 },
+    },
+  },
+  scene: [OverworldScene],
 };
 
 const StartGame = (parent: string) => {
