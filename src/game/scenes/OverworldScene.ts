@@ -1,19 +1,23 @@
 import { Scene } from "phaser";
 
 const PLAYER_SPEED = 80;
+const TILE_SIZE = 16;
 
 export class OverworldScene extends Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private collisionLayer!: Phaser.Tilemaps.TilemapLayer;
+  private collisionBodies!: Phaser.Physics.Arcade.StaticGroup;
 
   constructor() {
     super("OverworldScene");
   }
 
   preload() {
-    this.load.tilemapTiledJSON("starter-map", "assets/maps/starter.json");
+    this.load.tilemapTiledJSON("town-map", "assets/maps/cotton_town.json");
+    this.load.image("core_city_and_country", "assets/maps/core_city_and_country.png");
     this.load.image("core_outdoor", "assets/maps/core_outdoor.png");
+    this.load.image("core_buildings", "assets/maps/core_buildings.png");
+    this.load.image("core_set_pieces", "assets/maps/core_set pieces.png");
     this.load.spritesheet("player", "assets/sprites/adventurer.png", {
       frameWidth: 16,
       frameHeight: 32,
@@ -21,32 +25,53 @@ export class OverworldScene extends Scene {
   }
 
   create() {
-    // Map
-    const map = this.make.tilemap({ key: "starter-map" });
-    const tileset = map.addTilesetImage("core_outdoor", "core_outdoor")!;
+    const map = this.make.tilemap({ key: "town-map" });
 
-    map.createLayer("ground", tileset);
-    this.collisionLayer = map.createLayer("collision", tileset)!;
+    const tilesets = [
+      map.addTilesetImage("core_city_and_country", "core_city_and_country")!,
+      map.addTilesetImage("core_outdoor", "core_outdoor")!,
+      map.addTilesetImage("core_buildings", "core_buildings")!,
+      map.addTilesetImage("core_set pieces", "core_set_pieces")!,
+    ];
 
-    // Any non-zero tile on the collision layer is solid
-    this.collisionLayer.setCollisionByExclusion([-1, 0]);
+    // Create tile layers — pass all tilesets so any layer can use any tile
+    for (const layerData of map.layers) {
+      const layer = map.createLayer(layerData.name, tilesets)!;
+      if (layerData.name === "Above Player") {
+        layer.setDepth(10);
+      }
+    }
 
-    // Player — start near center of the map
-    const startX = 10 * 16 + 8;
-    const startY = 7 * 16 + 16;
+    // Player — start near center of the 40x40 map
+    const startX = 20 * TILE_SIZE + TILE_SIZE / 2;
+    const startY = 20 * TILE_SIZE;
     this.player = this.physics.add.sprite(startX, startY, "player", 1);
     this.player.setSize(12, 12);
     this.player.setOffset(2, 18);
+    this.player.setDepth(5);
 
-    // Animations: 4 rows x 3 cols (walk1, idle, walk2)
-    // Row 0 = down, Row 1 = left, Row 2 = right, Row 3 = up
+    // Walk animations
     this.createWalkAnimation("walk-down", 0);
     this.createWalkAnimation("walk-left", 1);
     this.createWalkAnimation("walk-right", 2);
     this.createWalkAnimation("walk-up", 3);
 
-    // Collision
-    this.physics.add.collider(this.player, this.collisionLayer);
+    // Collision from object layer rectangles
+    this.collisionBodies = this.physics.add.staticGroup();
+    const collisionLayer = map.getObjectLayer("Collisions");
+    if (collisionLayer) {
+      for (const obj of collisionLayer.objects) {
+        const rect = this.add.rectangle(
+          obj.x! + obj.width! / 2,
+          obj.y! + obj.height! / 2,
+          obj.width,
+          obj.height,
+        );
+        rect.setVisible(false);
+        this.collisionBodies.add(rect);
+      }
+    }
+    this.physics.add.collider(this.player, this.collisionBodies);
 
     // Camera
     this.cameras.main.startFollow(this.player, true);
