@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import { CombatMachine, CombatEvent, PlayerAction } from "../combat/machine";
+import { CombatMachine, CombatEvent, PlayerAction, MAX_DARK_POWER } from "../combat/machine";
 import { Monster } from "../model/Monster";
 
 const WIDTH = 320;
@@ -8,6 +8,8 @@ const MSG_BOX_H = 64;
 const MSG_BOX_Y = HEIGHT - MSG_BOX_H;
 const HP_BAR_W = 80;
 const HP_BAR_H = 6;
+const DP_PIP_SIZE = 8;
+const DP_PIP_GAP = 3;
 
 export class CombatScene extends Scene {
   private machine!: CombatMachine;
@@ -20,6 +22,8 @@ export class CombatScene extends Scene {
   private messageText!: Phaser.GameObjects.Text;
   private fightBtn!: Phaser.GameObjects.Text;
   private runBtn!: Phaser.GameObjects.Text;
+  private rechargeBtn!: Phaser.GameObjects.Text;
+  private dpPips: Phaser.GameObjects.Rectangle[] = [];
   private eventQueue: CombatEvent[] = [];
   private processing = false;
 
@@ -60,7 +64,13 @@ export class CombatScene extends Scene {
       color: "#ffffff",
     });
     this.add.rectangle(enemyHpX + HP_BAR_W / 2, enemyHpY + 2, HP_BAR_W, HP_BAR_H, 0x333333);
-    this.enemyHpBar = this.add.rectangle(enemyHpX + HP_BAR_W / 2, enemyHpY + 2, HP_BAR_W, HP_BAR_H, 0x44cc44);
+    this.enemyHpBar = this.add.rectangle(
+      enemyHpX + HP_BAR_W / 2,
+      enemyHpY + 2,
+      HP_BAR_W,
+      HP_BAR_H,
+      0x44cc44,
+    );
 
     // Player HP bar + name
     const playerHpX = 72 - HP_BAR_W / 2;
@@ -70,7 +80,13 @@ export class CombatScene extends Scene {
       color: "#ffffff",
     });
     this.add.rectangle(playerHpX + HP_BAR_W / 2, playerHpY + 2, HP_BAR_W, HP_BAR_H, 0x333333);
-    this.playerHpBar = this.add.rectangle(playerHpX + HP_BAR_W / 2, playerHpY + 2, HP_BAR_W, HP_BAR_H, 0x44cc44);
+    this.playerHpBar = this.add.rectangle(
+      playerHpX + HP_BAR_W / 2,
+      playerHpY + 2,
+      HP_BAR_W,
+      HP_BAR_H,
+      0x44cc44,
+    );
 
     // Message box background
     this.add.rectangle(WIDTH / 2, MSG_BOX_Y + MSG_BOX_H / 2, WIDTH, MSG_BOX_H, 0x111111, 0.9);
@@ -104,8 +120,43 @@ export class CombatScene extends Scene {
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.onAction("run"));
 
+    // Recharge button (shown when DP is not full)
+    this.rechargeBtn = this.add
+      .text(WIDTH - 100, btnY - 18, "⚡ RECHARGE", {
+        fontSize: "10px",
+        color: "#bb66ff",
+        backgroundColor: "#333333",
+        padding: { x: 6, y: 2 },
+      })
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.onRecharge());
+
+    // Dark Power pips — below player HP bar
+    const dpStartX = 72 - HP_BAR_W / 2;
+    const dpY = MSG_BOX_Y - 72;
+
+    this.add.text(dpStartX, dpY - 10, "DP", {
+      fontSize: "8px",
+      color: "#bb66ff",
+    });
+
+    this.dpPips = [];
+    for (let i = 0; i < MAX_DARK_POWER; i++) {
+      const pip = this.add
+        .rectangle(
+          dpStartX + i * (DP_PIP_SIZE + DP_PIP_GAP) + DP_PIP_SIZE / 2 + 16,
+          dpY - 5,
+          DP_PIP_SIZE,
+          DP_PIP_SIZE,
+          0xbb66ff,
+        )
+        .setStrokeStyle(1, 0x8833cc);
+      this.dpPips.push(pip);
+    }
+
     this.hideMenu();
     this.updateHpBars();
+    this.updateDpPips();
     this.updateNameLabels();
 
     // Start combat
@@ -136,20 +187,62 @@ export class CombatScene extends Scene {
     return 0xcc4444;
   }
 
+  private updateDpPips() {
+    for (let i = 0; i < this.dpPips.length; i++) {
+      if (i < this.machine.darkPower) {
+        this.dpPips[i].setFillStyle(0xbb66ff);
+      } else {
+        this.dpPips[i].setFillStyle(0x332244);
+      }
+    }
+  }
+
   private showMenu() {
+    const canFight = this.machine.canFight();
     this.fightBtn.setVisible(true);
+    this.fightBtn.setColor(canFight ? "#ffcc00" : "#666666");
+    this.fightBtn.setInteractive(canFight ? { useHandCursor: true } : false);
     this.runBtn.setVisible(true);
+    this.rechargeBtn.setVisible(this.machine.darkPower < this.machine.maxDarkPower);
   }
 
   private hideMenu() {
     this.fightBtn.setVisible(false);
     this.runBtn.setVisible(false);
+    this.rechargeBtn.setVisible(false);
   }
 
   private onAction(action: PlayerAction) {
     if (this.processing) return;
+    if (action === "fight" && !this.machine.canFight()) return;
     this.hideMenu();
     this.queueEvents(this.machine.submitAction(action));
+  }
+
+  private onRecharge() {
+    if (this.processing) return;
+    if (this.machine.darkPower >= this.machine.maxDarkPower) return;
+    this.hideMenu();
+
+    this.scene.pause();
+    this.scene.launch("MathProblemScene", { returnScene: "CombatScene" });
+
+    this.scene.get("MathProblemScene").events.once("shutdown", () => {
+      const mathScene = this.scene.get("MathProblemScene");
+      const correct = mathScene.data.get("correct") as boolean;
+      if (correct) {
+        this.machine.rechargeDarkPower();
+        this.messageText.setText("Dark Power recharged!");
+      } else {
+        this.messageText.setText("Recharge failed...");
+      }
+      this.updateDpPips();
+      this.time.delayedCall(1000, () => {
+        if (this.machine.state === "DECISION") {
+          this.showMenu();
+        }
+      });
+    });
   }
 
   private queueEvents(events: CombatEvent[]) {
@@ -175,6 +268,7 @@ export class CombatScene extends Scene {
     const event = this.eventQueue.shift()!;
     this.messageText.setText(event.message);
     this.updateHpBars();
+    this.updateDpPips();
 
     // Pause between events so the player can read them
     this.time.delayedCall(1000, () => this.processNextEvent());

@@ -4,6 +4,7 @@ export interface TechniqueDef {
   power: number;
   accuracy: number;
   range: "melee" | "ranged";
+  dpCost: number;
 }
 
 export const TECHNIQUES: Record<string, TechniqueDef> = {
@@ -13,5 +14,6 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
     power: 1.5,
     accuracy: 0.85,
     range: "melee",
+    dpCost: 2,
   },
 };

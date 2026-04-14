@@ -14,20 +14,35 @@ export interface CombatEvent {
     | "miss"
     | "faint"
     | "flee_success"
-    | "flee_fail";
+    | "flee_fail"
+    | "dp_drain"
+    | "dp_empty";
   message: string;
 }
+
+export const MAX_DARK_POWER = 5;
 
 export class CombatMachine {
   readonly player: Monster;
   readonly enemy: Monster;
   state: CombatState = "INTRO";
   outcome: CombatOutcome | null = null;
+  darkPower: number = MAX_DARK_POWER;
+  readonly maxDarkPower: number = MAX_DARK_POWER;
   private fleeAttempts = 0;
 
   constructor(player: Monster, enemy: Monster) {
     this.player = player;
     this.enemy = enemy;
+  }
+
+  canFight(): boolean {
+    const technique = this.player.techniques[0];
+    return technique != null && this.darkPower >= technique.dpCost;
+  }
+
+  rechargeDarkPower(): void {
+    this.darkPower = this.maxDarkPower;
   }
 
   intro(): CombatEvent[] {
@@ -43,9 +58,7 @@ export class CombatMachine {
 
     if (action === "run") {
       this.fleeAttempts++;
-      if (
-        rollFleeChance(this.fleeAttempts, this.player.level, this.enemy.level)
-      ) {
+      if (rollFleeChance(this.fleeAttempts, this.player.level, this.enemy.level)) {
         events.push({
           type: "flee_success",
           message: "Got away safely!",
@@ -59,6 +72,12 @@ export class CombatMachine {
         message: "Couldn't escape!",
       });
     } else {
+      const technique = this.player.techniques[0];
+      this.darkPower = Math.max(0, this.darkPower - technique.dpCost);
+      events.push({
+        type: "dp_drain",
+        message: `${technique.dpCost} Dark Power spent! (${this.darkPower}/${this.maxDarkPower})`,
+      });
       events.push(...this.performAttack(this.player, this.enemy, true));
       if (this.enemy.currentHp <= 0) {
         events.push({
@@ -87,11 +106,7 @@ export class CombatMachine {
     return events;
   }
 
-  private performAttack(
-    attacker: Monster,
-    defender: Monster,
-    isPlayer: boolean,
-  ): CombatEvent[] {
+  private performAttack(attacker: Monster, defender: Monster, isPlayer: boolean): CombatEvent[] {
     const events: CombatEvent[] = [];
     const technique = attacker.techniques[0];
     const label = isPlayer ? "player_attack" : "enemy_attack";
