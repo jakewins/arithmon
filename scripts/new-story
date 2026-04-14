@@ -27,7 +27,7 @@ LAST_NUM=$(find "$BOARD_DIR" -mindepth 2 -maxdepth 2 -type d -name 'STORY-*' \
   | sort -n \
   | tail -1 || true)
 
-NEXT_NUM=$(printf "%04d" $(( ${LAST_NUM:-0} + 1 )))
+NEXT_NUM=$(printf "%04d" $(( 10#${LAST_NUM:-0} + 1 )))
 STORY_ID="STORY-$NEXT_NUM"
 STORY_DIR="$BOARD_DIR/$LANE/$STORY_ID-$SLUG"
 
