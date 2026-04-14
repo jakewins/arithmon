@@ -6,9 +6,18 @@ import { RunningEvent } from "./running";
 import "./conditions/charFacingTile";
 import "./conditions/buttonPressed";
 import "./conditions/variableSet";
+import "./conditions/charAt";
+import "./conditions/charExists";
+import "./conditions/charFacingChar";
 import "./actions/dialog";
 import "./actions/setVariable";
 import "./actions/createNpc";
+import "./actions/charFace";
+import "./actions/lockControls";
+import "./actions/unlockControls";
+import "./actions/removeNpc";
+import "./actions/wait";
+import "./actions/pathfind";
 
 export class EventEngine {
   private events: EventDef[];

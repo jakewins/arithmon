@@ -2,34 +2,17 @@ import { Scene } from "phaser";
 import { Monster } from "../model/Monster";
 import { EventEngine } from "../event/engine";
 import { gameVariables } from "../event/variables";
-import type { Direction, EventContext, EventDef, NpcState } from "../event/types";
+import { loadEventsFromYaml } from "../event/loader";
+import type { Direction, EventContext, NpcState } from "../event/types";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
 const GRASS_TILE_ID = 1552;
 const ENCOUNTER_RATE = 0.5;
 
-const COTTON_TOWN_EVENTS: EventDef[] = [
-  {
-    id: 1,
-    name: "Talk to Greeter",
-    x: 20,
-    y: 18,
-    width: 1,
-    height: 1,
-    conditions: [
-      { operator: "is", type: "char_facing_tile", args: ["player"] },
-      { operator: "is", type: "button_pressed", args: ["INTERACT"] },
-    ],
-    actions: [
-      { type: "dialog", args: ["Welcome to Cotton Town! The monsters here are restless..."] },
-      { type: "set_variable", args: ["greeted:yes"] },
-    ],
-  },
-];
-
 export class OverworldScene extends Scene {
-  private player!: Phaser.Physics.Arcade.Sprite;
+  // Exposed so char_face action can update player sprite frame
+  player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private collisionBodies!: Phaser.Physics.Arcade.StaticGroup;
   private groundLayer!: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer;
@@ -40,6 +23,8 @@ export class OverworldScene extends Scene {
   private interactPressed = false;
   private eventEngine!: EventEngine;
   private npcs = new Map<string, NpcState>();
+  private controlsState = { locked: false };
+  private eventsYaml = "";
 
   constructor() {
     super("OverworldScene");
@@ -55,6 +40,7 @@ export class OverworldScene extends Scene {
       frameWidth: 16,
       frameHeight: 32,
     });
+    this.load.text("cotton-town-events", "assets/events/cotton_town.yaml");
   }
 
   create() {
@@ -78,9 +64,9 @@ export class OverworldScene extends Scene {
       }
     }
 
-    // Player — start near center of the 40x40 map
+    // Player — start on the open road (y=19, just above the building row)
     const startX = 20 * TILE_SIZE + TILE_SIZE / 2;
-    const startY = 20 * TILE_SIZE;
+    const startY = 19 * TILE_SIZE;
     this.player = this.physics.add.sprite(startX, startY, "player", 1);
     this.player.setSize(12, 12);
     this.player.setOffset(2, 18);
@@ -92,21 +78,25 @@ export class OverworldScene extends Scene {
     this.createWalkAnimation("walk-right", 2);
     this.createWalkAnimation("walk-up", 3);
 
-    // NPC sprite — static greeter near player start
-    // Sprite center placed same way as player: tileY * TILE_SIZE
-    const npcTileX = 20;
-    const npcTileY = 18;
-    const npcX = npcTileX * TILE_SIZE + TILE_SIZE / 2;
-    const npcY = npcTileY * TILE_SIZE;
-    const npcSprite = this.add.sprite(npcX, npcY, "player", 1);
-    npcSprite.setDepth(5);
+    // Static greeter NPC — on the open road west of player start
+    const greeterTileX = 17;
+    const greeterTileY = 18;
+    const greeterX = greeterTileX * TILE_SIZE + TILE_SIZE / 2;
+    const greeterY = greeterTileY * TILE_SIZE;
+    const greeterSprite = this.add.sprite(greeterX, greeterY, "player", 4);
+    greeterSprite.setDepth(5);
     this.npcs.set("greeter", {
       slug: "greeter",
-      tileX: npcTileX,
-      tileY: npcTileY,
-      facing: "down",
-      sprite: npcSprite,
+      tileX: greeterTileX,
+      tileY: greeterTileY,
+      facing: "left",
+      sprite: greeterSprite,
     });
+
+    // NPC collision body
+    const npcBodyY = greeterTileY * TILE_SIZE + TILE_SIZE / 2;
+    const npcCollision = this.add.rectangle(greeterX, npcBodyY, TILE_SIZE, TILE_SIZE);
+    npcCollision.setVisible(false);
 
     // Collision from object layer rectangles
     this.collisionBodies = this.physics.add.staticGroup();
@@ -123,14 +113,8 @@ export class OverworldScene extends Scene {
         this.collisionBodies.add(rect);
       }
     }
-    this.physics.add.collider(this.player, this.collisionBodies);
-
-    // NPC collision body — placed at the foot tile center so it blocks
-    // the player from entering the NPC's tile (not the head area)
-    const npcBodyY = npcTileY * TILE_SIZE + TILE_SIZE / 2;
-    const npcCollision = this.add.rectangle(npcX, npcBodyY, TILE_SIZE, TILE_SIZE);
-    npcCollision.setVisible(false);
     this.collisionBodies.add(npcCollision);
+    this.physics.add.collider(this.player, this.collisionBodies);
 
     // Camera
     this.cameras.main.startFollow(this.player, true);
@@ -159,8 +143,10 @@ export class OverworldScene extends Scene {
       if (!this.inCombat) this.startMathProblem();
     });
 
-    // Event engine
-    this.eventEngine = new EventEngine(COTTON_TOWN_EVENTS);
+    // Event engine — load from YAML
+    this.eventsYaml = this.cache.text.get("cotton-town-events") as string;
+    const events = loadEventsFromYaml(this.eventsYaml);
+    this.eventEngine = new EventEngine(events);
   }
 
   private createWalkAnimation(key: string, row: number) {
@@ -180,7 +166,7 @@ export class OverworldScene extends Scene {
   update(_time: number, delta: number) {
     if (this.inCombat) return;
 
-    const blocked = this.eventEngine.blocking;
+    const blocked = this.eventEngine.blocking || this.controlsState.locked;
 
     if (!blocked) {
       this.player.setVelocity(0);
@@ -217,9 +203,13 @@ export class OverworldScene extends Scene {
       variables: gameVariables,
       interactPressed: this.interactPressed,
       npcs: this.npcs,
+      controls: this.controlsState,
     };
 
     this.eventEngine.update(ctx, delta / 1000);
+
+    // Sync facing back from context (char_face action may have changed it)
+    this.playerFacing = ctx.player.facing;
 
     // Clear per-frame input
     this.interactPressed = false;

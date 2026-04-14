@@ -4,8 +4,7 @@ import { registerAction } from "../registry";
 const WIDTH = 320;
 const HEIGHT = 240;
 const BOX_H = 48;
-const BOX_MARGIN = 8;
-const BOX_Y = HEIGHT - BOX_H - BOX_MARGIN;
+const BOX_Y = HEIGHT - BOX_H;
 
 class DialogAction implements EventAction {
   type = "dialog";

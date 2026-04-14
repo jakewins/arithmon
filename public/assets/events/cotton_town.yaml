@@ -1,0 +1,41 @@
+events:
+  Hacker Intro:
+    conditions:
+      - is char_at player
+      - not variable_set spokencottonhacker:yes
+    actions:
+      - lock_controls
+      - create_npc hacker,30,18
+      - pathfind hacker,25,18
+      - char_face player,hacker
+      - dialog Welcome to Cotton Town! Watch out for wild monsters...
+      - dialog I'm a hacker. I can help you out. But first you need to prove yourself.
+      - pathfind hacker,30,18
+      - remove_npc hacker
+      - set_variable spokencottonhacker:yes
+      - unlock_controls
+    x: 368
+    y: 272
+    width: 64
+    height: 48
+
+  Greeter NPC:
+    behav: talk greeter
+    actions:
+      - dialog Welcome to Cotton Town! The monsters here are restless...
+      - set_variable greeted:yes
+    x: 272
+    y: 288
+    width: 16
+    height: 16
+
+  Town Sign:
+    conditions:
+      - is char_facing_tile
+      - is button_pressed INTERACT
+    actions:
+      - dialog Cotton Town - A peaceful village surrounded by wild monsters.
+    x: 240
+    y: 256
+    width: 16
+    height: 16

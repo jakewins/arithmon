@@ -28,6 +28,7 @@ export interface EventContext {
   variables: GameVariables;
   interactPressed: boolean;
   npcs: Map<string, NpcState>;
+  controls: { locked: boolean };
 }
 
 export interface NpcState {
