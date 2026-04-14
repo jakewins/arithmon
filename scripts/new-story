@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BOARD_DIR="$REPO_ROOT/board"
+
+# Usage
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <slug> [lane]"
+  echo "  slug: short kebab-case description (e.g. hello-world)"
+  echo "  lane: backlog, next, doing, done (default: next)"
+  exit 1
+fi
+
+SLUG="$1"
+LANE="${2:-next}"
+
+# Validate lane
+if [[ ! -d "$BOARD_DIR/$LANE" ]]; then
+  echo "Error: lane '$LANE' does not exist in $BOARD_DIR"
+  exit 1
+fi
+
+# Find next story number by scanning all existing stories across all lanes
+LAST_NUM=$(find "$BOARD_DIR" -mindepth 2 -maxdepth 2 -type d -name 'STORY-*' \
+  | grep -oP 'STORY-\K\d+' \
+  | sort -n \
+  | tail -1 || true)
+
+NEXT_NUM=$(printf "%04d" $(( ${LAST_NUM:-0} + 1 )))
+STORY_ID="STORY-$NEXT_NUM"
+STORY_DIR="$BOARD_DIR/$LANE/$STORY_ID-$SLUG"
+
+# Create scaffold
+mkdir -p "$STORY_DIR/todos/open"
+mkdir -p "$STORY_DIR/todos/done"
+
+cat > "$STORY_DIR/STORY.md" << EOF
+# $STORY_ID: $SLUG
+
+## Description
+
+_TODO: describe the story_
+
+## Acceptance Criteria
+
+- [ ] _TODO_
+EOF
+
+echo "Created $STORY_DIR"
