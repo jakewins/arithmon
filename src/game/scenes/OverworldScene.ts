@@ -4,6 +4,7 @@ import { EventEngine } from "../event/engine";
 import { gameVariables } from "../event/variables";
 import { loadEventsFromYaml } from "../event/loader";
 import type { Direction, EventContext, NpcState } from "../event/types";
+import { getNpcSprite, allNpcSpritesheets } from "../data/npcs";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -41,6 +42,14 @@ export class OverworldScene extends Scene {
       frameHeight: 32,
     });
     this.load.text("cotton-town-events", "assets/events/cotton_town.yaml");
+
+    // NPC spritesheets — same frame layout as player (16x32, 3 cols × 4 rows)
+    for (const sheet of allNpcSpritesheets()) {
+      this.load.spritesheet(sheet, `assets/sprites/${sheet}.png`, {
+        frameWidth: 16,
+        frameHeight: 32,
+      });
+    }
   }
 
   create() {
@@ -83,7 +92,8 @@ export class OverworldScene extends Scene {
     const greeterTileY = 18;
     const greeterX = greeterTileX * TILE_SIZE + TILE_SIZE / 2;
     const greeterY = greeterTileY * TILE_SIZE;
-    const greeterSprite = this.add.sprite(greeterX, greeterY, "player", 4);
+    const { spritesheet: greeterSheet } = getNpcSprite("greeter");
+    const greeterSprite = this.add.sprite(greeterX, greeterY, greeterSheet, 1);
     greeterSprite.setDepth(5);
     this.npcs.set("greeter", {
       slug: "greeter",

@@ -1,7 +1,15 @@
 import type { EventAction, EventContext, Direction } from "../types";
 import { registerAction } from "../registry";
+import { getNpcSprite } from "../../data/npcs";
 
 const TILE_SIZE = 16;
+
+const FACING_FRAMES: Record<Direction, number> = {
+  down: 1,
+  left: 4,
+  right: 7,
+  up: 10,
+};
 
 class CreateNpcAction implements EventAction {
   type = "create_npc";
@@ -23,14 +31,9 @@ class CreateNpcAction implements EventAction {
     const pixelX = this.tileX * TILE_SIZE + TILE_SIZE / 2;
     const pixelY = this.tileY * TILE_SIZE;
 
-    const facingFrames: Record<Direction, number> = {
-      down: 1,
-      left: 4,
-      right: 7,
-      up: 10,
-    };
+    const { spritesheet } = getNpcSprite(this.slug);
 
-    const sprite = ctx.scene.add.sprite(pixelX, pixelY, "player", facingFrames[this.facing]);
+    const sprite = ctx.scene.add.sprite(pixelX, pixelY, spritesheet, FACING_FRAMES[this.facing]);
     sprite.setDepth(5);
 
     ctx.npcs.set(this.slug, {
