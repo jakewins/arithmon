@@ -1,12 +1,19 @@
 import { Scene } from "phaser";
+import { Monster } from "../model/Monster";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
+const GRASS_TILE_ID = 1552;
+const ENCOUNTER_RATE = 0.5;
 
 export class OverworldScene extends Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private collisionBodies!: Phaser.Physics.Arcade.StaticGroup;
+  private groundLayer!: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer;
+  private lastTileX = -1;
+  private lastTileY = -1;
+  private inCombat = false;
 
   constructor() {
     super("OverworldScene");
@@ -39,6 +46,9 @@ export class OverworldScene extends Scene {
       const layer = map.createLayer(layerData.name, tilesets)!;
       if (layerData.name === "Above Player") {
         layer.setDepth(10);
+      }
+      if (layerData.name === "Ground") {
+        this.groundLayer = layer;
       }
     }
 
@@ -81,6 +91,11 @@ export class OverworldScene extends Scene {
 
     // Input
     this.cursors = this.input.keyboard!.createCursorKeys();
+
+    // Debug: press C to force a combat encounter
+    this.input.keyboard!.on("keydown-C", () => {
+      if (!this.inCombat) this.startCombat();
+    });
   }
 
   private createWalkAnimation(key: string, row: number) {
@@ -98,6 +113,8 @@ export class OverworldScene extends Scene {
   }
 
   update() {
+    if (this.inCombat) return;
+
     this.player.setVelocity(0);
 
     if (this.cursors.left.isDown) {
@@ -115,5 +132,41 @@ export class OverworldScene extends Scene {
     } else {
       this.player.anims.stop();
     }
+
+    this.checkEncounter();
+  }
+
+  private checkEncounter() {
+    const tileX = Math.floor(this.player.x / TILE_SIZE);
+    const tileY = Math.floor(this.player.y / TILE_SIZE);
+
+    // Only check on tile transitions
+    if (tileX === this.lastTileX && tileY === this.lastTileY) return;
+    this.lastTileX = tileX;
+    this.lastTileY = tileY;
+
+    const tile = this.groundLayer?.getTileAt(tileX, tileY);
+    if (!tile || tile.index !== GRASS_TILE_ID) return;
+
+    if (Math.random() >= ENCOUNTER_RATE) return;
+
+    this.startCombat();
+  }
+
+  private startCombat() {
+    this.inCombat = true;
+    this.player.setVelocity(0);
+    this.player.anims.stop();
+
+    const playerMonster = Monster.spawn("rockitten", 5);
+    const enemyMonster = Monster.spawn("rockitten", 4 + Math.floor(Math.random() * 3));
+
+    this.scene.pause();
+    this.scene.launch("CombatScene", { playerMonster, enemyMonster });
+
+    // Listen for combat scene to stop, then resume
+    this.scene.get("CombatScene").events.once("shutdown", () => {
+      this.inCombat = false;
+    });
   }
 }
