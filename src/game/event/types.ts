@@ -1,0 +1,62 @@
+export type Direction = "up" | "down" | "left" | "right";
+
+export interface ConditionDef {
+  operator: "is" | "not";
+  type: string;
+  args: string[];
+}
+
+export interface ActionDef {
+  type: string;
+  args: string[];
+}
+
+export interface EventDef {
+  id: number;
+  name: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  conditions: ConditionDef[];
+  actions: ActionDef[];
+}
+
+export interface EventContext {
+  scene: Phaser.Scene;
+  player: { tileX: number; tileY: number; facing: Direction };
+  variables: GameVariables;
+  interactPressed: boolean;
+  npcs: Map<string, NpcState>;
+}
+
+export interface NpcState {
+  slug: string;
+  tileX: number;
+  tileY: number;
+  facing: Direction;
+  sprite: Phaser.GameObjects.Sprite;
+}
+
+export interface GameVariables {
+  get(key: string): string | undefined;
+  set(key: string, value: string): void;
+  has(key: string): boolean;
+  remove(key: string): void;
+}
+
+export interface EventCondition {
+  type: string;
+  test(ctx: EventContext, def: EventDef): boolean;
+}
+
+export interface EventAction {
+  type: string;
+  done: boolean;
+  start(ctx: EventContext): void;
+  update(ctx: EventContext, dt: number): void;
+  cleanup(ctx: EventContext): void;
+}
+
+export type ConditionFactory = (args: string[]) => EventCondition;
+export type ActionFactory = (args: string[]) => EventAction;

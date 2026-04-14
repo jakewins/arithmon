@@ -1,10 +1,32 @@
 import { Scene } from "phaser";
 import { Monster } from "../model/Monster";
+import { EventEngine } from "../event/engine";
+import { gameVariables } from "../event/variables";
+import type { Direction, EventContext, EventDef, NpcState } from "../event/types";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
 const GRASS_TILE_ID = 1552;
 const ENCOUNTER_RATE = 0.5;
+
+const COTTON_TOWN_EVENTS: EventDef[] = [
+  {
+    id: 1,
+    name: "Talk to Greeter",
+    x: 20,
+    y: 18,
+    width: 1,
+    height: 1,
+    conditions: [
+      { operator: "is", type: "char_facing_tile", args: ["player"] },
+      { operator: "is", type: "button_pressed", args: ["INTERACT"] },
+    ],
+    actions: [
+      { type: "dialog", args: ["Welcome to Cotton Town! The monsters here are restless..."] },
+      { type: "set_variable", args: ["greeted:yes"] },
+    ],
+  },
+];
 
 export class OverworldScene extends Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
@@ -14,6 +36,10 @@ export class OverworldScene extends Scene {
   private lastTileX = -1;
   private lastTileY = -1;
   private inCombat = false;
+  private playerFacing: Direction = "down";
+  private interactPressed = false;
+  private eventEngine!: EventEngine;
+  private npcs = new Map<string, NpcState>();
 
   constructor() {
     super("OverworldScene");
@@ -66,6 +92,22 @@ export class OverworldScene extends Scene {
     this.createWalkAnimation("walk-right", 2);
     this.createWalkAnimation("walk-up", 3);
 
+    // NPC sprite — static greeter near player start
+    // Sprite center placed same way as player: tileY * TILE_SIZE
+    const npcTileX = 20;
+    const npcTileY = 18;
+    const npcX = npcTileX * TILE_SIZE + TILE_SIZE / 2;
+    const npcY = npcTileY * TILE_SIZE;
+    const npcSprite = this.add.sprite(npcX, npcY, "player", 1);
+    npcSprite.setDepth(5);
+    this.npcs.set("greeter", {
+      slug: "greeter",
+      tileX: npcTileX,
+      tileY: npcTileY,
+      facing: "down",
+      sprite: npcSprite,
+    });
+
     // Collision from object layer rectangles
     this.collisionBodies = this.physics.add.staticGroup();
     const collisionLayer = map.getObjectLayer("Collisions");
@@ -83,6 +125,13 @@ export class OverworldScene extends Scene {
     }
     this.physics.add.collider(this.player, this.collisionBodies);
 
+    // NPC collision body — placed at the foot tile center so it blocks
+    // the player from entering the NPC's tile (not the head area)
+    const npcBodyY = npcTileY * TILE_SIZE + TILE_SIZE / 2;
+    const npcCollision = this.add.rectangle(npcX, npcBodyY, TILE_SIZE, TILE_SIZE);
+    npcCollision.setVisible(false);
+    this.collisionBodies.add(npcCollision);
+
     // Camera
     this.cameras.main.startFollow(this.player, true);
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -91,6 +140,14 @@ export class OverworldScene extends Scene {
 
     // Input
     this.cursors = this.input.keyboard!.createCursorKeys();
+
+    this.input.keyboard!.on("keydown-SPACE", () => {
+      this.interactPressed = true;
+    });
+
+    this.input.keyboard!.on("keydown-Z", () => {
+      this.interactPressed = true;
+    });
 
     // Debug: press C to force a combat encounter
     this.input.keyboard!.on("keydown-C", () => {
@@ -101,6 +158,9 @@ export class OverworldScene extends Scene {
     this.input.keyboard!.on("keydown-P", () => {
       if (!this.inCombat) this.startMathProblem();
     });
+
+    // Event engine
+    this.eventEngine = new EventEngine(COTTON_TOWN_EVENTS);
   }
 
   private createWalkAnimation(key: string, row: number) {
@@ -117,33 +177,70 @@ export class OverworldScene extends Scene {
     });
   }
 
-  update() {
+  update(_time: number, delta: number) {
     if (this.inCombat) return;
 
-    this.player.setVelocity(0);
+    const blocked = this.eventEngine.blocking;
 
-    if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-PLAYER_SPEED);
-      this.player.anims.play("walk-left", true);
-    } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(PLAYER_SPEED);
-      this.player.anims.play("walk-right", true);
-    } else if (this.cursors.up.isDown) {
-      this.player.setVelocityY(-PLAYER_SPEED);
-      this.player.anims.play("walk-up", true);
-    } else if (this.cursors.down.isDown) {
-      this.player.setVelocityY(PLAYER_SPEED);
-      this.player.anims.play("walk-down", true);
+    if (!blocked) {
+      this.player.setVelocity(0);
+
+      if (this.cursors.left.isDown) {
+        this.player.setVelocityX(-PLAYER_SPEED);
+        this.player.anims.play("walk-left", true);
+        this.playerFacing = "left";
+      } else if (this.cursors.right.isDown) {
+        this.player.setVelocityX(PLAYER_SPEED);
+        this.player.anims.play("walk-right", true);
+        this.playerFacing = "right";
+      } else if (this.cursors.up.isDown) {
+        this.player.setVelocityY(-PLAYER_SPEED);
+        this.player.anims.play("walk-up", true);
+        this.playerFacing = "up";
+      } else if (this.cursors.down.isDown) {
+        this.player.setVelocityY(PLAYER_SPEED);
+        this.player.anims.play("walk-down", true);
+        this.playerFacing = "down";
+      } else {
+        this.player.anims.stop();
+      }
     } else {
+      this.player.setVelocity(0);
       this.player.anims.stop();
     }
 
-    this.checkEncounter();
+    // Build event context — use body center for tile coords (body is at feet)
+    const { tileX, tileY } = this.playerTile();
+    const ctx: EventContext = {
+      scene: this,
+      player: { tileX, tileY, facing: this.playerFacing },
+      variables: gameVariables,
+      interactPressed: this.interactPressed,
+      npcs: this.npcs,
+    };
+
+    this.eventEngine.update(ctx, delta / 1000);
+
+    // Clear per-frame input
+    this.interactPressed = false;
+
+    if (!blocked) {
+      this.checkEncounter();
+    }
+  }
+
+  /** Player tile based on physics body center (at feet, not sprite center). */
+  private playerTile() {
+    // Body offset (2, 18), size (12, 12) → body center is (player.x, player.y + 8)
+    const bodyCenterY = this.player.y + 8;
+    return {
+      tileX: Math.floor(this.player.x / TILE_SIZE),
+      tileY: Math.floor(bodyCenterY / TILE_SIZE),
+    };
   }
 
   private checkEncounter() {
-    const tileX = Math.floor(this.player.x / TILE_SIZE);
-    const tileY = Math.floor(this.player.y / TILE_SIZE);
+    const { tileX, tileY } = this.playerTile();
 
     // Only check on tile transitions
     if (tileX === this.lastTileX && tileY === this.lastTileY) return;
