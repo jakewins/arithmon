@@ -18,6 +18,7 @@ import "./actions/unlockControls";
 import "./actions/removeNpc";
 import "./actions/wait";
 import "./actions/pathfind";
+import "./actions/translatedDialogChoice";
 
 export class EventEngine {
   private events: EventDef[];

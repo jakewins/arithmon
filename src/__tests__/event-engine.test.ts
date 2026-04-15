@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { EventContext, EventDef, NpcState, Direction } from "../game/event/types";
 import { EventEngine } from "../game/event/engine";
 import { gameVariables } from "../game/event/variables";
@@ -6,6 +6,45 @@ import { loadEventsFromYaml } from "../game/event/loader";
 
 function stubScene(): Phaser.Scene {
   return {} as unknown as Phaser.Scene;
+}
+
+/** Scene stub with enough Phaser surface for dialog/choice actions. */
+function stubSceneWithUI(): Phaser.Scene {
+  const destroyed: { destroy: () => void }[] = [];
+  const makeObj = (overrides: Record<string, unknown> = {}) => {
+    const obj = {
+      setDepth: vi.fn().mockReturnThis(),
+      setScrollFactor: vi.fn().mockReturnThis(),
+      setVisible: vi.fn().mockReturnThis(),
+      setY: vi.fn().mockReturnThis(),
+      setText: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+      y: 192,
+      height: 48,
+      ...overrides,
+    };
+    destroyed.push(obj);
+    return obj;
+  };
+  const keyStubs = new Map<number, { isDown: boolean; _justDown: boolean }>();
+  return {
+    add: {
+      rectangle: vi.fn(() => makeObj()),
+      text: vi.fn(() => makeObj()),
+    },
+    input: {
+      keyboard: {
+        addKey: vi.fn((keyCode: number) => {
+          const key = { isDown: false, _justDown: false, keyCode };
+          keyStubs.set(keyCode, key);
+          return key;
+        }),
+        removeKey: vi.fn(),
+      },
+    },
+    _keyStubs: keyStubs,
+    _destroyed: destroyed,
+  } as unknown as Phaser.Scene;
 }
 
 function makeCtx(overrides: Partial<EventContext> = {}): EventContext {
@@ -318,5 +357,91 @@ describe("wait action", () => {
     // Past the 0.5s mark
     engine.update(makeCtx(), 0.4);
     expect(gameVariables.get("waited")).toBe("yes");
+  });
+});
+
+describe("translated_dialog_choice action", () => {
+  beforeEach(() => {
+    gameVariables.remove("greeter_mood");
+  });
+
+  it("parses options and variable from YAML-style args", () => {
+    const yaml = `
+events:
+  Test Choice:
+    conditions:
+      - is char_at player
+    actions:
+      - translated_dialog_choice good:bad:meh,test_var
+    x: 320
+    y: 304
+    width: 16
+    height: 16
+`;
+    const events = loadEventsFromYaml(yaml);
+    expect(events[0].actions[0]).toEqual({
+      type: "translated_dialog_choice",
+      args: ["good:bad:meh", "test_var"],
+    });
+  });
+
+  it("sets the variable to the selected option on confirm", () => {
+    const scene = stubSceneWithUI();
+    const event: EventDef = {
+      id: 20,
+      name: "Choice test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "translated_dialog_choice", args: ["good:bad", "greeter_mood"] },
+        { type: "set_variable", args: ["choice_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    // Trigger — player is inside the zone
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    // Choice menu is blocking, variable not set yet
+    expect(engine.blocking).toBe(true);
+    expect(gameVariables.has("greeter_mood")).toBe(false);
+
+    // First frame after start is ignored (absorbs residual interact press)
+    engine.update(makeCtx({ scene }), 0.016);
+    expect(gameVariables.has("greeter_mood")).toBe(false);
+
+    // Confirm (default selection = first option "good")
+    engine.update(makeCtx({ scene, interactPressed: true }), 0.016);
+    expect(gameVariables.get("greeter_mood")).toBe("good");
+
+    // Follow-up action should have run
+    expect(gameVariables.get("choice_done")).toBe("yes");
+  });
+
+  it("condition-driven branching works after choice", () => {
+    const goodEvent: EventDef = {
+      id: 21,
+      name: "Good branch",
+      conditions: [{ operator: "is", type: "variable_set", args: ["greeter_mood:good"] }],
+      actions: [{ type: "set_variable", args: ["branch:good_path"] }],
+    };
+    const badEvent: EventDef = {
+      id: 22,
+      name: "Bad branch",
+      conditions: [{ operator: "is", type: "variable_set", args: ["greeter_mood:bad"] }],
+      actions: [{ type: "set_variable", args: ["branch:bad_path"] }],
+    };
+
+    gameVariables.set("greeter_mood", "bad");
+    const engine = new EventEngine([goodEvent, badEvent]);
+    engine.update(makeCtx(), 0.016);
+
+    expect(gameVariables.get("branch")).toBe("bad_path");
+
+    gameVariables.remove("branch");
+    gameVariables.remove("greeter_mood");
   });
 });
