@@ -42,6 +42,7 @@ export class OverworldScene extends Scene {
       frameHeight: 32,
     });
     this.load.text("cotton-town-events", "assets/events/cotton_town.yaml");
+    this.load.text("sample-cutscene", "assets/events/sample_cutscene.yaml");
 
     // NPC spritesheets — same frame layout as player (16x32, 3 cols × 4 rows)
     for (const sheet of allNpcSpritesheets()) {
@@ -151,6 +152,11 @@ export class OverworldScene extends Scene {
     // Debug: press P to launch a math problem
     this.input.keyboard!.on("keydown-P", () => {
       if (!this.inCombat) this.startMathProblem();
+    });
+
+    // Debug: press V to launch a sample cutscene
+    this.input.keyboard!.on("keydown-V", () => {
+      if (!this.inCombat) this.startCutscene();
     });
 
     // Event engine — load from YAML
@@ -264,6 +270,22 @@ export class OverworldScene extends Scene {
     this.scene.launch("MathProblemScene");
 
     this.scene.get("MathProblemScene").events.once("shutdown", () => {
+      this.inCombat = false;
+    });
+  }
+
+  private startCutscene() {
+    this.inCombat = true;
+    this.player.setVelocity(0);
+    this.player.anims.stop();
+
+    this.scene.pause();
+    this.scene.launch("CutsceneScene", {
+      yamlKey: "sample-cutscene",
+      callerScene: "OverworldScene",
+    });
+
+    this.scene.get("CutsceneScene").events.once("shutdown", () => {
       this.inCombat = false;
     });
   }

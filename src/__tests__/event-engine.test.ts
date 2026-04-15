@@ -445,3 +445,130 @@ events:
     gameVariables.remove("greeter_mood");
   });
 });
+
+describe("change_bg action", () => {
+  it("sets the scene background color", () => {
+    const scene = stubSceneWithUI();
+    const mockSetBg = vi.fn();
+    (scene as unknown as { cameras: { main: { setBackgroundColor: typeof mockSetBg } } }).cameras =
+      { main: { setBackgroundColor: mockSetBg } };
+
+    const event: EventDef = {
+      id: 30,
+      name: "BG test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "change_bg", args: ["blue"] },
+        { type: "set_variable", args: ["bg_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(mockSetBg).toHaveBeenCalledWith(0x2244aa);
+    expect(gameVariables.get("bg_done")).toBe("yes");
+    gameVariables.remove("bg_done");
+  });
+});
+
+describe("end_cutscene action", () => {
+  it("sets cutsceneDone flag on controls", () => {
+    const controls = { locked: false, cutsceneDone: false };
+    const event: EventDef = {
+      id: 31,
+      name: "End test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "end_cutscene", args: [] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ controls, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(controls.cutsceneDone).toBe(true);
+  });
+});
+
+describe("cutscene event chain", () => {
+  beforeEach(() => {
+    gameVariables.remove("favorite");
+    gameVariables.remove("cutscene_done");
+    gameVariables.remove("cutscene_farewell");
+  });
+
+  it("chains choice → branch → farewell → end via variable guards", () => {
+    const scene = stubSceneWithUI();
+    const controls = { locked: false, cutsceneDone: false };
+
+    const events = loadEventsFromYaml(`
+events:
+  Ask:
+    conditions:
+      - not variable_set favorite
+    actions:
+      - translated_dialog_choice fire:water,favorite
+
+  Pick Fire:
+    conditions:
+      - is variable_set favorite:fire
+      - not variable_set cutscene_done:yes
+    actions:
+      - set_variable cutscene_done:yes
+
+  Farewell:
+    conditions:
+      - is variable_set cutscene_done:yes
+      - not variable_set cutscene_farewell:yes
+    actions:
+      - set_variable cutscene_farewell:yes
+      - end_cutscene
+`);
+    const engine = new EventEngine(events);
+
+    // Frame 1: Ask event starts, choice menu appears
+    engine.update(
+      makeCtx({ scene, controls, player: { tileX: 0, tileY: 0, facing: "down" } }),
+      0.016,
+    );
+    expect(engine.blocking).toBe(true);
+
+    // Frame 2: skip first-frame guard
+    engine.update(
+      makeCtx({ scene, controls, player: { tileX: 0, tileY: 0, facing: "down" } }),
+      0.016,
+    );
+
+    // Frame 3: confirm choice (first option = "fire")
+    engine.update(
+      makeCtx({
+        scene,
+        controls,
+        interactPressed: true,
+        player: { tileX: 0, tileY: 0, facing: "down" },
+      }),
+      0.016,
+    );
+    expect(gameVariables.get("favorite")).toBe("fire");
+
+    // Frame 4: Pick Fire fires, sets cutscene_done
+    engine.update(
+      makeCtx({ scene, controls, player: { tileX: 0, tileY: 0, facing: "down" } }),
+      0.016,
+    );
+    expect(gameVariables.get("cutscene_done")).toBe("yes");
+
+    // Frame 5: Farewell fires (its conditions now pass), sets cutsceneDone
+    engine.update(
+      makeCtx({ scene, controls, player: { tileX: 0, tileY: 0, facing: "down" } }),
+      0.016,
+    );
+    expect(gameVariables.get("cutscene_farewell")).toBe("yes");
+    expect(controls.cutsceneDone).toBe(true);
+  });
+});

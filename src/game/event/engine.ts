@@ -19,6 +19,8 @@ import "./actions/removeNpc";
 import "./actions/wait";
 import "./actions/pathfind";
 import "./actions/translatedDialogChoice";
+import "./actions/changeBg";
+import "./actions/endCutscene";
 
 export class EventEngine {
   private events: EventDef[];

@@ -1,0 +1,41 @@
+events:
+  Ask Favorite:
+    conditions:
+      - not variable_set favorite
+    actions:
+      - change_bg blue
+      - dialog Welcome, trainer! Before we begin...
+      - translated_dialog_choice fire:water:grass,favorite
+
+  Pick Fire:
+    conditions:
+      - is variable_set favorite:fire
+      - not variable_set cutscene_done:yes
+    actions:
+      - dialog Bold choice! Fire types are fierce.
+      - set_variable cutscene_done:yes
+
+  Pick Water:
+    conditions:
+      - is variable_set favorite:water
+      - not variable_set cutscene_done:yes
+    actions:
+      - dialog Wise choice! Water types are versatile.
+      - set_variable cutscene_done:yes
+
+  Pick Grass:
+    conditions:
+      - is variable_set favorite:grass
+      - not variable_set cutscene_done:yes
+    actions:
+      - dialog Natural choice! Grass types are resilient.
+      - set_variable cutscene_done:yes
+
+  Farewell:
+    conditions:
+      - is variable_set cutscene_done:yes
+      - not variable_set cutscene_farewell:yes
+    actions:
+      - dialog Good luck on your journey!
+      - set_variable cutscene_farewell:yes
+      - end_cutscene
