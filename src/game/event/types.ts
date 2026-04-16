@@ -1,3 +1,5 @@
+import type { GameSession } from "../session";
+
 export type Direction = "up" | "down" | "left" | "right";
 
 export interface ConditionDef {
@@ -24,7 +26,9 @@ export interface EventDef {
 
 export interface EventContext {
   scene: Phaser.Scene;
+  session: GameSession;
   player: { tileX: number; tileY: number; facing: Direction };
+  /** Shortcut for session.player.gameVariables — avoids churn on existing actions. */
   variables: GameVariables;
   interactPressed: boolean;
   npcs: Map<string, NpcState>;

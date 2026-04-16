@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 import { Monster } from "../model/Monster";
 import { EventEngine } from "../event/engine";
-import { gameVariables } from "../event/variables";
+import { session } from "../session";
 import { loadEventsFromYaml } from "../event/loader";
 import type { Direction, EventContext, NpcState } from "../event/types";
 import { getNpcSprite, allNpcSpritesheets } from "../data/npcs";
@@ -215,8 +215,9 @@ export class OverworldScene extends Scene {
     const { tileX, tileY } = this.playerTile();
     const ctx: EventContext = {
       scene: this,
+      session,
       player: { tileX, tileY, facing: this.playerFacing },
-      variables: gameVariables,
+      variables: session.player.gameVariables,
       interactPressed: this.interactPressed,
       npcs: this.npcs,
       controls: this.controlsState,

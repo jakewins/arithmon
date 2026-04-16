@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { EventContext, EventDef, NpcState, Direction } from "../game/event/types";
 import { EventEngine } from "../game/event/engine";
-import { gameVariables } from "../game/event/variables";
+import { session } from "../game/session";
 import { loadEventsFromYaml } from "../game/event/loader";
+
+const gameVariables = session.player.gameVariables;
 
 function stubScene(): Phaser.Scene {
   return {} as unknown as Phaser.Scene;
@@ -50,6 +52,7 @@ function stubSceneWithUI(): Phaser.Scene {
 function makeCtx(overrides: Partial<EventContext> = {}): EventContext {
   return {
     scene: stubScene(),
+    session,
     player: { tileX: 20, tileY: 19, facing: "up" as Direction },
     variables: gameVariables,
     interactPressed: false,
@@ -570,5 +573,86 @@ events:
     );
     expect(gameVariables.get("cutscene_farewell")).toBe("yes");
     expect(controls.cutsceneDone).toBe(true);
+  });
+});
+
+describe("session state and new actions", () => {
+  beforeEach(() => {
+    session.player.gender = null;
+    session.player.template = "adventurer";
+    session.player.name = "Player";
+  });
+
+  it("set_char_attribute sets typed fields on player", () => {
+    const event: EventDef = {
+      id: 40,
+      name: "Set gender",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "set_char_attribute", args: ["player", "gender", "female"] },
+        { type: "set_char_attribute", args: ["player", "name", "Luna"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(session.player.gender).toBe("female");
+    expect(session.player.name).toBe("Luna");
+  });
+
+  it("set_char_attribute ignores unknown fields", () => {
+    const event: EventDef = {
+      id: 41,
+      name: "Bad attr",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_char_attribute", args: ["player", "bogus", "value"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    // Should not throw
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+  });
+
+  it("set_template updates session.player.template", () => {
+    const event: EventDef = {
+      id: 42,
+      name: "Set template",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_template", args: ["player", "heroine", "heroine"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(session.player.template).toBe("heroine");
+  });
+
+  it("set_variable still works through ctx.variables shortcut", () => {
+    const event: EventDef = {
+      id: 43,
+      name: "Variable test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_variable", args: ["test_session:works"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(session.player.gameVariables.get("test_session")).toBe("works");
+    expect(gameVariables.get("test_session")).toBe("works"); // same reference
+    gameVariables.remove("test_session");
   });
 });

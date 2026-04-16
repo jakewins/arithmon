@@ -12,6 +12,8 @@ events:
       - is variable_set favorite:fire
       - not variable_set cutscene_done:yes
     actions:
+      - set_char_attribute player,gender,bold
+      - set_template player,adventurer,adventurer
       - dialog Bold choice! Fire types are fierce.
       - set_variable cutscene_done:yes
 
@@ -20,6 +22,8 @@ events:
       - is variable_set favorite:water
       - not variable_set cutscene_done:yes
     actions:
+      - set_char_attribute player,gender,wise
+      - set_template player,adventurer,adventurer
       - dialog Wise choice! Water types are versatile.
       - set_variable cutscene_done:yes
 
@@ -28,6 +32,8 @@ events:
       - is variable_set favorite:grass
       - not variable_set cutscene_done:yes
     actions:
+      - set_char_attribute player,gender,natural
+      - set_template player,adventurer,adventurer
       - dialog Natural choice! Grass types are resilient.
       - set_variable cutscene_done:yes
 

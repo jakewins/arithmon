@@ -1,8 +1,8 @@
 import { Scene } from "phaser";
 import { EventEngine } from "../event/engine";
-import { gameVariables } from "../event/variables";
 import { loadEventsFromYaml } from "../event/loader";
 import type { EventContext, NpcState } from "../event/types";
+import { session } from "../session";
 
 export class CutsceneScene extends Scene {
   private eventEngine!: EventEngine;
@@ -37,8 +37,9 @@ export class CutsceneScene extends Scene {
   update(_time: number, delta: number) {
     const ctx: EventContext = {
       scene: this,
+      session,
       player: { tileX: 0, tileY: 0, facing: "down" },
-      variables: gameVariables,
+      variables: session.player.gameVariables,
       interactPressed: this.interactPressed,
       npcs: new Map<string, NpcState>(),
       controls: this.controlsState,

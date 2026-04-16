@@ -21,6 +21,8 @@ import "./actions/pathfind";
 import "./actions/translatedDialogChoice";
 import "./actions/changeBg";
 import "./actions/endCutscene";
+import "./actions/setCharAttribute";
+import "./actions/setTemplate";
 
 export class EventEngine {
   private events: EventDef[];
