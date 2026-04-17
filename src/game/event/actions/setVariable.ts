@@ -1,5 +1,6 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
+import { debugBridge } from "../../debug";
 
 class SetVariableAction implements EventAction {
   type = "set_variable";
@@ -17,6 +18,7 @@ class SetVariableAction implements EventAction {
 
   start(ctx: EventContext): void {
     ctx.variables.set(this.key, this.value);
+    debugBridge.emit("variable_set", { key: this.key, value: this.value });
     this.done = true;
   }
 

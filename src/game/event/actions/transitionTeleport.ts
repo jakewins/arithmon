@@ -1,5 +1,6 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
+import { debugBridge } from "../../debug";
 
 /**
  * Tuxemon syntax:
@@ -37,6 +38,7 @@ class TransitionTeleportAction implements EventAction {
       duration: this.duration,
     };
     this.dispatched = true;
+    debugBridge.emit("teleport", { map: this.mapKey, x: this.tileX, y: this.tileY });
   }
 
   update(ctx: EventContext): void {

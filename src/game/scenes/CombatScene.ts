@@ -164,6 +164,11 @@ export class CombatScene extends Scene implements DebugStateProvider {
     this.queueEvents(this.machine.intro());
 
     debugBridge.setScene(this);
+    debugBridge.emit("scene_started", { scene: "CombatScene" });
+
+    this.events.once("shutdown", () => {
+      debugBridge.emit("scene_stopped", { scene: "CombatScene" });
+    });
   }
 
   getDebugState(): Record<string, unknown> {

@@ -90,6 +90,15 @@ export class MathProblemScene extends Scene implements DebugStateProvider {
       .setOrigin(0.5);
 
     debugBridge.setScene(this);
+    debugBridge.emit("scene_started", { scene: "MathProblemScene" });
+    debugBridge.emit("math_problem_shown", {
+      skill: this.problem.id,
+      type: widget.type,
+    });
+
+    this.events.once("shutdown", () => {
+      debugBridge.emit("scene_stopped", { scene: "MathProblemScene" });
+    });
   }
 
   getDebugState(): Record<string, unknown> {
@@ -208,6 +217,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider {
     const choices = widget.options.choices;
     const selected = choices[index];
     const result = skillTree.gradeAnswer(this.problem.id, selected.content);
+    debugBridge.emit("math_problem_answered", {
+      correct: result.correct,
+      answer: selected.content,
+    });
 
     this.data.set("correct", result.correct);
 
@@ -248,6 +261,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider {
 
     const answer = parseInt(this.currentAnswer, 10);
     const result = skillTree.gradeAnswer(this.problem.id, answer);
+    debugBridge.emit("math_problem_answered", {
+      correct: result.correct,
+      answer: this.currentAnswer,
+    });
 
     // Store result so the calling scene can read it
     this.data.set("correct", result.correct);

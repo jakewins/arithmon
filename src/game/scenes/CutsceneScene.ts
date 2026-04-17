@@ -42,6 +42,11 @@ export class CutsceneScene extends Scene implements DebugStateProvider {
     });
 
     debugBridge.setScene(this);
+    debugBridge.emit("scene_started", { scene: "CutsceneScene" });
+
+    this.events.once("shutdown", () => {
+      debugBridge.emit("scene_stopped", { scene: "CutsceneScene" });
+    });
   }
 
   getDebugState(): Record<string, unknown> {

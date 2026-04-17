@@ -1,5 +1,6 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
+import { debugBridge } from "../../debug";
 
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -41,6 +42,8 @@ class DialogAction implements EventAction {
     });
     this.prompt.setDepth(101).setScrollFactor(0);
     this.prompt.setVisible(false);
+
+    debugBridge.emit("dialog_opened", { text: this.text });
   }
 
   update(ctx: EventContext, dt: number): void {
@@ -75,6 +78,7 @@ class DialogAction implements EventAction {
     this.bg.destroy();
     this.label.destroy();
     this.prompt.destroy();
+    debugBridge.emit("dialog_closed", {});
   }
 }
 

@@ -1,6 +1,7 @@
 import type { EventContext, EventDef, ConditionDef } from "./types";
 import { createCondition } from "./registry";
 import { RunningEvent } from "./running";
+import { debugBridge } from "../debug";
 
 // Import conditions and actions to trigger their self-registration
 import "./conditions/charFacingTile";
@@ -54,6 +55,9 @@ export class EventEngine {
     for (const def of this.events) {
       if (this.runningIds.has(def.id)) continue;
       if (this.checkConditions(ctx, def)) {
+        if (def.conditions.some((c) => c.type === "button_pressed")) {
+          debugBridge.emit("npc_interact", { npc: def.name });
+        }
         const running = new RunningEvent(def);
         this.running.push(running);
         this.runningIds.add(def.id);

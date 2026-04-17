@@ -1,6 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { t } from "../../i18n";
+import { debugBridge } from "../../debug";
 
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -71,6 +72,8 @@ class TranslatedDialogChoiceAction implements EventAction {
 
     this.upKey = scene.input.keyboard!.addKey(KEY_UP);
     this.downKey = scene.input.keyboard!.addKey(KEY_DOWN);
+
+    debugBridge.emit("choice_presented", { options: this.options.map((o) => t(o)) });
   }
 
   update(ctx: EventContext): void {
@@ -102,6 +105,10 @@ class TranslatedDialogChoiceAction implements EventAction {
     // Confirm selection
     if (ctx.interactPressed) {
       ctx.variables.set(this.variable, this.options[this.selected]);
+      debugBridge.emit("choice_selected", {
+        index: this.selected,
+        text: t(this.options[this.selected]),
+      });
       this.done = true;
     }
   }

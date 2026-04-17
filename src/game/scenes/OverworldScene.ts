@@ -249,6 +249,11 @@ export class OverworldScene extends Scene implements DebugStateProvider {
     this.eventEngine = new EventEngine(events);
 
     debugBridge.setScene(this);
+    debugBridge.emit("scene_started", { scene: "OverworldScene" });
+
+    this.events.once("shutdown", () => {
+      debugBridge.emit("scene_stopped", { scene: "OverworldScene" });
+    });
   }
 
   getDebugState(): Record<string, unknown> {
@@ -403,6 +408,12 @@ export class OverworldScene extends Scene implements DebugStateProvider {
 
     // Only check on tile transitions
     if (tileX === this.lastTileX && tileY === this.lastTileY) return;
+    debugBridge.emit("player_moved", {
+      fromX: this.lastTileX,
+      fromY: this.lastTileY,
+      toX: tileX,
+      toY: tileY,
+    });
     this.lastTileX = tileX;
     this.lastTileY = tileY;
 
@@ -449,7 +460,9 @@ export class OverworldScene extends Scene implements DebugStateProvider {
     this.player.anims.stop();
 
     const playerMonster = Monster.spawn("rockitten", 5);
-    const enemyMonster = Monster.spawn("rockitten", 4 + Math.floor(Math.random() * 3));
+    const enemyLevel = 4 + Math.floor(Math.random() * 3);
+    const enemyMonster = Monster.spawn("rockitten", enemyLevel);
+    debugBridge.emit("encounter_started", { monster: "rockitten", level: enemyLevel });
 
     this.scene.pause();
     this.scene.launch("CombatScene", { playerMonster, enemyMonster });

@@ -1,5 +1,6 @@
 import { Monster } from "../model/Monster";
 import { calculateDamage, rollAccuracy, rollFleeChance } from "./formula";
+import { debugBridge } from "../debug";
 
 export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "END";
 export type PlayerAction = "fight" | "run";
@@ -46,14 +47,18 @@ export class CombatMachine {
   }
 
   intro(): CombatEvent[] {
+    const from = this.state;
     this.state = "DECISION";
+    debugBridge.emit("combat_state", { from, to: this.state });
     return [{ type: "intro", message: `A wild ${this.enemy.name} appeared!` }];
   }
 
   submitAction(action: PlayerAction): CombatEvent[] {
     if (this.state !== "DECISION") return [];
 
+    const fromState = this.state;
     this.state = "ACTION";
+    debugBridge.emit("combat_state", { from: fromState, to: this.state });
     const events: CombatEvent[] = [];
 
     if (action === "run") {
@@ -65,6 +70,8 @@ export class CombatMachine {
         });
         this.state = "END";
         this.outcome = "fled";
+        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+        debugBridge.emit("combat_action", { action, events });
         return events;
       }
       events.push({
@@ -86,6 +93,8 @@ export class CombatMachine {
         });
         this.state = "END";
         this.outcome = "win";
+        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+        debugBridge.emit("combat_action", { action, events });
         return events;
       }
     }
@@ -99,10 +108,14 @@ export class CombatMachine {
       });
       this.state = "END";
       this.outcome = "lose";
+      debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+      debugBridge.emit("combat_action", { action, events });
       return events;
     }
 
     this.state = "DECISION";
+    debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+    debugBridge.emit("combat_action", { action, events });
     return events;
   }
 
