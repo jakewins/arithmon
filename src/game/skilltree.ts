@@ -1,17 +1,21 @@
-import { PROBLEMS, type PerseusProblem, type GradeResult } from "./data/problems";
+import { type PerseusProblem, type GradeResult } from "./data/problems";
+import { generate as generateKOAA5 } from "./data/skills/k-oa-a5";
 
 /**
  * Singleton service that manages math problem selection and grading.
- * For now returns hard-coded problems; will eventually track skill
+ * Generates problems procedurally per skill; will eventually track skill
  * progression and use spaced repetition (ts-fsrs).
  */
 class SkillTree {
+  private activeProblem: PerseusProblem | null = null;
+
   getNextProblem(): PerseusProblem {
-    return PROBLEMS[0];
+    this.activeProblem = generateKOAA5();
+    return this.activeProblem;
   }
 
   gradeAnswer(problemId: string, answer: number): GradeResult {
-    const problem = PROBLEMS.find((p) => p.id === problemId);
+    const problem = this.activeProblem?.id === problemId ? this.activeProblem : null;
     if (!problem) {
       return { correct: false, expected: 0 };
     }
