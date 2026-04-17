@@ -193,7 +193,7 @@ describe("GameVariables", () => {
 });
 
 describe("YAML loader", () => {
-  it("parses a representative YAML doc with conditions, behav, and pixel coords", () => {
+  it("parses a representative YAML doc with conditions, behav, and tile coords", () => {
     const yaml = `
 events:
   Hacker Intro:
@@ -206,30 +206,30 @@ events:
       - dialog Welcome to Cotton Town!
       - set_variable spoken:yes
       - unlock_controls
-    x: 400
-    y: 576
-    width: 48
-    height: 16
+    x: 25
+    y: 36
+    width: 3
+    height: 1
 
   Talk to Greeter:
     behav: talk greeter
     actions:
       - dialog Hello there!
-    x: 320
-    y: 288
-    width: 16
-    height: 16
+    x: 20
+    y: 18
+    width: 1
+    height: 1
 `;
     const events = loadEventsFromYaml(yaml);
     expect(events).toHaveLength(2);
 
-    // Event with explicit conditions — verify condition/action parsing + pixel→tile
+    // Event with explicit conditions — coords are tile coordinates (passed through as-is)
     const hacker = events[0];
     expect(hacker.name).toBe("Hacker Intro");
-    expect(hacker.x).toBe(25); // 400 / 16
-    expect(hacker.y).toBe(36); // 576 / 16
-    expect(hacker.width).toBe(3); // 48 / 16
-    expect(hacker.height).toBe(1); // 16 / 16
+    expect(hacker.x).toBe(25);
+    expect(hacker.y).toBe(36);
+    expect(hacker.width).toBe(3);
+    expect(hacker.height).toBe(1);
     expect(hacker.conditions).toEqual([
       { operator: "is", type: "char_at", args: ["player"] },
       { operator: "not", type: "variable_set", args: ["spoken:yes"] },
@@ -247,6 +247,62 @@ events:
     ]);
     expect(greeter.actions[0]).toEqual({ type: "char_face", args: ["greeter", "player"] });
     expect(greeter.actions[1]).toEqual({ type: "dialog", args: ["Hello there!"] });
+  });
+});
+
+describe("spyder_bedroom YAML", () => {
+  it("loads Go Downstairs event with correct tile coordinates", () => {
+    const yaml = `
+events:
+  Go Downstairs:
+    actions:
+    - transition_teleport player,spyder_downstairs.tmx,0,2,0.3
+    - char_face player,down
+    conditions:
+    - is char_at player
+    x: 7
+    y: 2
+`;
+    const events = loadEventsFromYaml(yaml);
+    expect(events).toHaveLength(1);
+
+    const goDown = events[0];
+    expect(goDown.name).toBe("Go Downstairs");
+    expect(goDown.x).toBe(7);
+    expect(goDown.y).toBe(2);
+    expect(goDown.conditions).toEqual([{ operator: "is", type: "char_at", args: ["player"] }]);
+    expect(goDown.actions[0]).toEqual({
+      type: "transition_teleport",
+      args: ["player", "spyder_downstairs.tmx", "0", "2", "0.3"],
+    });
+    expect(goDown.actions[1]).toEqual({
+      type: "char_face",
+      args: ["player", "down"],
+    });
+  });
+
+  it("triggers teleport when player stands on stairs tile (7,2)", () => {
+    const events = loadEventsFromYaml(`
+events:
+  Go Downstairs:
+    actions:
+    - transition_teleport player,spyder_downstairs.tmx,0,2,0.3
+    conditions:
+    - is char_at player
+    x: 7
+    y: 2
+`);
+    const engine = new EventEngine(events);
+    const controls: EventContext["controls"] = { locked: false };
+
+    engine.update(makeCtx({ controls, player: { tileX: 7, tileY: 2, facing: "down" } }), 0.016);
+
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "spyder_downstairs",
+      tileX: 0,
+      tileY: 2,
+      duration: 0.3,
+    });
   });
 });
 
@@ -376,10 +432,10 @@ events:
       - is char_at player
     actions:
       - translated_dialog_choice good:bad:meh,test_var
-    x: 320
-    y: 304
-    width: 16
-    height: 16
+    x: 20
+    y: 19
+    width: 1
+    height: 1
 `;
     const events = loadEventsFromYaml(yaml);
     expect(events[0].actions[0]).toEqual({
@@ -585,10 +641,10 @@ events:
       - is char_at player
     actions:
       - transition_teleport player,foo.tmx,4,5,0.3
-    x: 320
-    y: 304
-    width: 16
-    height: 16
+    x: 20
+    y: 19
+    width: 1
+    height: 1
 `;
     const events = loadEventsFromYaml(yaml);
     expect(events[0].actions[0]).toEqual({

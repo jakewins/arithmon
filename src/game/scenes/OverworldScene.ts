@@ -82,7 +82,10 @@ export class OverworldScene extends Scene {
         frameHeight: 32,
       });
     }
-    this.load.text("cotton-town-events", "assets/events/cotton_town.yaml");
+    // Per-map event files — keyed by map name
+    this.load.text("events-cotton_town", "assets/events/cotton_town.yaml");
+    this.load.text("events-spyder_bedroom", "assets/events/spyder_bedroom.yaml");
+
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
     // i18n translations
@@ -207,9 +210,8 @@ export class OverworldScene extends Scene {
       if (!this.inCombat) this.startCutscene();
     });
 
-    // Event engine — only cotton_town has scripted events today.
-    const eventsYaml =
-      this.mapKey === "cotton_town" ? (this.cache.text.get("cotton-town-events") as string) : "";
+    // Event engine — load per-map YAML events by naming convention
+    const eventsYaml = this.cache.text.get(`events-${this.mapKey}`) as string | undefined;
     const events = eventsYaml ? loadEventsFromYaml(eventsYaml) : [];
     this.eventEngine = new EventEngine(events);
   }

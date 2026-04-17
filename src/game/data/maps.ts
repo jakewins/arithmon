@@ -81,6 +81,11 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonPath: "assets/maps/spyder_bedroom.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
   },
+  spyder_downstairs: {
+    jsonKey: "map-spyder_downstairs",
+    jsonPath: "assets/maps/spyder_downstairs.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+  },
   water_end_of_desert: {
     jsonKey: "map-water_end_of_desert",
     jsonPath: "assets/maps/water_end_of_desert.json",

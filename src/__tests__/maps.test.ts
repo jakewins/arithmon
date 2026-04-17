@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../game/data/maps";
 
 describe("map registry", () => {
-  it("contains cotton_town and player_house_bedroom", () => {
+  it("contains cotton_town, player_house_bedroom, spyder_bedroom, and spyder_downstairs", () => {
     expect(MAP_REGISTRY.cotton_town).toBeDefined();
     expect(MAP_REGISTRY.player_house_bedroom).toBeDefined();
+    expect(MAP_REGISTRY.spyder_bedroom).toBeDefined();
+    expect(MAP_REGISTRY.spyder_downstairs).toBeDefined();
   });
 
   it("cotton_town has the outdoor tileset set", () => {

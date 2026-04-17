@@ -1,8 +1,6 @@
 import { parse } from "yaml";
 import type { EventDef, ConditionDef, ActionDef } from "./types";
 
-const TILE_SIZE = 16;
-
 interface YamlEvent {
   conditions?: string[];
   actions?: string[];
@@ -74,10 +72,10 @@ export function loadEventsFromYaml(yamlText: string): EventDef[] {
       events.push({
         id: nextId++,
         name,
-        x: entry.x !== undefined ? Math.floor(entry.x / TILE_SIZE) : undefined,
-        y: entry.y !== undefined ? Math.floor(entry.y / TILE_SIZE) : undefined,
-        width: entry.width !== undefined ? Math.floor(entry.width / TILE_SIZE) : undefined,
-        height: entry.height !== undefined ? Math.floor(entry.height / TILE_SIZE) : undefined,
+        x: entry.x,
+        y: entry.y,
+        width: entry.width,
+        height: entry.height,
         conditions,
         actions: expanded.actions,
       });
@@ -86,10 +84,10 @@ export function loadEventsFromYaml(yamlText: string): EventDef[] {
       events.push({
         id: nextId++,
         name,
-        x: entry.x !== undefined ? Math.floor(entry.x / TILE_SIZE) : undefined,
-        y: entry.y !== undefined ? Math.floor(entry.y / TILE_SIZE) : undefined,
-        width: entry.width !== undefined ? Math.floor(entry.width / TILE_SIZE) : undefined,
-        height: entry.height !== undefined ? Math.floor(entry.height / TILE_SIZE) : undefined,
+        x: entry.x,
+        y: entry.y,
+        width: entry.width,
+        height: entry.height,
         conditions,
         actions,
       });
