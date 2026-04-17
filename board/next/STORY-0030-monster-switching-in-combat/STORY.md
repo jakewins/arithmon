@@ -64,6 +64,19 @@ When all party monsters are fainted, combat ends in a loss (whiteout from STORY-
 5. **Update CombatScene** — sprite swap, HUD update, wire to TUXEMON menu option
 6. **Tests** — voluntary swap costs turn, forced swap doesn't, can't select fainted monster, can't swap to already-active monster
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. You'll need a party with multiple monsters — use `A.addMonster(slug, level)` to populate the party before testing. You'll also need `A.startCombat()` to enter combat on demand.
+
+Write a QA script that:
+
+1. Launches the game, adds 2-3 monsters to the party
+2. Starts combat, screenshots the combat screen
+3. Selects TUXEMON from the menu, screenshots the party list overlay — verify slot display with names, levels, HP, active indicator
+4. Selects a healthy monster, verifies the swap happens (sprite/HUD updates)
+5. Verifies the swap cost a turn (enemy attacked)
+6. Tests forced swap: add a debug command like `A.setMonsterHp(index, 0)` to faint the active monster mid-combat, verify the forced swap prompt appears with no back-out option
+
 ## Acceptance Criteria
 
 - [ ] Selecting TUXEMON in combat opens a party list showing all party monsters with HP

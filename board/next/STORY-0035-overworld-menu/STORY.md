@@ -72,6 +72,18 @@ This mirrors Tuxemon's `states/world_menus.py`.
 4. **Wire ESC key** — in OverworldScene, launch/close pause menu
 5. **Tests** — menu opens/closes, overworld pauses/resumes
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. The pause menu is triggered by a keypress, so use Playwright's `page.keyboard.press("Escape")` directly rather than a debug command.
+
+Write a QA script that:
+
+1. Launches the game, waits for idle
+2. Presses ESC, screenshots the pause menu — verify right-aligned panel with options, dialog border styling, semi-transparent overlay
+3. Navigates options with arrow keys, screenshots to verify cursor movement
+4. Selects "Close", verifies the menu dismisses and the overworld resumes
+5. Re-opens the menu, selects each stub option (Tuxemon, Bag, Save), verifies stub messages appear
+
 ## Acceptance Criteria
 
 - [ ] Pressing ESC on the overworld opens a pause menu

@@ -74,6 +74,20 @@ Full visual animation (ball sprite, bounce, etc.) can come in a later visual pol
 5. **Wire to item menu** — capture devices auto-target enemy, trigger capture action
 6. **Tests** — capture formula edge cases (1 HP = easy catch, full HP = hard), party-full storage
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. Capture success depends on the enemy's HP, so you need control over it. Add a debug command `A.setEnemyHp(hp)` to set the wild monster's current HP during combat.
+
+Write a QA script that:
+
+1. Launches the game, starts combat
+2. Sets the enemy's HP to 1 via `A.setEnemyHp(1)` to maximize capture chance
+3. Uses a tuxeball from the item menu
+4. Watches for shake events via `getEvents()` — verify shake messages appear
+5. On success: verify the monster was added to the party via `getState()`, item consumed, combat ended
+6. Tests failure path: set enemy HP to max, attempt capture, verify "broke free" message and combat continues
+7. Tests party-full scenario: fill the party to 6 monsters via `A.addMonster()`, capture another, verify it goes to storage
+
 ## Acceptance Criteria
 
 - [ ] Using a tuxeball on a wild monster triggers the capture formula

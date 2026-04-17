@@ -79,6 +79,22 @@ Mirrors Tuxemon's `states/journal_state.py` and `states/journal_info.py`.
 5. **Wire combat** — mark monster as "seen" on battle start
 6. **Tests** — registry tracking, display states
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. You need control over the seen/caught registry to test all three visual states. Add debug commands:
+
+- `A.markMonsterSeen(slug)` — mark a species as seen
+- `A.markMonsterCaught(slug)` — mark a species as caught
+
+Write a QA script that:
+
+1. Launches the game, marks a few monsters as seen and one as caught using the debug commands
+2. Opens the pause menu, selects "Journal"
+3. Screenshots the monster list — verify three visual states: unknown ("???"), seen (name visible), caught (name + icon)
+4. Selects a seen-but-not-caught monster, screenshots the detail view — verify some fields show "???"
+5. Selects a caught monster, screenshots — verify full detail with sprite, stats, description
+6. Tests navigation: LEFT/RIGHT cycles through registered monsters
+
 ## Acceptance Criteria
 
 - [ ] Encountering a monster in combat marks it as "seen" in the registry

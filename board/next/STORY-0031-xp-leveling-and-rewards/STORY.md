@@ -73,6 +73,22 @@ After combat, if the monster leveled up, show a brief summary of stat changes. C
 6. **XP bar rendering** — blue bar below player HP bar in combat HUD, animated
 7. **Tests** — XP calculation, level-up stat recalculation, move learning at correct levels
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. Testing leveling naturally requires winning many fights, so add debug commands to shortcut:
+
+- `A.setMonsterXp(index, xp)` — set a monster's XP to a specific value (to position it just below a level-up threshold)
+- `A.startCombat()` — force a wild encounter
+
+Write a QA script that:
+
+1. Launches the game, screenshots the combat HUD to verify the XP bar is visible below the HP bar
+2. Sets the lead monster's XP to just below the next level threshold
+3. Starts and wins a combat encounter
+4. Screenshots the XP bar animation and level-up message
+5. Checks `getState()` to verify the monster's level increased and stats were recalculated
+6. Tests move learning: set XP so the monster levels to a level where it learns a new move, verify the move appears in the monster's technique list
+
 ## Acceptance Criteria
 
 - [ ] Defeating a wild monster awards XP to the player's active monster

@@ -99,6 +99,19 @@ This mirrors Tuxemon's separation of `states/monster_menu.py` and the renderer c
 6. **Wire to pause menu** — "Tuxemon" option launches PartyScreen
 7. **Tests** — reorder updates party array, slot rendering shows correct data
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. You'll need a full party to test the layout properly — use `A.addMonster(slug, level)` to populate 4-5 monsters before opening the screen.
+
+Write a QA script that:
+
+1. Launches the game, adds several monsters to the party (different species and levels)
+2. Opens the pause menu (ESC), selects "Tuxemon"
+3. Screenshots the party screen — verify 6 slots on the right (filled + empty), detail panel on the left with portrait and stats
+4. Navigates between slots with arrow keys, screenshots to verify the detail panel updates
+5. Tests reorder: selects a monster, chooses "Move", selects a target slot, verifies the party order changed via `getState()`
+6. Tests context menu: selects a monster, screenshots the Summary/Move/Cancel options
+
 ## Acceptance Criteria
 
 - [ ] Party screen shows 6 slots with monster info (name, level, HP bar) on the right

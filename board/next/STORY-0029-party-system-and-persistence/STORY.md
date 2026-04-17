@@ -58,6 +58,20 @@ Monsters need stable identity so we can track the same instance across combat an
 7. **Whiteout** — when all party fainted, heal all and teleport to faint location
 8. **Tests** — lead monster selection, HP persistence after combat, whiteout trigger
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. Add these debug commands to the DebugBridge if they don't already exist:
+
+- `A.startCombat()` — force a wild encounter (may exist from STORY-0028)
+- `A.addMonster(slug, level)` — add a monster to the player's party
+
+Write a QA script that:
+
+1. Launches the game, checks `getState()` to verify the starter monster is in the party
+2. Adds a second monster via `A.addMonster()`, verifies party has 2 members
+3. Triggers combat, wins or flees, then checks `getState()` to verify HP persisted (not reset)
+4. Tests whiteout: set all party monsters to 0 HP via a debug command (e.g. `A.setMonsterHp(index, hp)`), trigger combat, lose, verify the party was healed and player teleported to faint location
+
 ## Acceptance Criteria
 
 - [ ] Player starts with a monster in their party (`session.player.monsters`)

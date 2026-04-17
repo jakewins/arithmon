@@ -99,6 +99,17 @@ This mirrors Tuxemon's `tuxemon/item/` directory structure.
 5. **Item validation** — `canUseItem()` for context-aware usage checks
 6. **Tests** — inventory add/remove, validation logic (can't potion a full-HP monster, can't revive a healthy one)
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. This story is mostly data model, but the inventory should be visible via `getState()`.
+
+Write a QA script that:
+
+1. Launches the game, calls `getState()` and verifies the session includes the starting inventory (potions, tuxeballs)
+2. Verifies item counts match expectations
+
+No visual screenshots needed — this is a data-layer story.
+
 ## Acceptance Criteria
 
 - [ ] `ItemDef` type defined with slug, name, description, category, effects

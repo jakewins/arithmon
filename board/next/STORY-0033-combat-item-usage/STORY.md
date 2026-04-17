@@ -66,6 +66,20 @@ After an item heals a monster, the HP bar should update (animated if possible).
 6. **Combat event messages** — "Used Potion!", "Recovered 20 HP!" etc.
 7. **Tests** — item use heals correctly, item consumed, costs a turn, can't use potion on full HP monster
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. You'll need `A.startCombat()` and a way to damage the player's monster so healing items are valid targets. Add a debug command `A.setMonsterHp(index, hp)` if it doesn't already exist.
+
+Write a QA script that:
+
+1. Launches the game, starts combat, damages the player's monster (e.g. let the enemy attack, or set HP directly)
+2. Selects ITEM from the combat menu, screenshots the item list — verify items shown with quantities
+3. Selects a potion, screenshots the target selection (party list)
+4. Uses the potion on the damaged monster, verifies HP increased via `getState()`
+5. Verifies the item was consumed (quantity decreased)
+6. Verifies the enemy got a turn (item usage costs a turn)
+7. Tests edge case: try to use a potion on a full-HP monster — verify it's not a valid target
+
 ## Acceptance Criteria
 
 - [ ] Selecting ITEM in combat shows a list of the player's combat-usable items

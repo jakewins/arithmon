@@ -93,6 +93,18 @@ Update `dialog.ts`, `translatedDialog.ts`, and `accessPc.ts` to use the shared `
    - Single-page text works as before (no regression)
    - Multi-page text advances on interact and dismisses on last page
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. Write a QA script that:
+
+1. Launches the game, walks to the greeter NPC, and triggers a dialog (`interact`)
+2. Takes a screenshot of the styled dialog box — verify nine-slice border, light background, dark text
+3. If the dialog text is short (single page), verify interact dismisses it
+4. To test pagination: find or create an NPC with long dialog text (or temporarily edit the greeter's text to be 8+ lines). Trigger the dialog, screenshot the first page, advance with `interact`, screenshot the second page, then dismiss
+5. Verify the "▼" prompt is visible between pages
+
+The dialog box is the most visually prominent UI element — screenshot it at each stage and inspect.
+
 ## Acceptance Criteria
 
 - [ ] Long dialog text is split into pages of ~4 lines; pressing interact advances to the next page

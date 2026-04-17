@@ -74,6 +74,19 @@ The Recharge button currently floats above the menu. Move it into the technique 
 7. **Remove old button rendering** — delete the ad-hoc `fightBtn`/`runBtn`/`rechargeBtn` text buttons
 8. **Tests** — technique selection flows through machine correctly, menu navigation
 
+## QA Validation
+
+Use `/puppeteer` to verify this story in a real browser. You'll need a way to enter combat on demand — add a debug command `debugStartCombat()` to the DebugBridge (and expose it as `A.startCombat()`) that triggers a wild encounter immediately. This avoids relying on random encounters. Add the corresponding typing to the `DebugBridgeAPI` interface in `qa/harness.ts` and a wrapper function.
+
+Write a QA script that:
+
+1. Launches the game, triggers combat via the new debug command
+2. Screenshots the two-panel bottom bar — verify left prompt panel and right 2x2 grid
+3. Navigates the menu with `selectChoice` — select FIGHT, screenshot the technique submenu showing moves with DP costs
+4. Verifies grayed-out techniques (set DP to 0 if needed via a debug command)
+5. Goes back to main menu (ESC), selects RUN, verifies combat ends
+6. Screenshots at each stage for visual review
+
 ## Acceptance Criteria
 
 - [ ] Bottom bar has two bordered panels: prompt (left) and menu (right)
