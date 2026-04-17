@@ -44,4 +44,4 @@ events:
     actions:
       - dialog Good luck on your journey!
       - set_variable cutscene_farewell:yes
-      - end_cutscene
+      - transition_teleport player,player_house_bedroom.tmx,4,4,0.3

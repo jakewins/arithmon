@@ -1,7 +1,7 @@
 import type { EventAction, EventContext, Direction } from "../types";
 import { registerAction } from "../registry";
 
-const FACING_FRAMES: Record<Direction, number> = {
+export const FACING_FRAMES: Record<Direction, number> = {
   down: 1,
   left: 4,
   right: 7,

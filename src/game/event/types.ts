@@ -32,7 +32,18 @@ export interface EventContext {
   variables: GameVariables;
   interactPressed: boolean;
   npcs: Map<string, NpcState>;
-  controls: { locked: boolean; cutsceneDone?: boolean };
+  controls: {
+    locked: boolean;
+    cutsceneDone?: boolean;
+    pendingTeleport?: PendingTeleport;
+  };
+}
+
+export interface PendingTeleport {
+  mapKey: string;
+  tileX: number;
+  tileY: number;
+  duration: number;
 }
 
 export interface NpcState {

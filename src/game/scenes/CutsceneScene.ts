@@ -1,14 +1,20 @@
 import { Scene } from "phaser";
 import { EventEngine } from "../event/engine";
 import { loadEventsFromYaml } from "../event/loader";
-import type { EventContext, NpcState } from "../event/types";
+import type { EventContext, NpcState, PendingTeleport } from "../event/types";
 import { session } from "../session";
+import type { OverworldInitData } from "./OverworldScene";
 
 export class CutsceneScene extends Scene {
   private eventEngine!: EventEngine;
   private interactPressed = false;
-  private controlsState = { locked: false, cutsceneDone: false };
+  private controlsState: {
+    locked: boolean;
+    cutsceneDone: boolean;
+    pendingTeleport?: PendingTeleport;
+  } = { locked: false, cutsceneDone: false };
   private callerScene = "";
+  private teleporting = false;
 
   constructor() {
     super("CutsceneScene");
@@ -21,6 +27,7 @@ export class CutsceneScene extends Scene {
     this.eventEngine = new EventEngine(events);
     this.controlsState = { locked: false, cutsceneDone: false };
     this.interactPressed = false;
+    this.teleporting = false;
   }
 
   create() {
@@ -35,6 +42,8 @@ export class CutsceneScene extends Scene {
   }
 
   update(_time: number, delta: number) {
+    if (this.teleporting) return;
+
     const ctx: EventContext = {
       scene: this,
       session,
@@ -49,9 +58,35 @@ export class CutsceneScene extends Scene {
 
     this.interactPressed = false;
 
+    // Teleport request: fade, stop the cutscene, and hand off to the overworld
+    // with the target map + spawn instead of resuming the caller scene.
+    if (this.controlsState.pendingTeleport) {
+      this.beginTeleport(this.controlsState.pendingTeleport);
+      this.controlsState.pendingTeleport = undefined;
+      return;
+    }
+
     if (this.controlsState.cutsceneDone) {
       this.scene.stop();
       this.scene.resume(this.callerScene);
     }
+  }
+
+  private beginTeleport(teleport: PendingTeleport) {
+    this.teleporting = true;
+    const durationMs = Math.max(1, Math.round(teleport.duration * 1000));
+    this.cameras.main.fadeOut(durationMs, 0, 0, 0);
+    // Use the scene's timer rather than the camera's FADE_OUT_COMPLETE event.
+    // The timer is tied to the scene update loop and fires reliably regardless
+    // of camera effect state. scene.start queues a stop for this scene and a
+    // stop+start for the paused caller (OverworldScene), so we don't need to
+    // call scene.stop ourselves.
+    this.time.delayedCall(durationMs, () => {
+      this.scene.start("OverworldScene", {
+        mapKey: teleport.mapKey,
+        spawnTileX: teleport.tileX,
+        spawnTileY: teleport.tileY,
+      } satisfies OverworldInitData);
+    });
   }
 }

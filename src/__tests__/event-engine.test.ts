@@ -576,6 +576,196 @@ events:
   });
 });
 
+describe("transition_teleport action", () => {
+  it("parses args and strips .tmx suffix", () => {
+    const yaml = `
+events:
+  Teleport:
+    conditions:
+      - is char_at player
+    actions:
+      - transition_teleport player,foo.tmx,4,5,0.3
+    x: 320
+    y: 304
+    width: 16
+    height: 16
+`;
+    const events = loadEventsFromYaml(yaml);
+    expect(events[0].actions[0]).toEqual({
+      type: "transition_teleport",
+      args: ["player", "foo.tmx", "4", "5", "0.3"],
+    });
+  });
+
+  it("sets pendingTeleport on controls with .tmx stripped", () => {
+    const controls: EventContext["controls"] = { locked: false };
+    const event: EventDef = {
+      id: 50,
+      name: "Teleport test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        {
+          type: "transition_teleport",
+          args: ["player", "player_house_bedroom.tmx", "4", "5", "0.3"],
+        },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ controls, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "player_house_bedroom",
+      tileX: 4,
+      tileY: 5,
+      duration: 0.3,
+    });
+  });
+
+  it("stays not-done while pendingTeleport is set and blocks the engine", () => {
+    const controls: EventContext["controls"] = { locked: false };
+    const event: EventDef = {
+      id: 51,
+      name: "Teleport blocks",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "transition_teleport", args: ["player", "foo", "1", "2", "0.3"] },
+        { type: "set_variable", args: ["after_teleport:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    // Frame 1: action dispatches, pendingTeleport set
+    engine.update(makeCtx({ controls, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(controls.pendingTeleport).toBeDefined();
+    expect(engine.blocking).toBe(true);
+    expect(gameVariables.has("after_teleport")).toBe(false);
+
+    // Frame 2: flag still set, still blocking, follow-up action hasn't run
+    engine.update(makeCtx({ controls, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+    expect(gameVariables.has("after_teleport")).toBe(false);
+
+    // Simulate the scene consuming the flag (fade started)
+    controls.pendingTeleport = undefined;
+    engine.update(makeCtx({ controls, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    // Follow-up action runs now that teleport is done
+    expect(gameVariables.get("after_teleport")).toBe("yes");
+    gameVariables.remove("after_teleport");
+  });
+});
+
+describe("sample_cutscene.yaml end-to-end", () => {
+  beforeEach(() => {
+    gameVariables.remove("favorite");
+    gameVariables.remove("cutscene_done");
+    gameVariables.remove("cutscene_farewell");
+  });
+
+  it("drives the full cutscene chain through to pendingTeleport", () => {
+    // Mirror of public/assets/events/sample_cutscene.yaml, inlined so the test
+    // doesn't need node:fs. Keep this in sync with that file.
+    const yamlText = `
+events:
+  Ask Favorite:
+    conditions:
+      - not variable_set favorite
+    actions:
+      - change_bg blue
+      - dialog Welcome, trainer! Before we begin...
+      - translated_dialog_choice fire:water:grass,favorite
+
+  Pick Fire:
+    conditions:
+      - is variable_set favorite:fire
+      - not variable_set cutscene_done:yes
+    actions:
+      - set_char_attribute player,gender,bold
+      - set_template player,adventurer,adventurer
+      - dialog Bold choice! Fire types are fierce.
+      - set_variable cutscene_done:yes
+
+  Farewell:
+    conditions:
+      - is variable_set cutscene_done:yes
+      - not variable_set cutscene_farewell:yes
+    actions:
+      - dialog Good luck on your journey!
+      - set_variable cutscene_farewell:yes
+      - transition_teleport player,player_house_bedroom.tmx,4,4,0.3
+`;
+    const events = loadEventsFromYaml(yamlText);
+    const engine = new EventEngine(events);
+    const scene = stubSceneWithUI();
+    const controls: EventContext["controls"] = { locked: false };
+    const player = { tileX: 0, tileY: 0, facing: "down" as Direction };
+
+    // Add cameras.main.setBackgroundColor so change_bg works
+    (scene as unknown as { cameras: { main: { setBackgroundColor: () => void } } }).cameras = {
+      main: { setBackgroundColor: vi.fn() },
+    };
+
+    const tick = (interact = false) => {
+      engine.update(makeCtx({ scene, controls, player, interactPressed: interact }), 0.05);
+    };
+
+    // Dismiss a dialog by waiting for typewriter (dt=0.05s, ~30 chars/sec means
+    // ~1.5 chars per tick — long enough for a few ticks to cover typical lines)
+    // then pressing interact. Safety cap to avoid infinite loops.
+    const dismissDialog = () => {
+      for (let i = 0; i < 200; i++) {
+        tick();
+        if (!engine.blocking) return;
+        // Try to dismiss each frame; the first press might skip the typewriter,
+        // the second will dismiss once dismissReady is true.
+        tick(true);
+        if (!engine.blocking) return;
+      }
+      throw new Error("dialog never dismissed");
+    };
+
+    // Ask Favorite: change_bg → dialog "Welcome..." → translated_dialog_choice
+    dismissDialog(); // dismisses Welcome dialog, leaves choice menu blocking
+
+    // Confirm choice. The choice action ignores the first-frame interact (which
+    // would be the press that dismissed the previous dialog), so we need one
+    // tick with interact=false followed by one with interact=true.
+    tick();
+    tick(true);
+    expect(gameVariables.get("favorite")).toBe("fire");
+
+    // Pick Fire: set_char_attribute, set_template, dialog "Bold choice!...",
+    // set_variable cutscene_done:yes
+    dismissDialog();
+    expect(gameVariables.get("cutscene_done")).toBe("yes");
+
+    // Farewell: dialog "Good luck...", set_variable cutscene_farewell:yes,
+    // transition_teleport. dismissDialog stops once engine.blocking is false
+    // — but transition_teleport keeps the engine blocking until pendingTeleport
+    // is cleared, so we need a slightly different loop here.
+    for (let i = 0; i < 200; i++) {
+      tick();
+      if (controls.pendingTeleport) break;
+      tick(true);
+      if (controls.pendingTeleport) break;
+    }
+    expect(gameVariables.get("cutscene_farewell")).toBe("yes");
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "player_house_bedroom",
+      tileX: 4,
+      tileY: 4,
+      duration: 0.3,
+    });
+  });
+});
+
 describe("session state and new actions", () => {
   beforeEach(() => {
     session.player.gender = null;

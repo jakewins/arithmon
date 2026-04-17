@@ -23,6 +23,7 @@ import "./actions/changeBg";
 import "./actions/endCutscene";
 import "./actions/setCharAttribute";
 import "./actions/setTemplate";
+import "./actions/transitionTeleport";
 
 export class EventEngine {
   private events: EventDef[];
