@@ -19,6 +19,7 @@ export interface DebugCommandHandler {
   debugTypeAnswer?(text: string): void;
   debugSubmitAnswer?(): void;
   debugIsBlocking?(): boolean;
+  debugWalkTo?(tileX: number, tileY: number, facing?: Direction): Promise<void>;
 }
 
 export interface DebugEvent {
@@ -158,6 +159,14 @@ export class DebugBridge {
     const handler = this.getCommandHandler();
     if (handler?.debugSubmitAnswer) {
       handler.debugSubmitAnswer();
+    }
+  }
+
+  /** Walk the player to the target tile using A* pathfinding. */
+  async walkTo(tileX: number, tileY: number, facing?: Direction): Promise<void> {
+    const handler = this.getCommandHandler();
+    if (handler?.debugWalkTo) {
+      return handler.debugWalkTo(tileX, tileY, facing);
     }
   }
 

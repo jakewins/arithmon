@@ -8,7 +8,7 @@ import { getNpcSprite, allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../da
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
-import { buildGrid, type CollisionRect } from "../event/pathfinding";
+import { buildGrid, findPath, type CollisionRect } from "../event/pathfinding";
 import type PF from "pathfinding";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 
@@ -51,6 +51,14 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   private walkGrid?: PF.Grid;
   private pendingChoiceOverride?: number;
 
+  // walkTo state
+  private walkToWaypoints: [number, number][] = [];
+  private walkToIndex = 0;
+  private walkToTargetPixelX = 0;
+  private walkToTargetPixelY = 0;
+  private walkToFacing?: Direction;
+  private walkToResolve?: () => void;
+
   constructor() {
     super("OverworldScene");
   }
@@ -68,6 +76,8 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.lastTileX = -1;
     this.lastTileY = -1;
     this.groundLayer = undefined;
+    this.walkToWaypoints = [];
+    this.walkToResolve = undefined;
   }
 
   preload() {
@@ -298,6 +308,107 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     return this.eventEngine.blocking || this.controlsState.locked;
   }
 
+  debugWalkTo(tileX: number, tileY: number, facing?: Direction): Promise<void> {
+    // Reject if a walk is already in progress
+    if (this.walkToResolve) {
+      return Promise.reject(new Error("walkTo already in progress"));
+    }
+
+    const { tileX: px, tileY: py } = this.playerTile();
+
+    // Already there
+    if (px === tileX && py === tileY) {
+      if (facing) this.debugFace(facing);
+      return Promise.resolve();
+    }
+
+    if (!this.walkGrid) {
+      return Promise.reject(new Error("walkTo: no walkability grid available"));
+    }
+
+    const waypoints = findPath(
+      { x: px, y: py },
+      { x: tileX, y: tileY },
+      this.walkGrid,
+      this.npcs,
+      "__player__",
+    );
+
+    if (waypoints.length === 0) {
+      return Promise.reject(new Error(`walkTo: no path from (${px},${py}) to (${tileX},${tileY})`));
+    }
+
+    this.walkToWaypoints = waypoints;
+    this.walkToIndex = 0;
+    this.walkToFacing = facing;
+    this.setWalkToTarget();
+
+    return new Promise<void>((resolve) => {
+      this.walkToResolve = resolve;
+    });
+  }
+
+  private get walkToActive(): boolean {
+    return this.walkToResolve !== undefined;
+  }
+
+  private setWalkToTarget(): void {
+    const [tx, ty] = this.walkToWaypoints[this.walkToIndex];
+    this.walkToTargetPixelX = tx * TILE_SIZE + TILE_SIZE / 2;
+    this.walkToTargetPixelY = ty * TILE_SIZE;
+  }
+
+  private finishWalkTo(): void {
+    if (this.walkToFacing) {
+      this.debugFace(this.walkToFacing);
+    } else {
+      this.player.setVelocity(0);
+      this.player.anims.stop();
+    }
+    const resolve = this.walkToResolve;
+    this.walkToResolve = undefined;
+    this.walkToWaypoints = [];
+    resolve?.();
+  }
+
+  private updateWalkTo(dt: number): void {
+    const dx = this.walkToTargetPixelX - this.player.x;
+    const dy = this.walkToTargetPixelY - this.player.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const step = PLAYER_SPEED * dt;
+
+    // Update facing and animation based on direction to target
+    let dir: Direction;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      dir = dx > 0 ? "right" : "left";
+    } else {
+      dir = dy > 0 ? "down" : "up";
+    }
+    if (dir !== this.playerFacing) {
+      this.playerFacing = dir;
+    }
+    this.player.anims.play(`walk-${dir}`, true);
+
+    if (step >= dist || dist < 1) {
+      // Snap to waypoint
+      this.player.setPosition(this.walkToTargetPixelX, this.walkToTargetPixelY);
+      this.player.setVelocity(0);
+
+      this.walkToIndex++;
+      if (this.walkToIndex >= this.walkToWaypoints.length) {
+        this.finishWalkTo();
+        return;
+      }
+
+      this.setWalkToTarget();
+    } else {
+      // Move toward target using velocity (physics will move the sprite)
+      const vx = (dx / dist) * PLAYER_SPEED;
+      const vy = (dy / dist) * PLAYER_SPEED;
+      this.player.setVelocity(vx, vy);
+    }
+  }
+
   private spawnGreeter() {
     const greeterTileX = 17;
     const greeterTileY = 18;
@@ -340,26 +451,31 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     const blocked = this.eventEngine.blocking || this.controlsState.locked;
 
     if (!blocked && !this.teleporting) {
-      this.player.setVelocity(0);
-
-      if (this.cursors.left.isDown) {
-        this.player.setVelocityX(-PLAYER_SPEED);
-        this.player.anims.play("walk-left", true);
-        this.playerFacing = "left";
-      } else if (this.cursors.right.isDown) {
-        this.player.setVelocityX(PLAYER_SPEED);
-        this.player.anims.play("walk-right", true);
-        this.playerFacing = "right";
-      } else if (this.cursors.up.isDown) {
-        this.player.setVelocityY(-PLAYER_SPEED);
-        this.player.anims.play("walk-up", true);
-        this.playerFacing = "up";
-      } else if (this.cursors.down.isDown) {
-        this.player.setVelocityY(PLAYER_SPEED);
-        this.player.anims.play("walk-down", true);
-        this.playerFacing = "down";
+      if (this.walkToActive) {
+        // walkTo drives movement — suppress keyboard input
+        this.updateWalkTo(delta / 1000);
       } else {
-        this.player.anims.stop();
+        this.player.setVelocity(0);
+
+        if (this.cursors.left.isDown) {
+          this.player.setVelocityX(-PLAYER_SPEED);
+          this.player.anims.play("walk-left", true);
+          this.playerFacing = "left";
+        } else if (this.cursors.right.isDown) {
+          this.player.setVelocityX(PLAYER_SPEED);
+          this.player.anims.play("walk-right", true);
+          this.playerFacing = "right";
+        } else if (this.cursors.up.isDown) {
+          this.player.setVelocityY(-PLAYER_SPEED);
+          this.player.anims.play("walk-up", true);
+          this.playerFacing = "up";
+        } else if (this.cursors.down.isDown) {
+          this.player.setVelocityY(PLAYER_SPEED);
+          this.player.anims.play("walk-down", true);
+          this.playerFacing = "down";
+        } else {
+          this.player.anims.stop();
+        }
       }
     } else {
       this.player.setVelocity(0);
