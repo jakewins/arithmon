@@ -44,6 +44,20 @@ describe("i18n PO parser", () => {
     expect(t("some_unknown_key")).toBe("Some Unknown Key");
   });
 
+  it("parses multi-line msgstr values", () => {
+    loadPO(`
+msgid "intro"
+msgstr ""
+"Hello, I am the CEO.\\n"
+"It is my duty to inform you."
+
+msgid "simple"
+msgstr "one liner"
+`);
+    expect(t("intro")).toBe("Hello, I am the CEO.\nIt is my duty to inform you.");
+    expect(t("simple")).toBe("one liner");
+  });
+
   it("clears previous translations on reload", () => {
     expect(t("gender_male")).toBe("Male");
     loadPO('msgid "new_key"\nmsgstr "New Value"\n');

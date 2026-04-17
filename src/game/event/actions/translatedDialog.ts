@@ -4,7 +4,7 @@ import { t } from "../../i18n";
 
 const WIDTH = 320;
 const HEIGHT = 240;
-const BOX_H = 48;
+const BOX_H = 84;
 const BOX_Y = HEIGHT - BOX_H;
 
 class TranslatedDialogAction implements EventAction {
@@ -32,9 +32,10 @@ class TranslatedDialogAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     this.label = scene.add.text(12, BOX_Y + 8, "", {
-      fontSize: "11px",
+      fontSize: "9px",
       color: "#ffffff",
       wordWrap: { width: WIDTH - 24 },
+      lineSpacing: 2,
     });
     this.label.setDepth(101).setScrollFactor(0);
 

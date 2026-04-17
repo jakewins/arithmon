@@ -6,24 +6,21 @@ const HEIGHT = 240;
 const BOX_H = 84;
 const BOX_Y = HEIGHT - BOX_H;
 
-class DialogAction implements EventAction {
-  type = "dialog";
+class AccessPcAction implements EventAction {
+  type = "access_pc";
   done = false;
 
-  private text: string;
   private bg!: Phaser.GameObjects.Rectangle;
   private label!: Phaser.GameObjects.Text;
   private prompt!: Phaser.GameObjects.Text;
   private dismissReady = false;
   private charIndex = 0;
   private charTimer = 0;
-
-  constructor(args: string[]) {
-    this.text = args.join(" ");
-  }
+  private text = "The computer hums quietly...";
 
   start(ctx: EventContext): void {
     const scene = ctx.scene;
+
     this.bg = scene.add.rectangle(WIDTH / 2, BOX_Y + BOX_H / 2, WIDTH, BOX_H, 0x111111, 0.92);
     this.bg.setDepth(100).setScrollFactor(0);
 
@@ -35,7 +32,7 @@ class DialogAction implements EventAction {
     });
     this.label.setDepth(101).setScrollFactor(0);
 
-    this.prompt = scene.add.text(WIDTH - 20, BOX_Y + BOX_H - 14, "▼", {
+    this.prompt = scene.add.text(WIDTH - 20, BOX_Y + BOX_H - 14, "\u25bc", {
       fontSize: "10px",
       color: "#ffffff",
     });
@@ -45,7 +42,6 @@ class DialogAction implements EventAction {
 
   update(ctx: EventContext, dt: number): void {
     if (!this.dismissReady) {
-      // Typewriter effect: ~30 chars/sec
       this.charTimer += dt;
       const charsToShow = Math.floor(this.charTimer * 30);
       if (charsToShow > this.charIndex) {
@@ -58,13 +54,12 @@ class DialogAction implements EventAction {
         this.prompt.setVisible(true);
       }
 
-      // Skip to full text on interact press
       if (ctx.interactPressed && !this.dismissReady) {
         this.charIndex = this.text.length;
         this.label.setText(this.text);
         this.dismissReady = true;
         this.prompt.setVisible(true);
-        return; // consume this press for skip, don't dismiss
+        return;
       }
     } else if (ctx.interactPressed) {
       this.done = true;
@@ -78,4 +73,4 @@ class DialogAction implements EventAction {
   }
 }
 
-registerAction("dialog", (args) => new DialogAction(args));
+registerAction("access_pc", () => new AccessPcAction());

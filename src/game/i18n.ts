@@ -10,22 +10,38 @@ export function loadPO(text: string): void {
   translations.clear();
   const lines = text.split("\n");
   let currentId: string | null = null;
+  let currentStr: string | null = null;
+
+  /** Unescape PO string escapes (\n, \t, \\, \"). */
+  const unescape = (s: string) =>
+    s.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\\\/g, "\\").replace(/\\"/g, '"');
+
+  const flush = () => {
+    if (currentId !== null && currentStr !== null && currentId !== "" && currentStr !== "") {
+      translations.set(currentId, unescape(currentStr));
+    }
+  };
 
   for (const line of lines) {
     const idMatch = line.match(/^msgid\s+"(.*)"/);
     if (idMatch) {
+      flush();
       currentId = idMatch[1];
+      currentStr = null;
       continue;
     }
     const strMatch = line.match(/^msgstr\s+"(.*)"/);
-    if (strMatch && currentId !== null) {
-      const value = strMatch[1];
-      if (currentId !== "" && value !== "") {
-        translations.set(currentId, value);
-      }
-      currentId = null;
+    if (strMatch) {
+      currentStr = strMatch[1];
+      continue;
+    }
+    // Continuation line: bare "quoted string"
+    const contMatch = line.match(/^"(.*)"/);
+    if (contMatch && currentStr !== null) {
+      currentStr += contMatch[1];
     }
   }
+  flush();
 }
 
 /** Title-case fallback for unknown keys: "spyder_campaign" → "Spyder Campaign". */

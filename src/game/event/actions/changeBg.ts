@@ -1,24 +1,6 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
-
-const NAMED_COLORS: Record<string, number> = {
-  black: 0x000000,
-  white: 0xffffff,
-  red: 0xcc0000,
-  green: 0x00aa00,
-  blue: 0x2244aa,
-  gradient_blue: 0x2244aa,
-};
-
-const WIDTH = 320;
-const HEIGHT = 240;
-
-/**
- * Stash key used to persist the overlay image sprite across consecutive
- * change_bg calls within the same scene. Each call destroys the previous
- * overlay (if any) before optionally creating a new one.
- */
-const OVERLAY_KEY = "__changeBgOverlay";
+import { destroyOverlay, setOverlay, NAMED_COLORS, WIDTH, HEIGHT } from "./changeBgShared";
 
 class ChangeBgAction implements EventAction {
   type = "change_bg";
@@ -45,19 +27,12 @@ class ChangeBgAction implements EventAction {
 
   start(ctx: EventContext): void {
     ctx.scene.cameras.main.setBackgroundColor(this.color);
+    destroyOverlay(ctx.scene);
 
-    // Destroy any previous overlay image
-    const prev = (ctx.scene as unknown as Record<string, Phaser.GameObjects.Image>)[OVERLAY_KEY];
-    if (prev) {
-      prev.destroy();
-      delete (ctx.scene as unknown as Record<string, unknown>)[OVERLAY_KEY];
-    }
-
-    // Create new overlay if requested
     if (this.imageKey && ctx.scene.textures?.exists(this.imageKey)) {
       const img = ctx.scene.add.image(WIDTH / 2, HEIGHT / 2, this.imageKey);
       img.setDepth(50).setScrollFactor(0);
-      (ctx.scene as unknown as Record<string, Phaser.GameObjects.Image>)[OVERLAY_KEY] = img;
+      setOverlay(ctx.scene, null, img);
     }
 
     this.done = true;

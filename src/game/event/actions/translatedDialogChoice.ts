@@ -4,8 +4,8 @@ import { t } from "../../i18n";
 
 const WIDTH = 320;
 const HEIGHT = 240;
-const BOX_H = 48;
-const OPTION_H = 14;
+const BOX_H = 84;
+const OPTION_H = 12;
 const PAD_X = 12;
 const PAD_Y = 6;
 
@@ -56,7 +56,7 @@ class TranslatedDialogChoiceAction implements EventAction {
 
     for (let i = 0; i < this.options.length; i++) {
       const label = scene.add.text(PAD_X + 12, boxY + PAD_Y + i * OPTION_H, t(this.options[i]), {
-        fontSize: "11px",
+        fontSize: "9px",
         color: "#ffffff",
       });
       label.setDepth(101).setScrollFactor(0);

@@ -1280,6 +1280,89 @@ describe("set_monster_status action", () => {
   });
 });
 
+describe("play_music action", () => {
+  it("executes without error and completes immediately", () => {
+    const event: EventDef = {
+      id: 70,
+      name: "Music test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "play_music", args: ["music_home"] },
+        { type: "set_variable", args: ["music_played:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(gameVariables.get("music_played")).toBe("yes");
+    gameVariables.remove("music_played");
+  });
+});
+
+describe("music_playing condition", () => {
+  it("always returns false (stub)", () => {
+    const event: EventDef = {
+      id: 71,
+      name: "Music cond",
+      conditions: [
+        { operator: "is", type: "char_at", args: ["player"] },
+        { operator: "not", type: "music_playing", args: ["music_home"] },
+      ],
+      actions: [{ type: "set_variable", args: ["music_cond:yes"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    // Since music_playing always returns false, "not music_playing" is true
+    expect(gameVariables.get("music_cond")).toBe("yes");
+    gameVariables.remove("music_cond");
+  });
+});
+
+describe("access_pc action", () => {
+  it("shows placeholder dialog and blocks until dismissed", () => {
+    const scene = stubSceneWithUI();
+    const event: EventDef = {
+      id: 72,
+      name: "PC test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "access_pc", args: ["player"] },
+        { type: "set_variable", args: ["pc_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    // Trigger
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+    expect(gameVariables.has("pc_done")).toBe(false);
+
+    // Dismiss the dialog
+    for (let i = 0; i < 100; i++) {
+      engine.update(makeCtx({ scene }), 0.05);
+      if (!engine.blocking) break;
+      engine.update(makeCtx({ scene, interactPressed: true }), 0.05);
+      if (!engine.blocking) break;
+    }
+    expect(engine.blocking).toBe(false);
+    expect(gameVariables.get("pc_done")).toBe("yes");
+    gameVariables.remove("pc_done");
+  });
+});
+
 describe("set_teleport_faint action", () => {
   beforeEach(() => {
     session.faintTeleport = undefined;
@@ -1321,5 +1404,209 @@ describe("set_teleport_faint action", () => {
     engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
 
     expect(session.faintTeleport!.mapKey).toBe("some_map");
+  });
+});
+
+describe("change_bg_char action", () => {
+  it("sets background color and completes immediately", () => {
+    const scene = stubSceneWithUI();
+    const mockSetBg = vi.fn();
+    (scene as unknown as Record<string, unknown>).cameras = {
+      main: { setBackgroundColor: mockSetBg },
+    };
+    (scene as unknown as Record<string, unknown>).textures = {
+      exists: vi.fn(() => false),
+    };
+
+    const event: EventDef = {
+      id: 80,
+      name: "Char BG test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "change_bg_char", args: ["gradient_blue", "spyder_omnichannel_beaverbrook"] },
+        { type: "set_variable", args: ["char_bg_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(mockSetBg).toHaveBeenCalledWith(0x2244aa);
+    expect(gameVariables.get("char_bg_done")).toBe("yes");
+    gameVariables.remove("char_bg_done");
+  });
+});
+
+describe("change_bg_monster action", () => {
+  it("sets background color and completes immediately", () => {
+    const scene = stubSceneWithUI();
+    const mockSetBg = vi.fn();
+    (scene as unknown as Record<string, unknown>).cameras = {
+      main: { setBackgroundColor: mockSetBg },
+    };
+    (scene as unknown as Record<string, unknown>).textures = {
+      exists: vi.fn(() => false),
+    };
+
+    const event: EventDef = {
+      id: 81,
+      name: "Monster BG test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "change_bg_monster", args: ["gradient_blue", "dollfin"] },
+        { type: "set_variable", args: ["monster_bg_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(mockSetBg).toHaveBeenCalledWith(0x2244aa);
+    expect(gameVariables.get("monster_bg_done")).toBe("yes");
+    gameVariables.remove("monster_bg_done");
+  });
+});
+
+describe("spyder intro cutscene flow", () => {
+  beforeEach(() => {
+    gameVariables.remove("question_intro");
+    gameVariables.remove("spyder_intro");
+  });
+
+  const INTRO_YAML = `
+events:
+  Intro Question:
+    actions:
+    - translated_dialog spyder_intro_question
+    - translated_dialog_choice no:yes,question_intro
+    conditions:
+    - not variable_set question_intro:yes
+    - not variable_set question_intro:no
+    type: event
+
+  No Intro:
+    actions:
+    - set_variable spyder_intro:yes
+    - transition_teleport player,spyder_paper_scoop.tmx,4,8,0.3
+    - char_face player,right
+    conditions:
+    - is variable_set question_intro:yes
+    - not variable_set spyder_intro:yes
+    type: event
+
+  Spyder Intro:
+    actions:
+    - change_bg_char gradient_blue,spyder_omnichannel_beaverbrook
+    - translated_dialog spyder_intro00
+    - change_bg gradient_blue,spyder_tumble,image
+    - translated_dialog spyder_intro01
+    - set_variable spyder_intro:yes
+    - transition_teleport player,spyder_paper_scoop.tmx,4,8,0.3
+    - char_face player,right
+    conditions:
+    - is variable_set question_intro:no
+    - not variable_set spyder_intro:yes
+    type: event
+`;
+
+  function setupIntro() {
+    const events = loadEventsFromYaml(INTRO_YAML);
+    const engine = new EventEngine(events);
+    const scene = stubSceneWithUI();
+    const controls: EventContext["controls"] = { locked: false };
+    const player = { tileX: 0, tileY: 0, facing: "down" as Direction };
+
+    (scene as unknown as Record<string, unknown>).cameras = {
+      main: { setBackgroundColor: vi.fn() },
+    };
+    (scene as unknown as Record<string, unknown>).textures = {
+      exists: vi.fn(() => false),
+    };
+
+    const tick = (interact = false) => {
+      engine.update(makeCtx({ scene, controls, player, interactPressed: interact }), 0.05);
+    };
+
+    const dismissDialog = () => {
+      for (let i = 0; i < 200; i++) {
+        tick();
+        if (!engine.blocking) return;
+        tick(true);
+        if (!engine.blocking) return;
+      }
+      throw new Error("dialog never dismissed");
+    };
+
+    const confirmChoice = () => {
+      tick();
+      tick(true);
+    };
+
+    return { engine, tick, dismissDialog, confirmChoice, controls };
+  }
+
+  it("choosing to see intro plays slideshow then teleports to spyder_paper_scoop", () => {
+    const { tick, dismissDialog, confirmChoice, controls } = setupIntro();
+
+    // Intro Question fires: translated_dialog then choice
+    dismissDialog(); // dismiss intro question dialog
+
+    // Choice menu: options are "no:yes" → index 0 = "no" (wants to see intro)
+    confirmChoice();
+    expect(gameVariables.get("question_intro")).toBe("no");
+
+    // Spyder Intro fires: change_bg_char (instant), dialog, change_bg (instant),
+    // dialog, set_variable (instant), transition_teleport (blocks).
+    // Drive through all dialogs until the teleport flag is set.
+    for (let i = 0; i < 200; i++) {
+      tick();
+      if (controls.pendingTeleport) break;
+      tick(true);
+      if (controls.pendingTeleport) break;
+    }
+    expect(gameVariables.get("spyder_intro")).toBe("yes");
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "spyder_paper_scoop",
+      tileX: 4,
+      tileY: 8,
+      duration: 0.3,
+    });
+  });
+
+  it("skip intro: setting question_intro:yes triggers No Intro teleport", () => {
+    gameVariables.set("question_intro", "yes");
+
+    const { tick, controls } = setupIntro();
+
+    // No Intro should fire: set_variable + transition_teleport
+    for (let i = 0; i < 200; i++) {
+      tick();
+      if (controls.pendingTeleport) break;
+    }
+    expect(gameVariables.get("spyder_intro")).toBe("yes");
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "spyder_paper_scoop",
+      tileX: 4,
+      tileY: 8,
+      duration: 0.3,
+    });
+  });
+
+  it("does not replay intro when both variables are already set", () => {
+    gameVariables.set("question_intro", "no");
+    gameVariables.set("spyder_intro", "yes");
+
+    const { tick, controls } = setupIntro();
+
+    // Run several frames — nothing should trigger
+    for (let i = 0; i < 10; i++) tick();
+
+    expect(controls.pendingTeleport).toBeUndefined();
   });
 });

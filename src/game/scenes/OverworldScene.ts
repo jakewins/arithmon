@@ -93,6 +93,24 @@ export class OverworldScene extends Scene {
 
     // Background images used by change_bg image overlay
     this.load.image("choice_gender", "assets/ui/background/choice_gender.png");
+    this.load.image("spyder_tumble", "assets/ui/background/spyder_tumble.png");
+    this.load.image("spyder_monsters", "assets/ui/background/spyder_monsters.png");
+    this.load.image("spyder_morph", "assets/ui/background/spyder_morph.png");
+
+    // Character sprite for change_bg_char overlay (32×32 frames)
+    this.load.spritesheet(
+      "spyder_omnichannel_beaverbrook",
+      "assets/sprites/spyder_omnichannel_beaverbrook.png",
+      { frameWidth: 32, frameHeight: 32 },
+    );
+
+    // Monster battle sprites for change_bg_monster overlay (64×44 frames)
+    for (const slug of ["dollfin", "ignibus", "memnomnom", "budaye", "grintot"]) {
+      this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
+        frameWidth: 64,
+        frameHeight: 44,
+      });
+    }
 
     // NPC spritesheets — same frame layout as player (16x32, 3 cols × 4 rows)
     for (const sheet of allNpcSpritesheets()) {
@@ -181,7 +199,8 @@ export class OverworldScene extends Scene {
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.player.setCollideWorldBounds(true);
 
-    // Fade in — matches the fade-out done during teleport
+    // Reset background colour (change_bg* sets it during cutscenes) and fade in
+    this.cameras.main.setBackgroundColor(0x000000);
     this.cameras.main.fadeIn(300, 0, 0, 0);
 
     // Input
