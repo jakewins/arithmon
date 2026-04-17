@@ -12,12 +12,23 @@ export interface PlayerState {
   gameVariables: GameVariables;
 }
 
+export interface SkillState {
+  /** Leitner box 0–4. Higher = better known. */
+  box: number;
+  /** Global encounter counter value when this node was last practiced. */
+  lastSeen: number;
+}
+
 /**
  * Top-level game state — mirrors Tuxemon's SaveData.
  * In-memory only for now (resets on browser refresh).
  */
 export interface GameSession {
   player: PlayerState;
+  /** Per-skill Leitner state, keyed by skill id (e.g. "K.OA.A.5"). */
+  skillStates: Record<string, SkillState>;
+  /** Global encounter counter for skill practice. */
+  skillEncounter: number;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -48,6 +59,8 @@ function createSession(): GameSession {
       template: "adventurer",
       gameVariables: new GameVariablesImpl(),
     },
+    skillStates: {},
+    skillEncounter: 0,
   };
 }
 
