@@ -3,6 +3,7 @@ import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
 import { MathProblemScene } from "./scenes/MathProblemScene";
 import { CutsceneScene } from "./scenes/CutsceneScene";
+import { debugBridge } from "./debug";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
@@ -24,7 +25,13 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const StartGame = (parent: string) => {
-  return new Game({ ...config, parent });
+  const game = new Game({ ...config, parent });
+
+  if (import.meta.env.DEV) {
+    window.A = debugBridge;
+  }
+
+  return game;
 };
 
 export default StartGame;

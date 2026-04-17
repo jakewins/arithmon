@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import { CombatMachine, CombatEvent, PlayerAction, MAX_DARK_POWER } from "../combat/machine";
 import { Monster } from "../model/Monster";
+import { debugBridge, type DebugStateProvider } from "../debug";
 
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -11,7 +12,7 @@ const HP_BAR_H = 6;
 const DP_PIP_SIZE = 8;
 const DP_PIP_GAP = 3;
 
-export class CombatScene extends Scene {
+export class CombatScene extends Scene implements DebugStateProvider {
   private machine!: CombatMachine;
   private enemySprite!: Phaser.GameObjects.Image;
   private playerSprite!: Phaser.GameObjects.Image;
@@ -161,6 +162,28 @@ export class CombatScene extends Scene {
 
     // Start combat
     this.queueEvents(this.machine.intro());
+
+    debugBridge.setScene(this);
+  }
+
+  getDebugState(): Record<string, unknown> {
+    const m = this.machine;
+    const monsterSnapshot = (mon: Monster) => ({
+      slug: mon.slug,
+      level: mon.level,
+      currentHp: mon.currentHp,
+      maxHp: mon.maxHp,
+    });
+    return {
+      combat: {
+        state: m.state,
+        outcome: m.outcome,
+        darkPower: m.darkPower,
+        maxDarkPower: m.maxDarkPower,
+        playerMonster: monsterSnapshot(m.player),
+        enemyMonster: monsterSnapshot(m.enemy),
+      },
+    };
   }
 
   private updateNameLabels() {

@@ -4,8 +4,9 @@ import { loadEventsFromYaml } from "../event/loader";
 import type { EventContext, NpcState, PendingTeleport } from "../event/types";
 import { session } from "../session";
 import type { OverworldInitData } from "./OverworldScene";
+import { debugBridge, type DebugStateProvider } from "../debug";
 
-export class CutsceneScene extends Scene {
+export class CutsceneScene extends Scene implements DebugStateProvider {
   private eventEngine!: EventEngine;
   private interactPressed = false;
   private controlsState: {
@@ -39,6 +40,18 @@ export class CutsceneScene extends Scene {
     this.input.keyboard!.on("keydown-Z", () => {
       this.interactPressed = true;
     });
+
+    debugBridge.setScene(this);
+  }
+
+  getDebugState(): Record<string, unknown> {
+    return {
+      cutscene: {
+        callerScene: this.callerScene,
+        blocking: this.eventEngine.blocking,
+        cutsceneDone: this.controlsState.cutsceneDone,
+      },
+    };
   }
 
   update(_time: number, delta: number) {

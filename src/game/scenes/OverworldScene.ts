@@ -10,6 +10,7 @@ import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
 import { buildGrid, type CollisionRect } from "../event/pathfinding";
 import type PF from "pathfinding";
+import { debugBridge, type DebugStateProvider } from "../debug";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -26,7 +27,7 @@ export interface OverworldInitData {
   spawnFacing?: Direction;
 }
 
-export class OverworldScene extends Scene {
+export class OverworldScene extends Scene implements DebugStateProvider {
   // Exposed so char_face action can update player sprite frame
   player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -246,6 +247,28 @@ export class OverworldScene extends Scene {
     const eventsYaml = this.cache.text.get(`events-${this.mapKey}`) as string | undefined;
     const events = eventsYaml ? loadEventsFromYaml(eventsYaml) : [];
     this.eventEngine = new EventEngine(events);
+
+    debugBridge.setScene(this);
+  }
+
+  getDebugState(): Record<string, unknown> {
+    const { tileX, tileY } = this.playerTile();
+    return {
+      player: {
+        tileX,
+        tileY,
+        facing: this.playerFacing,
+        pixelX: this.player.x,
+        pixelY: this.player.y,
+      },
+      npcs: [...this.npcs.values()].map((npc) => ({
+        slug: npc.slug,
+        tileX: npc.tileX,
+        tileY: npc.tileY,
+        facing: npc.facing,
+      })),
+      blocking: this.eventEngine.blocking || this.controlsState.locked,
+    };
   }
 
   private spawnGreeter() {

@@ -1,11 +1,12 @@
 import { Scene } from "phaser";
 import { skillTree } from "../skilltree";
 import type { PerseusProblem, ProblemWidget } from "../data/problems";
+import { debugBridge, type DebugStateProvider } from "../debug";
 
 const WIDTH = 320;
 const HEIGHT = 240;
 
-export class MathProblemScene extends Scene {
+export class MathProblemScene extends Scene implements DebugStateProvider {
   private problem!: PerseusProblem;
   private currentAnswer = "";
   private answerText!: Phaser.GameObjects.Text;
@@ -87,6 +88,21 @@ export class MathProblemScene extends Scene {
         fontStyle: "bold",
       })
       .setOrigin(0.5);
+
+    debugBridge.setScene(this);
+  }
+
+  getDebugState(): Record<string, unknown> {
+    return {
+      mathProblem: {
+        problemId: this.problem.id,
+        currentAnswer: this.currentAnswer,
+        resolved: this.resolved,
+        hintIndex: this.hintIndex,
+        totalHints: this.problem.hints.length,
+        returnScene: this.returnScene,
+      },
+    };
   }
 
   private createNumericInputUI(panelY: number, panelW: number) {

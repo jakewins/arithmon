@@ -58,6 +58,10 @@ class GameVariablesImpl implements GameVariables {
   remove(key: string): void {
     this.store.delete(key);
   }
+
+  toRecord(): Record<string, string> {
+    return Object.fromEntries(this.store);
+  }
 }
 
 function createSession(): GameSession {

@@ -62,6 +62,7 @@ export interface GameVariables {
   set(key: string, value: string): void;
   has(key: string): boolean;
   remove(key: string): void;
+  toRecord(): Record<string, string>;
 }
 
 export interface EventCondition {
