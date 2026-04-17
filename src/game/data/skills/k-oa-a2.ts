@@ -1,0 +1,87 @@
+/**
+ * Procedural problem generator for K.OA.A.2:
+ * "Add and subtract within 10"
+ */
+import type { PerseusProblem } from "../problems";
+
+const ADDITION_PHRASINGS = [
+  (a: number, b: number) => `**What is $${a} + ${b}$?**`,
+  (a: number, b: number) => `**Solve: $${a} + ${b}$**`,
+  (a: number, b: number) => `**$${a} + ${b} = {?}$**`,
+];
+
+const SUBTRACTION_PHRASINGS = [
+  (a: number, b: number) => `**What is $${a} - ${b}$?**`,
+  (a: number, b: number) => `**Solve: $${a} - ${b}$**`,
+  (a: number, b: number) => `**$${a} - ${b} = {?}$**`,
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randInt(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function generateAddition(): { a: number; b: number; answer: number; phrasing: string } {
+  const a = randInt(0, 10);
+  const b = randInt(0, 10 - a);
+  return { a, b, answer: a + b, phrasing: pick(ADDITION_PHRASINGS)(a, b) };
+}
+
+function generateSubtraction(): { a: number; b: number; answer: number; phrasing: string } {
+  const a = randInt(0, 10);
+  const b = randInt(0, a);
+  return { a, b, answer: a - b, phrasing: pick(SUBTRACTION_PHRASINGS)(a, b) };
+}
+
+function additionHint(a: number, b: number, answer: number): { content: string }[] {
+  if (b === 0) {
+    return [
+      { content: `Adding zero doesn't change the number.` },
+      { content: `The answer is $${a} + ${b} = ${answer}$.` },
+    ];
+  }
+  return [
+    { content: `Count on your fingers: start at ${a}, then count up ${b} more.` },
+    { content: `The answer is $${a} + ${b} = ${answer}$.` },
+  ];
+}
+
+function subtractionHint(a: number, b: number, answer: number): { content: string }[] {
+  if (b === 0) {
+    return [
+      { content: `Subtracting zero doesn't change the number.` },
+      { content: `The answer is $${a} - ${b} = ${answer}$.` },
+    ];
+  }
+  return [
+    { content: `Start at ${a} and count back ${b}.` },
+    { content: `The answer is $${a} - ${b} = ${answer}$.` },
+  ];
+}
+
+let counter = 0;
+
+export function generate(): PerseusProblem {
+  const isAddition = Math.random() < 0.5;
+  const { a, b, answer, phrasing } = isAddition ? generateAddition() : generateSubtraction();
+  const hints = isAddition ? additionHint(a, b, answer) : subtractionHint(a, b, answer);
+  const id = `k-oa-a2-gen-${++counter}`;
+
+  return {
+    id,
+    standard: "K.OA.A.2",
+    question: {
+      content: `${phrasing}\n\n[[☃ numeric-input 1]]`,
+      widgets: {
+        "numeric-input 1": {
+          type: "numeric-input",
+          options: { answers: [{ value: answer, status: "correct" }] },
+        },
+      },
+    },
+    hints,
+  };
+}
