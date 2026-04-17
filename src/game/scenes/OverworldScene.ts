@@ -167,13 +167,13 @@ export class OverworldScene extends Scene {
     this.physics.add.collider(this.player, this.collisionBodies);
 
     // Camera
-    this.cameras.main.startFollow(this.player, true);
     const cam = this.cameras.main;
-    // Only constrain the camera when the map is at least as large as the
-    // viewport.  For small maps (e.g. indoor rooms) we skip bounds so the
-    // camera can centre on the player instead of pinning to the top-left.
     if (map.widthInPixels >= cam.width && map.heightInPixels >= cam.height) {
+      cam.startFollow(this.player, true);
       cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    } else {
+      // Small map — lock camera to map centre so the room stays fixed on screen
+      cam.centerOn(map.widthInPixels / 2, map.heightInPixels / 2);
     }
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.player.setCollideWorldBounds(true);
