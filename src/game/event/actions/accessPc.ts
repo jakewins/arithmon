@@ -3,7 +3,7 @@ import { registerAction } from "../registry";
 
 const WIDTH = 320;
 const HEIGHT = 240;
-const BOX_H = 48;
+const BOX_H = 84;
 const BOX_Y = HEIGHT - BOX_H;
 
 class AccessPcAction implements EventAction {
@@ -25,9 +25,10 @@ class AccessPcAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     this.label = scene.add.text(12, BOX_Y + 8, "", {
-      fontSize: "11px",
+      fontSize: "9px",
       color: "#ffffff",
       wordWrap: { width: WIDTH - 24 },
+      lineSpacing: 2,
     });
     this.label.setDepth(101).setScrollFactor(0);
 

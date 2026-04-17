@@ -20,6 +20,8 @@ import "./actions/wait";
 import "./actions/pathfind";
 import "./actions/translatedDialogChoice";
 import "./actions/changeBg";
+import "./actions/changeBgChar";
+import "./actions/changeBgMonster";
 import "./actions/endCutscene";
 import "./actions/setCharAttribute";
 import "./actions/setTemplate";
