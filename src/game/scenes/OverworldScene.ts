@@ -8,6 +8,8 @@ import { getNpcSprite, allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../da
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
+import { buildGrid, type CollisionRect } from "../event/pathfinding";
+import type PF from "pathfinding";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -45,6 +47,7 @@ export class OverworldScene extends Scene {
   private spawnTileY = DEFAULT_SPAWN.tileY;
   private spawnFacing: Direction = DEFAULT_SPAWN.facing;
   private teleporting = false;
+  private walkGrid?: PF.Grid;
 
   constructor() {
     super("OverworldScene");
@@ -172,6 +175,7 @@ export class OverworldScene extends Scene {
     }
 
     // Collision from object layer rectangles
+    const collisionRects: CollisionRect[] = [];
     const collisionLayer = map.getObjectLayer("Collisions");
     if (collisionLayer) {
       for (const obj of collisionLayer.objects) {
@@ -183,9 +187,18 @@ export class OverworldScene extends Scene {
         );
         rect.setVisible(false);
         this.collisionBodies.add(rect);
+        collisionRects.push({
+          x: obj.x!,
+          y: obj.y!,
+          width: obj.width!,
+          height: obj.height!,
+        });
       }
     }
     this.physics.add.collider(this.player, this.collisionBodies);
+
+    // Build walkability grid for A* pathfinding
+    this.walkGrid = buildGrid(collisionRects, map.width, map.height, TILE_SIZE);
 
     // Camera
     const cam = this.cameras.main;
@@ -313,6 +326,7 @@ export class OverworldScene extends Scene {
       interactPressed: this.interactPressed,
       npcs: this.npcs,
       controls: this.controlsState,
+      walkGrid: this.walkGrid,
     };
 
     this.eventEngine.update(ctx, delta / 1000);

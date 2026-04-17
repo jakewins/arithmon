@@ -1,5 +1,6 @@
 import type { EventAction, EventContext, Direction } from "../types";
 import { registerAction } from "../registry";
+import { findPath } from "../pathfinding";
 
 const TILE_SIZE = 16;
 const NPC_SPEED = 60; // pixels per second
@@ -18,15 +19,16 @@ class PathfindAction implements EventAction {
   private slug: string;
   private targetTileX: number;
   private targetTileY: number;
-  private targetPixelX: number;
-  private targetPixelY: number;
+
+  private waypoints: [number, number][] = [];
+  private waypointIndex = 0;
+  private currentTargetPixelX = 0;
+  private currentTargetPixelY = 0;
 
   constructor(args: string[]) {
     this.slug = args[0];
     this.targetTileX = parseInt(args[1], 10);
     this.targetTileY = parseInt(args[2], 10);
-    this.targetPixelX = this.targetTileX * TILE_SIZE + TILE_SIZE / 2;
-    this.targetPixelY = this.targetTileY * TILE_SIZE;
   }
 
   start(ctx: EventContext): void {
@@ -36,10 +38,38 @@ class PathfindAction implements EventAction {
       return;
     }
 
-    // Set facing direction toward target
-    const dir = this.computeDirection(npc.sprite.x, npc.sprite.y);
-    npc.facing = dir;
-    npc.sprite.setFrame(FACING_FRAMES[dir]);
+    // Already at destination
+    if (npc.tileX === this.targetTileX && npc.tileY === this.targetTileY) {
+      this.done = true;
+      return;
+    }
+
+    if (!ctx.walkGrid) {
+      // No grid available — fall through to done (graceful fallback)
+      console.warn(`[pathfind] No walkability grid available for NPC "${this.slug}"`);
+      this.done = true;
+      return;
+    }
+
+    this.waypoints = findPath(
+      { x: npc.tileX, y: npc.tileY },
+      { x: this.targetTileX, y: this.targetTileY },
+      ctx.walkGrid,
+      ctx.npcs,
+      this.slug,
+    );
+
+    if (this.waypoints.length === 0) {
+      console.warn(
+        `[pathfind] No path found for NPC "${this.slug}" from (${npc.tileX},${npc.tileY}) to (${this.targetTileX},${this.targetTileY})`,
+      );
+      this.done = true;
+      return;
+    }
+
+    this.waypointIndex = 0;
+    this.setCurrentTarget();
+    this.updateFacing(npc);
   }
 
   update(ctx: EventContext, dt: number): void {
@@ -49,48 +79,60 @@ class PathfindAction implements EventAction {
       return;
     }
 
-    const dx = this.targetPixelX - npc.sprite.x;
-    const dy = this.targetPixelY - npc.sprite.y;
+    const dx = this.currentTargetPixelX - npc.sprite.x;
+    const dy = this.currentTargetPixelY - npc.sprite.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < 1) {
-      // Arrived
-      npc.sprite.x = this.targetPixelX;
-      npc.sprite.y = this.targetPixelY;
-      npc.tileX = this.targetTileX;
-      npc.tileY = this.targetTileY;
-      this.done = true;
-      return;
-    }
-
     const step = NPC_SPEED * dt;
-    if (step >= dist) {
-      npc.sprite.x = this.targetPixelX;
-      npc.sprite.y = this.targetPixelY;
+
+    if (step >= dist || dist < 1) {
+      // Snap to current waypoint
+      npc.sprite.x = this.currentTargetPixelX;
+      npc.sprite.y = this.currentTargetPixelY;
+      npc.tileX = this.waypoints[this.waypointIndex][0];
+      npc.tileY = this.waypoints[this.waypointIndex][1];
+
+      // Advance to next waypoint
+      this.waypointIndex++;
+      if (this.waypointIndex >= this.waypoints.length) {
+        this.done = true;
+        return;
+      }
+
+      this.setCurrentTarget();
+      this.updateFacing(npc);
     } else {
       npc.sprite.x += (dx / dist) * step;
       npc.sprite.y += (dy / dist) * step;
+
+      // Update tile position in real-time
+      npc.tileX = Math.floor(npc.sprite.x / TILE_SIZE);
+      npc.tileY = Math.floor(npc.sprite.y / TILE_SIZE);
     }
+  }
 
-    // Update tile position
-    npc.tileX = Math.floor(npc.sprite.x / TILE_SIZE);
-    npc.tileY = Math.floor(npc.sprite.y / TILE_SIZE);
+  private setCurrentTarget(): void {
+    const [tx, ty] = this.waypoints[this.waypointIndex];
+    this.currentTargetPixelX = tx * TILE_SIZE + TILE_SIZE / 2;
+    this.currentTargetPixelY = ty * TILE_SIZE;
+  }
 
-    // Update facing based on dominant axis
-    const dir = this.computeDirection(npc.sprite.x, npc.sprite.y);
+  private updateFacing(npc: {
+    facing: Direction;
+    sprite: { x: number; y: number; setFrame(f: number): void };
+  }): void {
+    const dx = this.currentTargetPixelX - npc.sprite.x;
+    const dy = this.currentTargetPixelY - npc.sprite.y;
+    let dir: Direction;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      dir = dx > 0 ? "right" : "left";
+    } else {
+      dir = dy > 0 ? "down" : "up";
+    }
     if (dir !== npc.facing) {
       npc.facing = dir;
       npc.sprite.setFrame(FACING_FRAMES[dir]);
     }
-  }
-
-  private computeDirection(fromX: number, fromY: number): Direction {
-    const dx = this.targetPixelX - fromX;
-    const dy = this.targetPixelY - fromY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      return dx > 0 ? "right" : "left";
-    }
-    return dy > 0 ? "down" : "up";
   }
 
   cleanup(): void {

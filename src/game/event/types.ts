@@ -1,4 +1,5 @@
 import type { GameSession } from "../session";
+import type PF from "pathfinding";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -37,6 +38,8 @@ export interface EventContext {
     cutsceneDone?: boolean;
     pendingTeleport?: PendingTeleport;
   };
+  /** Walkability grid for A* pathfinding (built from collision layer). */
+  walkGrid?: PF.Grid;
 }
 
 export interface PendingTeleport {
