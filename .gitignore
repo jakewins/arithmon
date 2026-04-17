@@ -25,3 +25,4 @@ dist-ssr
 .devenv
 mods
 trees
+qa/screenshots

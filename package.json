@@ -10,7 +10,8 @@
     "lint": "eslint src/",
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
-    "test": "vitest run"
+    "test": "vitest run",
+    "qa": "tsx"
   },
   "dependencies": {
     "@types/pathfinding": "^0.1.0",
@@ -20,9 +21,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
     "eslint": "^10.2.0",
     "prettier": "^3.8.2",
     "terser": "^5.39.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^6.3.1",
