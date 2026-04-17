@@ -1,6 +1,14 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 
+/** Convert underscore-separated keys like "spyder_campaign" to "Spyder Campaign". */
+function titleCase(key: string): string {
+  return key
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 const WIDTH = 320;
 const HEIGHT = 240;
 const BOX_H = 48;
@@ -54,10 +62,15 @@ class TranslatedDialogChoiceAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     for (let i = 0; i < this.options.length; i++) {
-      const label = scene.add.text(PAD_X + 12, boxY + PAD_Y + i * OPTION_H, this.options[i], {
-        fontSize: "11px",
-        color: "#ffffff",
-      });
+      const label = scene.add.text(
+        PAD_X + 12,
+        boxY + PAD_Y + i * OPTION_H,
+        titleCase(this.options[i]),
+        {
+          fontSize: "11px",
+          color: "#ffffff",
+        },
+      );
       label.setDepth(101).setScrollFactor(0);
       this.labels.push(label);
     }

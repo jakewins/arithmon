@@ -846,3 +846,237 @@ describe("session state and new actions", () => {
     gameVariables.remove("test_session");
   });
 });
+
+describe("start_tuxemon.yaml end-to-end", () => {
+  beforeEach(() => {
+    gameVariables.remove("scenario_choice");
+    gameVariables.remove("gender_choice");
+    gameVariables.remove("race_choice");
+    session.player.gender = null;
+    session.player.template = "adventurer";
+  });
+
+  // Inlined copy of public/assets/events/start_tuxemon.yaml — keep in sync.
+  const START_YAML = `
+events:
+  Scenario:
+    actions:
+    - change_bg gradient_blue
+    - translated_dialog_choice spyder_campaign:xero_campaign:water_campaign,scenario_choice
+    conditions:
+    - not variable_set scenario_choice
+    - not variable_set gender_choice
+    - not variable_set race_choice
+
+  Gender:
+    actions:
+    - change_bg gradient_blue,choice_gender,image
+    - translated_dialog_choice gender_male:gender_female:gender_nonbinary,gender_choice
+    conditions:
+    - is variable_set scenario_choice
+    - not variable_set gender_choice
+    - not variable_set race_choice
+
+  Gender Male:
+    actions:
+    - set_char_attribute player,gender,male
+    - change_bg gradient_blue,choice_gender,image
+    - translated_dialog_choice black_male:white_male,race_choice
+    conditions:
+    - is variable_set scenario_choice
+    - is variable_set gender_choice:gender_male
+    - not variable_set race_choice
+
+  Gender Female:
+    actions:
+    - set_char_attribute player,gender,female
+    - change_bg gradient_blue,choice_gender,image
+    - translated_dialog_choice black_female:white_female,race_choice
+    conditions:
+    - is variable_set scenario_choice
+    - is variable_set gender_choice:gender_female
+    - not variable_set race_choice
+
+  Gender Nonbinary:
+    actions:
+    - set_char_attribute player,gender,nonbinary
+    - change_bg gradient_blue,choice_gender,image
+    - translated_dialog_choice gender_enby:gender_whatever,race_choice
+    conditions:
+    - is variable_set scenario_choice
+    - is variable_set gender_choice:gender_nonbinary
+    - not variable_set race_choice
+
+  Black Female:
+    actions:
+    - set_template player,brownheroine_brown,heroineblack
+    conditions:
+    - is variable_set race_choice:black_female
+  Black Male:
+    actions:
+    - set_template player,adventurerblack,adventurerblack
+    conditions:
+    - is variable_set race_choice:black_male
+  Gender Enby:
+    actions:
+    - set_template player,enbyasian,enbyasian
+    conditions:
+    - is variable_set race_choice:gender_enby
+  Whatever Penguin:
+    actions:
+    - set_template player,penguin,penguin
+    conditions:
+    - is variable_set race_choice:gender_whatever
+  White Female:
+    actions:
+    - set_template player,heroine,heroine
+    conditions:
+    - is variable_set race_choice:white_female
+  White Male:
+    actions:
+    - set_template player,adventurer,adventurer
+    conditions:
+    - is variable_set race_choice:white_male
+
+  Spyder:
+    actions:
+    - change_bg gradient_blue
+    - transition_teleport player,spyder_bedroom.tmx,4,4,0.3
+    conditions:
+    - is variable_set scenario_choice:spyder_campaign
+    - is variable_set gender_choice
+    - is variable_set race_choice
+
+  Xero:
+    actions:
+    - change_bg gradient_blue
+    - transition_teleport player,player_house_bedroom.tmx,4,4,0.3
+    conditions:
+    - is variable_set scenario_choice:xero_campaign
+    - is variable_set gender_choice
+    - is variable_set race_choice
+
+  Water:
+    actions:
+    - change_bg gradient_blue
+    - transition_teleport player,water_end_of_desert.tmx,11,32,0.5
+    conditions:
+    - is variable_set scenario_choice:water_campaign
+    - is variable_set gender_choice
+    - is variable_set race_choice
+`;
+
+  function setupEngine() {
+    const events = loadEventsFromYaml(START_YAML);
+    const engine = new EventEngine(events);
+    const scene = stubSceneWithUI();
+    const controls: EventContext["controls"] = { locked: false };
+    const player = { tileX: 0, tileY: 0, facing: "down" as Direction };
+
+    // change_bg needs cameras.main.setBackgroundColor and textures.exists
+    (scene as unknown as Record<string, unknown>).cameras = {
+      main: { setBackgroundColor: vi.fn() },
+    };
+    (scene as unknown as Record<string, unknown>).textures = {
+      exists: vi.fn(() => false),
+    };
+
+    const tick = (interact = false) => {
+      engine.update(makeCtx({ scene, controls, player, interactPressed: interact }), 0.05);
+    };
+
+    // Confirm the currently visible choice menu by pressing interact
+    const confirmChoice = () => {
+      tick(); // one frame with no interact (choice ignores first-frame press)
+      tick(true); // confirm selection
+    };
+
+    return { engine, tick, confirmChoice, controls };
+  }
+
+  it("spyder → male → white_male reaches spyder_bedroom teleport", () => {
+    const { tick, confirmChoice, controls } = setupEngine();
+
+    // Scenario choice: change_bg → translated_dialog_choice (default index 0 = spyder_campaign)
+    tick(); // change_bg fires, then choice starts
+    confirmChoice();
+    expect(gameVariables.get("scenario_choice")).toBe("spyder_campaign");
+
+    // Gender choice: change_bg → translated_dialog_choice (default index 0 = gender_male)
+    tick(); // change_bg
+    confirmChoice();
+    expect(gameVariables.get("gender_choice")).toBe("gender_male");
+
+    // Gender Male: set_char_attribute, change_bg → translated_dialog_choice
+    // race options: black_male (0), white_male (1) — pick white_male by pressing down
+    tick(); // set_char_attribute + change_bg fire, choice starts
+    expect(session.player.gender).toBe("male");
+    confirmChoice(); // confirms black_male (index 0)
+    expect(gameVariables.get("race_choice")).toBe("black_male");
+
+    // Black Male: set_template fires immediately
+    tick();
+    expect(session.player.template).toBe("adventurerblack");
+
+    // Spyder: change_bg + transition_teleport
+    for (let i = 0; i < 200; i++) {
+      tick();
+      if (controls.pendingTeleport) break;
+    }
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "spyder_bedroom",
+      tileX: 4,
+      tileY: 4,
+      duration: 0.3,
+    });
+  });
+
+  it("xero → female → white_female reaches player_house_bedroom teleport", () => {
+    // Pre-set variables to skip to the end
+    gameVariables.set("scenario_choice", "xero_campaign");
+    gameVariables.set("gender_choice", "gender_female");
+    gameVariables.set("race_choice", "white_female");
+
+    const { tick, controls } = setupEngine();
+
+    // White Female set_template fires
+    tick();
+    expect(session.player.template).toBe("heroine");
+
+    // Xero teleport
+    for (let i = 0; i < 200; i++) {
+      tick();
+      if (controls.pendingTeleport) break;
+    }
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "player_house_bedroom",
+      tileX: 4,
+      tileY: 4,
+      duration: 0.3,
+    });
+  });
+
+  it("water → nonbinary → penguin reaches water_end_of_desert teleport", () => {
+    gameVariables.set("scenario_choice", "water_campaign");
+    gameVariables.set("gender_choice", "gender_nonbinary");
+    gameVariables.set("race_choice", "gender_whatever");
+
+    const { tick, controls } = setupEngine();
+
+    // Whatever Penguin set_template
+    tick();
+    expect(session.player.template).toBe("penguin");
+
+    // Water teleport
+    for (let i = 0; i < 200; i++) {
+      tick();
+      if (controls.pendingTeleport) break;
+    }
+    expect(controls.pendingTeleport).toEqual({
+      mapKey: "water_end_of_desert",
+      tileX: 11,
+      tileY: 32,
+      duration: 0.5,
+    });
+  });
+});

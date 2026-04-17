@@ -19,3 +19,16 @@ export function allNpcSpritesheets(): string[] {
   }
   return [...sheets];
 }
+
+/**
+ * Player sprite templates available for selection via set_template.
+ * Each entry is both the Phaser texture key and the filename (without .png).
+ */
+export const PLAYER_SPRITE_TEMPLATES = [
+  "adventurer",
+  "adventurerblack",
+  "brownheroine_brown",
+  "enbyasian",
+  "heroine",
+  "penguin",
+];

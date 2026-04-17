@@ -4,7 +4,7 @@ import { EventEngine } from "../event/engine";
 import { session } from "../session";
 import { loadEventsFromYaml } from "../event/loader";
 import type { Direction, EventContext, NpcState, PendingTeleport } from "../event/types";
-import { getNpcSprite, allNpcSpritesheets } from "../data/npcs";
+import { getNpcSprite, allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { FACING_FRAMES } from "../event/actions/charFace";
 
@@ -74,12 +74,18 @@ export class OverworldScene extends Scene {
       this.load.image(tileset.imageKey, tileset.imagePath);
     }
 
-    this.load.spritesheet("player", "assets/sprites/adventurer.png", {
-      frameWidth: 16,
-      frameHeight: 32,
-    });
+    // Player sprite templates — all share the same 16×32 frame layout
+    for (const template of PLAYER_SPRITE_TEMPLATES) {
+      this.load.spritesheet(template, `assets/sprites/${template}.png`, {
+        frameWidth: 16,
+        frameHeight: 32,
+      });
+    }
     this.load.text("cotton-town-events", "assets/events/cotton_town.yaml");
-    this.load.text("sample-cutscene", "assets/events/sample_cutscene.yaml");
+    this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
+
+    // Background images used by change_bg image overlay
+    this.load.image("choice_gender", "assets/ui/background/choice_gender.png");
 
     // NPC spritesheets — same frame layout as player (16x32, 3 cols × 4 rows)
     for (const sheet of allNpcSpritesheets()) {
@@ -109,25 +115,26 @@ export class OverworldScene extends Scene {
       }
     }
 
-    // Player
+    // Player — use the session template to pick the spritesheet
+    const playerTexture = session.player.template;
     const startX = this.spawnTileX * TILE_SIZE + TILE_SIZE / 2;
     const startY = this.spawnTileY * TILE_SIZE;
     this.playerFacing = this.spawnFacing;
     this.player = this.physics.add.sprite(
       startX,
       startY,
-      "player",
+      playerTexture,
       FACING_FRAMES[this.spawnFacing],
     );
     this.player.setSize(12, 12);
     this.player.setOffset(2, 18);
     this.player.setDepth(5);
 
-    // Walk animations
-    this.createWalkAnimation("walk-down", 0);
-    this.createWalkAnimation("walk-left", 1);
-    this.createWalkAnimation("walk-right", 2);
-    this.createWalkAnimation("walk-up", 3);
+    // Walk animations — keyed to the current texture
+    this.createWalkAnimation("walk-down", 0, playerTexture);
+    this.createWalkAnimation("walk-left", 1, playerTexture);
+    this.createWalkAnimation("walk-right", 2, playerTexture);
+    this.createWalkAnimation("walk-up", 3, playerTexture);
 
     // Per-map NPCs: only cotton_town has the greeter for now.
     this.collisionBodies = this.physics.add.staticGroup();
@@ -221,14 +228,14 @@ export class OverworldScene extends Scene {
     this.collisionBodies.add(npcCollision);
   }
 
-  private createWalkAnimation(key: string, row: number) {
+  private createWalkAnimation(key: string, row: number, textureKey: string) {
     this.anims.create({
       key,
       frames: [
-        { key: "player", frame: row * 3 + 0 },
-        { key: "player", frame: row * 3 + 1 },
-        { key: "player", frame: row * 3 + 2 },
-        { key: "player", frame: row * 3 + 1 },
+        { key: textureKey, frame: row * 3 + 0 },
+        { key: textureKey, frame: row * 3 + 1 },
+        { key: textureKey, frame: row * 3 + 2 },
+        { key: textureKey, frame: row * 3 + 1 },
       ],
       frameRate: 8,
       repeat: -1,
@@ -361,7 +368,7 @@ export class OverworldScene extends Scene {
 
     this.scene.pause();
     this.scene.launch("CutsceneScene", {
-      yamlKey: "sample-cutscene",
+      yamlKey: "start-tuxemon",
       callerScene: "OverworldScene",
     });
 
