@@ -1280,6 +1280,89 @@ describe("set_monster_status action", () => {
   });
 });
 
+describe("play_music action", () => {
+  it("executes without error and completes immediately", () => {
+    const event: EventDef = {
+      id: 70,
+      name: "Music test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "play_music", args: ["music_home"] },
+        { type: "set_variable", args: ["music_played:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(gameVariables.get("music_played")).toBe("yes");
+    gameVariables.remove("music_played");
+  });
+});
+
+describe("music_playing condition", () => {
+  it("always returns false (stub)", () => {
+    const event: EventDef = {
+      id: 71,
+      name: "Music cond",
+      conditions: [
+        { operator: "is", type: "char_at", args: ["player"] },
+        { operator: "not", type: "music_playing", args: ["music_home"] },
+      ],
+      actions: [{ type: "set_variable", args: ["music_cond:yes"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    // Since music_playing always returns false, "not music_playing" is true
+    expect(gameVariables.get("music_cond")).toBe("yes");
+    gameVariables.remove("music_cond");
+  });
+});
+
+describe("access_pc action", () => {
+  it("shows placeholder dialog and blocks until dismissed", () => {
+    const scene = stubSceneWithUI();
+    const event: EventDef = {
+      id: 72,
+      name: "PC test",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "access_pc", args: ["player"] },
+        { type: "set_variable", args: ["pc_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    // Trigger
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+    expect(gameVariables.has("pc_done")).toBe(false);
+
+    // Dismiss the dialog
+    for (let i = 0; i < 100; i++) {
+      engine.update(makeCtx({ scene }), 0.05);
+      if (!engine.blocking) break;
+      engine.update(makeCtx({ scene, interactPressed: true }), 0.05);
+      if (!engine.blocking) break;
+    }
+    expect(engine.blocking).toBe(false);
+    expect(gameVariables.get("pc_done")).toBe("yes");
+    gameVariables.remove("pc_done");
+  });
+});
+
 describe("set_teleport_faint action", () => {
   beforeEach(() => {
     session.faintTeleport = undefined;

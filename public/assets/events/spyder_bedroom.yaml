@@ -15,6 +15,32 @@ events:
     x: 0
     y: 2
 
+  Play Music:
+    actions:
+    - play_music music_home
+    conditions:
+    - not music_playing music_home
+
+  Use Computer:
+    actions:
+    - access_pc player
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    - not variable_set kernelquest:yes
+    x: 3
+    y: 1
+
+  Use Computer Kernel:
+    actions:
+    - translated_dialog spyder_pc_alert
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    - is variable_set kernelquest:yes
+    x: 3
+    y: 1
+
   Go Downstairs:
     actions:
     - transition_teleport player,spyder_downstairs.tmx,0,2,0.3

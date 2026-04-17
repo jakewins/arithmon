@@ -29,6 +29,9 @@ import "./actions/screenTransition";
 import "./actions/setMonsterHealth";
 import "./actions/setMonsterStatus";
 import "./actions/setTeleportFaint";
+import "./actions/playMusic";
+import "./actions/accessPc";
+import "./conditions/musicPlaying";
 
 export class EventEngine {
   private events: EventDef[];
