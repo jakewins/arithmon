@@ -40,6 +40,8 @@ export interface EventContext {
   };
   /** Walkability grid for A* pathfinding (built from collision layer). */
   walkGrid?: PF.Grid;
+  /** Debug override: when set, the choice action selects this index and confirms. */
+  debugChoiceOverride?: number;
 }
 
 export interface PendingTeleport {

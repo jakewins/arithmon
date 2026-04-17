@@ -95,6 +95,21 @@ class TranslatedDialogChoiceAction implements EventAction {
     const boxY = this.bg.y - this.bg.height / 2;
     this.cursor.setY(boxY + PAD_Y + this.selected * OPTION_H);
 
+    // Debug override: programmatic choice selection from A.selectChoice()
+    if (ctx.debugChoiceOverride !== undefined) {
+      const idx = ctx.debugChoiceOverride;
+      if (idx >= 0 && idx < this.options.length) {
+        this.selected = idx;
+        ctx.variables.set(this.variable, this.options[this.selected]);
+        debugBridge.emit("choice_selected", {
+          index: this.selected,
+          text: t(this.options[this.selected]),
+        });
+        this.done = true;
+      }
+      return;
+    }
+
     // Ignore the interact press on the first frame — it's the residual press
     // that dismissed the previous action (e.g. a dialog) in the same step() loop.
     if (this.firstFrame) {

@@ -10,7 +10,7 @@ import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
 import { buildGrid, type CollisionRect } from "../event/pathfinding";
 import type PF from "pathfinding";
-import { debugBridge, type DebugStateProvider } from "../debug";
+import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -27,7 +27,7 @@ export interface OverworldInitData {
   spawnFacing?: Direction;
 }
 
-export class OverworldScene extends Scene implements DebugStateProvider {
+export class OverworldScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   // Exposed so char_face action can update player sprite frame
   player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -49,6 +49,7 @@ export class OverworldScene extends Scene implements DebugStateProvider {
   private spawnFacing: Direction = DEFAULT_SPAWN.facing;
   private teleporting = false;
   private walkGrid?: PF.Grid;
+  private pendingChoiceOverride?: number;
 
   constructor() {
     super("OverworldScene");
@@ -276,6 +277,27 @@ export class OverworldScene extends Scene implements DebugStateProvider {
     };
   }
 
+  // --- DebugCommandHandler ---
+
+  debugSetInteract(): void {
+    this.interactPressed = true;
+  }
+
+  debugFace(direction: Direction): void {
+    this.playerFacing = direction;
+    this.player.setVelocity(0);
+    this.player.anims.stop();
+    this.player.setFrame(FACING_FRAMES[direction]);
+  }
+
+  debugSelectChoice(index: number): void {
+    this.pendingChoiceOverride = index;
+  }
+
+  debugIsBlocking(): boolean {
+    return this.eventEngine.blocking || this.controlsState.locked;
+  }
+
   private spawnGreeter() {
     const greeterTileX = 17;
     const greeterTileY = 18;
@@ -355,6 +377,7 @@ export class OverworldScene extends Scene implements DebugStateProvider {
       npcs: this.npcs,
       controls: this.controlsState,
       walkGrid: this.walkGrid,
+      debugChoiceOverride: this.pendingChoiceOverride,
     };
 
     this.eventEngine.update(ctx, delta / 1000);
@@ -364,6 +387,7 @@ export class OverworldScene extends Scene implements DebugStateProvider {
 
     // Clear per-frame input
     this.interactPressed = false;
+    this.pendingChoiceOverride = undefined;
 
     // Teleport request from an action (e.g. transition_teleport)?
     if (this.controlsState.pendingTeleport && !this.teleporting) {

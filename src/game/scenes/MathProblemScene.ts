@@ -1,12 +1,12 @@
 import { Scene } from "phaser";
 import { skillTree } from "../skilltree";
 import type { PerseusProblem, ProblemWidget } from "../data/problems";
-import { debugBridge, type DebugStateProvider } from "../debug";
+import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 
 const WIDTH = 320;
 const HEIGHT = 240;
 
-export class MathProblemScene extends Scene implements DebugStateProvider {
+export class MathProblemScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   private problem!: PerseusProblem;
   private currentAnswer = "";
   private answerText!: Phaser.GameObjects.Text;
@@ -112,6 +112,28 @@ export class MathProblemScene extends Scene implements DebugStateProvider {
         returnScene: this.returnScene,
       },
     };
+  }
+
+  // --- DebugCommandHandler ---
+
+  debugTypeAnswer(text: string): void {
+    if (this.resolved) return;
+    this.currentAnswer = text;
+    this.updateAnswerDisplay();
+  }
+
+  debugSubmitAnswer(): void {
+    if (this.resolved) return;
+    const widget = Object.values(this.problem.question.widgets)[0];
+    if (widget.type === "radio") {
+      // For radio, interpret currentAnswer as a 0-based index
+      const index = parseInt(this.currentAnswer, 10);
+      if (!isNaN(index)) {
+        this.selectChoice(index);
+      }
+    } else {
+      this.submitNumericAnswer();
+    }
   }
 
   private createNumericInputUI(panelY: number, panelW: number) {

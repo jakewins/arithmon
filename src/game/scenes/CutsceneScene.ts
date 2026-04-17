@@ -4,9 +4,9 @@ import { loadEventsFromYaml } from "../event/loader";
 import type { EventContext, NpcState, PendingTeleport } from "../event/types";
 import { session } from "../session";
 import type { OverworldInitData } from "./OverworldScene";
-import { debugBridge, type DebugStateProvider } from "../debug";
+import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 
-export class CutsceneScene extends Scene implements DebugStateProvider {
+export class CutsceneScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   private eventEngine!: EventEngine;
   private interactPressed = false;
   private controlsState: {
@@ -16,6 +16,7 @@ export class CutsceneScene extends Scene implements DebugStateProvider {
   } = { locked: false, cutsceneDone: false };
   private callerScene = "";
   private teleporting = false;
+  private pendingChoiceOverride?: number;
 
   constructor() {
     super("CutsceneScene");
@@ -59,6 +60,20 @@ export class CutsceneScene extends Scene implements DebugStateProvider {
     };
   }
 
+  // --- DebugCommandHandler ---
+
+  debugSetInteract(): void {
+    this.interactPressed = true;
+  }
+
+  debugSelectChoice(index: number): void {
+    this.pendingChoiceOverride = index;
+  }
+
+  debugIsBlocking(): boolean {
+    return this.eventEngine.blocking;
+  }
+
   update(_time: number, delta: number) {
     if (this.teleporting) return;
 
@@ -70,11 +85,13 @@ export class CutsceneScene extends Scene implements DebugStateProvider {
       interactPressed: this.interactPressed,
       npcs: new Map<string, NpcState>(),
       controls: this.controlsState,
+      debugChoiceOverride: this.pendingChoiceOverride,
     };
 
     this.eventEngine.update(ctx, delta / 1000);
 
     this.interactPressed = false;
+    this.pendingChoiceOverride = undefined;
 
     // Teleport request: fade, stop the cutscene, and hand off to the overworld
     // with the target map + spawn instead of resuming the caller scene.
