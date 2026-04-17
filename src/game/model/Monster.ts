@@ -11,6 +11,7 @@ export class Monster {
   readonly speed: number;
   readonly techniques: TechniqueDef[];
   currentHp: number;
+  status: string[] = [];
 
   private constructor(
     slug: string,

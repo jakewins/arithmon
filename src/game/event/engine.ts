@@ -24,6 +24,11 @@ import "./actions/endCutscene";
 import "./actions/setCharAttribute";
 import "./actions/setTemplate";
 import "./actions/transitionTeleport";
+import "./actions/translatedDialog";
+import "./actions/screenTransition";
+import "./actions/setMonsterHealth";
+import "./actions/setMonsterStatus";
+import "./actions/setTeleportFaint";
 
 export class EventEngine {
   private events: EventDef[];

@@ -1,4 +1,20 @@
 events:
+  Resting in Bed:
+    actions:
+    - screen_transition 1
+    - wait 0.5
+    - translated_dialog spyder_papertown_restinbed
+    - set_monster_health
+    - set_monster_status
+    - set_teleport_faint player,spyder_bedroom.tmx,6,5
+    conditions:
+    - is button_pressed INTERACT
+    - is char_facing_tile player
+    height: 2
+    width: 1
+    x: 0
+    y: 2
+
   Go Downstairs:
     actions:
     - transition_teleport player,spyder_downstairs.tmx,0,2,0.3

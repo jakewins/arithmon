@@ -3,6 +3,8 @@ import type { EventContext, EventDef, NpcState, Direction } from "../game/event/
 import { EventEngine } from "../game/event/engine";
 import { session } from "../game/session";
 import { loadEventsFromYaml } from "../game/event/loader";
+import { loadPO } from "../game/i18n";
+import { Monster } from "../game/model/Monster";
 
 const gameVariables = session.player.gameVariables;
 
@@ -1134,5 +1136,190 @@ events:
       tileY: 32,
       duration: 0.5,
     });
+  });
+});
+
+describe("translated_dialog action", () => {
+  beforeEach(() => {
+    loadPO('msgid "spyder_papertown_restinbed"\nmsgstr "You rest for a while..."\n');
+  });
+
+  it("resolves i18n key and shows dialog text", () => {
+    const scene = stubSceneWithUI();
+    const event: EventDef = {
+      id: 60,
+      name: "Rest dialog",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "translated_dialog", args: ["spyder_papertown_restinbed"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    // Trigger
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+
+    // Run typewriter to completion
+    for (let i = 0; i < 100; i++) {
+      engine.update(makeCtx({ scene }), 0.05);
+      if (!engine.blocking) break;
+      engine.update(makeCtx({ scene, interactPressed: true }), 0.05);
+      if (!engine.blocking) break;
+    }
+    expect(engine.blocking).toBe(false);
+  });
+
+  it("falls back to title-cased key for unknown i18n key", () => {
+    loadPO(""); // clear translations
+    const scene = stubSceneWithUI();
+    const event: EventDef = {
+      id: 61,
+      name: "Fallback dialog",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "translated_dialog", args: ["unknown_key"] },
+        { type: "set_variable", args: ["dialog_shown:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+
+    // Dismiss
+    for (let i = 0; i < 100; i++) {
+      engine.update(makeCtx({ scene }), 0.05);
+      engine.update(makeCtx({ scene, interactPressed: true }), 0.05);
+      if (!engine.blocking) break;
+    }
+    expect(gameVariables.get("dialog_shown")).toBe("yes");
+    gameVariables.remove("dialog_shown");
+  });
+});
+
+describe("set_monster_health action", () => {
+  beforeEach(() => {
+    session.player.monsters = [];
+  });
+
+  it("restores all party monsters to full HP", () => {
+    const m1 = Monster.spawn("rockitten", 5);
+    const m2 = Monster.spawn("rockitten", 3);
+    m1.currentHp = 10;
+    m2.currentHp = 1;
+    session.player.monsters = [m1, m2];
+
+    const event: EventDef = {
+      id: 62,
+      name: "Heal",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_monster_health", args: [] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(m1.currentHp).toBe(m1.maxHp);
+    expect(m2.currentHp).toBe(m2.maxHp);
+  });
+
+  it("is a no-op when party is empty", () => {
+    const event: EventDef = {
+      id: 63,
+      name: "Heal empty",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_monster_health", args: [] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    // Should not throw
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+  });
+});
+
+describe("set_monster_status action", () => {
+  beforeEach(() => {
+    session.player.monsters = [];
+  });
+
+  it("clears all status effects from party monsters", () => {
+    const m1 = Monster.spawn("rockitten", 5);
+    const m2 = Monster.spawn("rockitten", 3);
+    m1.status = ["poison", "sleep"];
+    m2.status = ["burn"];
+    session.player.monsters = [m1, m2];
+
+    const event: EventDef = {
+      id: 64,
+      name: "Clear status",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_monster_status", args: [] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(m1.status).toEqual([]);
+    expect(m2.status).toEqual([]);
+  });
+});
+
+describe("set_teleport_faint action", () => {
+  beforeEach(() => {
+    session.faintTeleport = undefined;
+  });
+
+  it("stores respawn location on session", () => {
+    const event: EventDef = {
+      id: 65,
+      name: "Set faint",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_teleport_faint", args: ["player", "spyder_bedroom.tmx", "6", "5"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(session.faintTeleport).toEqual({
+      mapKey: "spyder_bedroom",
+      tileX: 6,
+      tileY: 5,
+    });
+  });
+
+  it("strips .tmx suffix from map key", () => {
+    const event: EventDef = {
+      id: 66,
+      name: "Set faint tmx",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "set_teleport_faint", args: ["player", "some_map.tmx", "3", "4"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+
+    expect(session.faintTeleport!.mapKey).toBe("some_map");
   });
 });

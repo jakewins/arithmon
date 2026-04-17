@@ -1,4 +1,5 @@
 import type { GameVariables } from "./event/types";
+import type { Monster } from "./model/Monster";
 
 /**
  * Typed player state — mirrors Tuxemon's NPCState for the player character.
@@ -9,7 +10,14 @@ export interface PlayerState {
   name: string;
   gender: string | null;
   template: string;
+  monsters: Monster[];
   gameVariables: GameVariables;
+}
+
+export interface FaintTeleport {
+  mapKey: string;
+  tileX: number;
+  tileY: number;
 }
 
 /**
@@ -18,6 +26,7 @@ export interface PlayerState {
  */
 export interface GameSession {
   player: PlayerState;
+  faintTeleport?: FaintTeleport;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -46,6 +55,7 @@ function createSession(): GameSession {
       name: "Player",
       gender: null,
       template: "adventurer",
+      monsters: [],
       gameVariables: new GameVariablesImpl(),
     },
   };
