@@ -20,6 +20,13 @@ export interface FaintTeleport {
   tileY: number;
 }
 
+export interface SkillState {
+  /** Leitner box 0–4. Higher = better known. */
+  box: number;
+  /** Global encounter counter value when this node was last practiced. */
+  lastSeen: number;
+}
+
 /**
  * Top-level game state — mirrors Tuxemon's SaveData.
  * In-memory only for now (resets on browser refresh).
@@ -27,6 +34,10 @@ export interface FaintTeleport {
 export interface GameSession {
   player: PlayerState;
   faintTeleport?: FaintTeleport;
+  /** Per-skill Leitner state, keyed by skill id (e.g. "K.OA.A.5"). */
+  skillStates: Record<string, SkillState>;
+  /** Global encounter counter for skill practice. */
+  skillEncounter: number;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -58,6 +69,8 @@ function createSession(): GameSession {
       monsters: [],
       gameVariables: new GameVariablesImpl(),
     },
+    skillStates: {},
+    skillEncounter: 0,
   };
 }
 

@@ -12,42 +12,32 @@ export interface NumericInputWidget {
   };
 }
 
+export interface RadioChoice {
+  content: string;
+  correct: boolean;
+}
+
+export interface RadioWidget {
+  type: "radio";
+  options: {
+    choices: RadioChoice[];
+  };
+}
+
+export type ProblemWidget = NumericInputWidget | RadioWidget;
+
 export interface PerseusProblem {
   id: string;
   standard: string;
   question: {
     /** Markdown with $LaTeX$ and [[☃ widget-id]] placeholders */
     content: string;
-    widgets: Record<string, NumericInputWidget>;
+    widgets: Record<string, ProblemWidget>;
   };
   hints: { content: string }[];
 }
 
 export interface GradeResult {
   correct: boolean;
-  expected: number;
+  expected: number | string;
 }
-
-/**
- * Hard-coded problem bank for STORY-0005.
- * K.OA.A.5: "Fluently add within 5"
- */
-export const PROBLEMS: PerseusProblem[] = [
-  {
-    id: "k-oa-a5-001",
-    standard: "K.OA.A.5",
-    question: {
-      content: "**What is $2 + 3$?**\n\n[[☃ numeric-input 1]]",
-      widgets: {
-        "numeric-input 1": {
-          type: "numeric-input",
-          options: { answers: [{ value: 5, status: "correct" }] },
-        },
-      },
-    },
-    hints: [
-      { content: "Count on your fingers: start at 2, then count up 3 more: 3, 4, **5**." },
-      { content: "The answer is $2 + 3 = 5$." },
-    ],
-  },
-];
