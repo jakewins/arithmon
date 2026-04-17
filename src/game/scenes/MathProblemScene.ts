@@ -1,6 +1,6 @@
 import { Scene } from "phaser";
 import { skillTree } from "../skilltree";
-import type { PerseusProblem } from "../data/problems";
+import type { PerseusProblem, ProblemWidget } from "../data/problems";
 
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -14,6 +14,7 @@ export class MathProblemScene extends Scene {
   private hintIndex = 0;
   private resolved = false;
   private returnScene = "OverworldScene";
+  private choiceButtons: Phaser.GameObjects.Text[] = [];
 
   constructor() {
     super("MathProblemScene");
@@ -27,8 +28,11 @@ export class MathProblemScene extends Scene {
     this.currentAnswer = "";
     this.hintIndex = 0;
     this.resolved = false;
+    this.choiceButtons = [];
 
     this.problem = skillTree.getNextProblem();
+
+    const widget = Object.values(this.problem.question.widgets)[0];
 
     // Extract display text from Perseus content: strip markdown bold and LaTeX $
     const displayQuestion = this.problem.question.content
@@ -70,6 +74,22 @@ export class MathProblemScene extends Scene {
       })
       .setOrigin(0.5);
 
+    if (widget.type === "radio") {
+      this.createRadioUI(widget, panelY, panelW);
+    } else {
+      this.createNumericInputUI(panelY, panelW);
+    }
+
+    // Feedback text (correct/incorrect)
+    this.feedbackText = this.add
+      .text(WIDTH / 2, HEIGHT - panelY - 24, "", {
+        fontSize: "12px",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+  }
+
+  private createNumericInputUI(panelY: number, panelW: number) {
     // Answer input area
     const inputY = panelY + 84;
     this.add.rectangle(WIDTH / 2, inputY, 80, 22, 0x222244).setStrokeStyle(1, 0x6666aa);
@@ -92,7 +112,7 @@ export class MathProblemScene extends Scene {
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.submitAnswer());
+      .on("pointerdown", () => this.submitNumericAnswer());
 
     // Hint button
     this.add
@@ -116,14 +136,6 @@ export class MathProblemScene extends Scene {
       })
       .setOrigin(0.5, 0);
 
-    // Feedback text (correct/incorrect)
-    this.feedbackText = this.add
-      .text(WIDTH / 2, HEIGHT - panelY - 24, "", {
-        fontSize: "12px",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
-
     // Keyboard input: digits, backspace, enter
     this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
       if (this.resolved) return;
@@ -137,8 +149,76 @@ export class MathProblemScene extends Scene {
         this.currentAnswer = this.currentAnswer.slice(0, -1);
         this.updateAnswerDisplay();
       } else if (event.key === "Enter") {
-        this.submitAnswer();
+        this.submitNumericAnswer();
       }
+    });
+  }
+
+  private createRadioUI(widget: ProblemWidget & { type: "radio" }, panelY: number, panelW: number) {
+    const choices = widget.options.choices;
+    const startY = panelY + 78;
+    const spacing = 24;
+
+    for (let i = 0; i < choices.length; i++) {
+      const y = startY + i * spacing;
+      const btn = this.add
+        .text(WIDTH / 2, y, choices[i].content, {
+          fontSize: "13px",
+          color: "#ffffff",
+          backgroundColor: "#333355",
+          padding: { x: 12, y: 5 },
+          fixedWidth: panelW - 80,
+          align: "center",
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", () => this.selectChoice(i));
+
+      this.choiceButtons.push(btn);
+    }
+
+    // No hint button for radio — the choices themselves are scaffolding.
+    // Create a dummy hintText so showNextHint() doesn't crash if called.
+    this.hintText = this.add.text(0, 0, "").setVisible(false);
+  }
+
+  private selectChoice(index: number) {
+    if (this.resolved) return;
+    this.resolved = true;
+
+    const widget = Object.values(this.problem.question.widgets)[0];
+    if (widget.type !== "radio") return;
+
+    const choices = widget.options.choices;
+    const selected = choices[index];
+    const result = skillTree.gradeAnswer(this.problem.id, selected.content);
+
+    this.data.set("correct", result.correct);
+
+    // Highlight the selected button
+    for (let i = 0; i < this.choiceButtons.length; i++) {
+      if (i === index) {
+        this.choiceButtons[i].setBackgroundColor(result.correct ? "#225522" : "#552222");
+        this.choiceButtons[i].setColor(result.correct ? "#44cc44" : "#cc4444");
+      }
+      if (!result.correct && choices[i].correct) {
+        // Show correct answer
+        this.choiceButtons[i].setBackgroundColor("#225522");
+        this.choiceButtons[i].setColor("#44cc44");
+      }
+    }
+
+    if (result.correct) {
+      this.feedbackText.setText("CORRECT!");
+      this.feedbackText.setColor("#44cc44");
+    } else {
+      this.feedbackText.setText(`INCORRECT — answer was ${result.expected}`);
+      this.feedbackText.setColor("#cc4444");
+    }
+
+    this.time.delayedCall(2000, () => {
+      this.scene.stop("MathProblemScene");
+      this.scene.resume(this.returnScene);
     });
   }
 
@@ -146,7 +226,7 @@ export class MathProblemScene extends Scene {
     this.answerText.setText(this.currentAnswer || "_");
   }
 
-  private submitAnswer() {
+  private submitNumericAnswer() {
     if (this.resolved || this.currentAnswer === "") return;
     this.resolved = true;
 

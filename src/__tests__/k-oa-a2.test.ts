@@ -1,14 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { generate } from "../game/data/skills/k-oa-a2";
 
+function getAnswer(problem: ReturnType<typeof generate>): number {
+  const widget = Object.values(problem.question.widgets)[0];
+  if (widget.type === "radio") {
+    const correct = widget.options.choices.find((c) => c.correct);
+    return parseInt(correct!.content, 10);
+  }
+  return widget.options.answers[0].value;
+}
+
 describe("K.OA.A.2 problem generator", () => {
   it("returns a valid PerseusProblem structure", () => {
     const problem = generate();
     expect(problem.id).toMatch(/^k-oa-a2-gen-\d+$/);
     expect(problem.standard).toBe("K.OA.A.2");
-    expect(problem.question.content).toContain("[[☃ numeric-input 1]]");
-    expect(problem.question.widgets["numeric-input 1"]).toBeDefined();
     expect(problem.hints.length).toBeGreaterThanOrEqual(1);
+
+    const widget = Object.values(problem.question.widgets)[0];
+    expect(["numeric-input", "radio"]).toContain(widget.type);
   });
 
   it("produces unique ids across calls", () => {
@@ -19,8 +29,7 @@ describe("K.OA.A.2 problem generator", () => {
   it("always produces operands where the answer is correct", () => {
     for (let i = 0; i < 200; i++) {
       const problem = generate();
-      const widget = problem.question.widgets["numeric-input 1"];
-      const answer = widget.options.answers[0].value;
+      const answer = getAnswer(problem);
       const content = problem.question.content;
 
       const addMatch = content.match(/\$(\d+)\s*\+\s*(\d+)/);
@@ -100,5 +109,25 @@ describe("K.OA.A.2 problem generator", () => {
       }
     }
     expect(seenLargeOperand).toBe(true);
+  });
+
+  it("produces both numeric-input and radio widget types", () => {
+    const types = new Set<string>();
+    for (let i = 0; i < 100; i++) {
+      const widget = Object.values(generate().question.widgets)[0];
+      types.add(widget.type);
+    }
+    expect(types.has("numeric-input")).toBe(true);
+    expect(types.has("radio")).toBe(true);
+  });
+
+  it("radio widgets have exactly one correct choice", () => {
+    for (let i = 0; i < 100; i++) {
+      const widget = Object.values(generate().question.widgets)[0];
+      if (widget.type === "radio") {
+        const correctCount = widget.options.choices.filter((c) => c.correct).length;
+        expect(correctCount).toBe(1);
+      }
+    }
   });
 });

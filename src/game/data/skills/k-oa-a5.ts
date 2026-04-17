@@ -2,7 +2,8 @@
  * Procedural problem generator for K.OA.A.5:
  * "Fluently add and subtract within 5"
  */
-import type { PerseusProblem } from "../problems";
+import type { PerseusProblem, ProblemWidget } from "../problems";
+import { makeRadioWidget } from "../radio-helpers";
 
 const ADDITION_PHRASINGS = [
   (a: number, b: number) => `**What is $${a} + ${b}$?**`,
@@ -25,13 +26,13 @@ function randInt(min: number, max: number): number {
 }
 
 function generateAddition(): { a: number; b: number; answer: number; phrasing: string } {
-  const a = randInt(0, 5);
+  const a = randInt(1, 5);
   const b = randInt(0, 5 - a);
   return { a, b, answer: a + b, phrasing: pick(ADDITION_PHRASINGS)(a, b) };
 }
 
 function generateSubtraction(): { a: number; b: number; answer: number; phrasing: string } {
-  const a = randInt(0, 5);
+  const a = randInt(1, 5);
   const b = randInt(0, a);
   return { a, b, answer: a - b, phrasing: pick(SUBTRACTION_PHRASINGS)(a, b) };
 }
@@ -70,17 +71,27 @@ export function generate(): PerseusProblem {
   const hints = isAddition ? additionHint(a, b, answer) : subtractionHint(a, b, answer);
   const id = `k-oa-a5-gen-${++counter}`;
 
+  const useRadio = Math.random() < 0.3;
+  let widget: ProblemWidget;
+  let widgetKey: string;
+
+  if (useRadio) {
+    widget = makeRadioWidget(answer, 0, 5);
+    widgetKey = "radio 1";
+  } else {
+    widget = {
+      type: "numeric-input",
+      options: { answers: [{ value: answer, status: "correct" }] },
+    };
+    widgetKey = "numeric-input 1";
+  }
+
   return {
     id,
     standard: "K.OA.A.5",
     question: {
-      content: `${phrasing}\n\n[[☃ numeric-input 1]]`,
-      widgets: {
-        "numeric-input 1": {
-          type: "numeric-input",
-          options: { answers: [{ value: answer, status: "correct" }] },
-        },
-      },
+      content: `${phrasing}\n\n[[☃ ${widgetKey}]]`,
+      widgets: { [widgetKey]: widget },
     },
     hints,
   };

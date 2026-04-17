@@ -93,16 +93,25 @@ export class SkillTree<Id extends string = SkillNodeId> {
     return this.activeProblem;
   }
 
-  gradeAnswer(problemId: string, answer: number): GradeResult {
+  gradeAnswer(problemId: string, answer: number | string): GradeResult {
     const problem = this.activeProblem?.id === problemId ? this.activeProblem : null;
     if (!problem) {
       return { correct: false, expected: 0 };
     }
 
     const widget = Object.values(problem.question.widgets)[0];
-    const correctAnswer = widget.options.answers.find((a) => a.status === "correct");
-    const expected = correctAnswer?.value ?? 0;
-    const correct = answer === expected;
+    let correct: boolean;
+    let expected: number | string;
+
+    if (widget.type === "radio") {
+      const correctChoice = widget.options.choices.find((c) => c.correct);
+      expected = correctChoice?.content ?? "";
+      correct = answer === expected;
+    } else {
+      const correctAnswer = widget.options.answers.find((a) => a.status === "correct");
+      expected = correctAnswer?.value ?? 0;
+      correct = answer === expected;
+    }
 
     // Update Leitner state
     if (this.activeProblemNodeId) {

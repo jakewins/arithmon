@@ -12,18 +12,32 @@ export interface NumericInputWidget {
   };
 }
 
+export interface RadioChoice {
+  content: string;
+  correct: boolean;
+}
+
+export interface RadioWidget {
+  type: "radio";
+  options: {
+    choices: RadioChoice[];
+  };
+}
+
+export type ProblemWidget = NumericInputWidget | RadioWidget;
+
 export interface PerseusProblem {
   id: string;
   standard: string;
   question: {
     /** Markdown with $LaTeX$ and [[☃ widget-id]] placeholders */
     content: string;
-    widgets: Record<string, NumericInputWidget>;
+    widgets: Record<string, ProblemWidget>;
   };
   hints: { content: string }[];
 }
 
 export interface GradeResult {
   correct: boolean;
-  expected: number;
+  expected: number | string;
 }
