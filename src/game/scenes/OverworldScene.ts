@@ -7,6 +7,7 @@ import type { Direction, EventContext, NpcState, PendingTeleport } from "../even
 import { getNpcSprite, allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { FACING_FRAMES } from "../event/actions/charFace";
+import { loadPO } from "../i18n";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -84,6 +85,9 @@ export class OverworldScene extends Scene {
     this.load.text("cotton-town-events", "assets/events/cotton_town.yaml");
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
+    // i18n translations
+    this.load.text("i18n-en", "assets/l10n/en_US.po");
+
     // Background images used by change_bg image overlay
     this.load.image("choice_gender", "assets/ui/background/choice_gender.png");
 
@@ -97,6 +101,10 @@ export class OverworldScene extends Scene {
   }
 
   create() {
+    // Initialize i18n from preloaded PO file
+    const poText = this.cache.text.get("i18n-en") as string;
+    if (poText) loadPO(poText);
+
     const mapDef = getMapDef(this.mapKey);
     const map = this.make.tilemap({ key: mapDef.jsonKey });
 
