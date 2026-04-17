@@ -1,12 +1,14 @@
 import { type PerseusProblem, type GradeResult } from "./data/problems";
 import { generate as generateKOAA5 } from "./data/skills/k-oa-a5";
 import { generate as generateKOAA2 } from "./data/skills/k-oa-a2";
+import { generate as generateKOAA4 } from "./data/skills/k-oa-a4";
+import { generate as generateKOAA3 } from "./data/skills/k-oa-a3";
 import { session, type GameSession, type SkillState } from "./session";
 
 export type { SkillState };
 
 /** Union of all skill node IDs currently handled by the game. */
-export type SkillNodeId = "K.OA.A.5" | "K.OA.A.2";
+export type SkillNodeId = "K.OA.A.5" | "K.OA.A.2" | "K.OA.A.4" | "K.OA.A.3";
 
 export interface SkillNode<Id extends string = SkillNodeId> {
   id: Id;
@@ -144,6 +146,20 @@ export function createSkillTree(gameSession: GameSession): SkillTree {
     id: "K.OA.A.2",
     prerequisites: ["K.OA.A.5"],
     generate: generateKOAA2,
+  });
+
+  // Register K.OA.A.4 — unlocks once K.OA.A.2 reaches box >= 2
+  tree.register({
+    id: "K.OA.A.4",
+    prerequisites: ["K.OA.A.2"],
+    generate: generateKOAA4,
+  });
+
+  // Register K.OA.A.3 — unlocks once K.OA.A.2 reaches box >= 2
+  tree.register({
+    id: "K.OA.A.3",
+    prerequisites: ["K.OA.A.2"],
+    generate: generateKOAA3,
   });
 
   return tree;
