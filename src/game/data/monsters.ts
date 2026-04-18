@@ -81,6 +81,23 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "rockThrow", learnedAt: 7 },
     ],
   },
+  memnomnom: {
+    slug: "memnomnom",
+    name: "Memnomnom",
+    baseStats: {
+      hp: 7,
+      attack: 7,
+      defense: 5,
+      speed: 6,
+    },
+    baseXpYield: 50,
+    catchRate: 255,
+    moveset: [
+      { slug: "bite", learnedAt: 1 },
+      { slug: "scratch", learnedAt: 1 },
+      { slug: "ram", learnedAt: 4 },
+    ],
+  },
   dollfin: {
     slug: "dollfin",
     name: "Dollfin",

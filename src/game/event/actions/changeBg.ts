@@ -9,7 +9,18 @@ class ChangeBgAction implements EventAction {
   private color: number;
   private imageKey: string | null;
 
+  private clearOnly: boolean;
+
   constructor(args: string[]) {
+    // No-arg form: change_bg — dismiss overlay
+    if (args.length === 0 || !args[0]) {
+      this.color = 0;
+      this.imageKey = null;
+      this.clearOnly = true;
+      return;
+    }
+
+    this.clearOnly = false;
     // 1-arg form: change_bg <color>
     // 3-arg form: change_bg <color>,<imageKey>,image
     const name = args[0];
@@ -26,6 +37,12 @@ class ChangeBgAction implements EventAction {
   }
 
   start(ctx: EventContext): void {
+    if (this.clearOnly) {
+      destroyOverlay(ctx.scene);
+      this.done = true;
+      return;
+    }
+
     ctx.scene.cameras.main.setBackgroundColor(this.color);
     destroyOverlay(ctx.scene);
 

@@ -100,6 +100,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     // Per-map event files — keyed by map name
     this.load.text("events-cotton_town", "assets/events/cotton_town.yaml");
     this.load.text("events-spyder_bedroom", "assets/events/spyder_bedroom.yaml");
+    this.load.text("events-spyder_paper_scoop", "assets/events/spyder_paper_scoop.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 

@@ -5,6 +5,13 @@ export interface NpcSpriteDef {
 const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   hacker: { spritesheet: "magician" },
   greeter: { spritesheet: "postboy" },
+  spyder_shopkeeper: { spritesheet: "shopkeeper" },
+  spyder_dante: { spritesheet: "shopassistant" },
+  spyder_papermart_miles: { spritesheet: "tennisplayer_green" },
+  spyder_papermart_shirley: { spritesheet: "picnicker" },
+  spyder_route2_roddick: { spritesheet: "tennisplayer_fiery" },
+  spyder_papermart_harith: { spritesheet: "beachcomber" },
+  spyder_billie: { spritesheet: "fashionista" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {
