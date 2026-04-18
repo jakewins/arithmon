@@ -38,6 +38,8 @@ export interface EventContext {
     cutsceneDone?: boolean;
     pendingTeleport?: PendingTeleport;
   };
+  /** Static collision group — NPC bodies are added here for physics blocking. */
+  collisionBodies?: Phaser.Physics.Arcade.StaticGroup;
   /** Walkability grid for A* pathfinding (built from collision layer). */
   walkGrid?: PF.Grid;
   /** Debug override: when set, the choice action selects this index and confirms. */

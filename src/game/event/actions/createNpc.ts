@@ -36,6 +36,14 @@ class CreateNpcAction implements EventAction {
     const sprite = ctx.scene.add.sprite(pixelX, pixelY, spritesheet, FACING_FRAMES[this.facing]);
     sprite.setDepth(5);
 
+    // Add a collision body so the player can't walk through the NPC
+    if (ctx.collisionBodies) {
+      const bodyY = this.tileY * TILE_SIZE + TILE_SIZE / 2;
+      const rect = ctx.scene.add.rectangle(pixelX, bodyY, TILE_SIZE, TILE_SIZE);
+      rect.setVisible(false);
+      ctx.collisionBodies.add(rect);
+    }
+
     ctx.npcs.set(this.slug, {
       slug: this.slug,
       tileX: this.tileX,

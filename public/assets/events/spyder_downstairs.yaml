@@ -13,7 +13,7 @@ events:
     conditions:
     - not char_exists spyder_papertown_mom
     actions:
-    - create_npc spyder_papertown_mom,5,5
+    - create_npc spyder_papertown_mom,5,3
 
   # --- Map connections ---
 

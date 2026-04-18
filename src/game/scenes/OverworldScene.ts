@@ -528,6 +528,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       interactPressed: this.interactPressed,
       npcs: this.npcs,
       controls: this.controlsState,
+      collisionBodies: this.collisionBodies,
       walkGrid: this.walkGrid,
       debugChoiceOverride: this.pendingChoiceOverride,
     };

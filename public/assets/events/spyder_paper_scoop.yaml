@@ -228,6 +228,58 @@ events:
     - not variable_set billie_choice
     type: event
 
+  # --- Add chosen monster to party ---
+
+  Add Budaye:
+    actions:
+    - add_monster budaye,5
+    - set_variable got_starter:yes
+    conditions:
+    - is variable_set myintrochoice:budaye
+    - is variable_set choice_phase:progress
+    - not variable_set got_starter:yes
+    type: event
+
+  Add Dollfin:
+    actions:
+    - add_monster dollfin,5
+    - set_variable got_starter:yes
+    conditions:
+    - is variable_set myintrochoice:dollfin
+    - is variable_set choice_phase:progress
+    - not variable_set got_starter:yes
+    type: event
+
+  Add Grintot:
+    actions:
+    - add_monster grintot,5
+    - set_variable got_starter:yes
+    conditions:
+    - is variable_set myintrochoice:grintot
+    - is variable_set choice_phase:progress
+    - not variable_set got_starter:yes
+    type: event
+
+  Add Ignibus:
+    actions:
+    - add_monster ignibus,5
+    - set_variable got_starter:yes
+    conditions:
+    - is variable_set myintrochoice:ignibus
+    - is variable_set choice_phase:progress
+    - not variable_set got_starter:yes
+    type: event
+
+  Add Memnomnom:
+    actions:
+    - add_monster memnomnom,5
+    - set_variable got_starter:yes
+    conditions:
+    - is variable_set myintrochoice:memnomnom
+    - is variable_set choice_phase:progress
+    - not variable_set got_starter:yes
+    type: event
+
   # --- Exit choreography ---
 
   Continue Storekeeper:
