@@ -7,6 +7,7 @@ export interface MonsterDef {
     defense: number;
     speed: number;
   };
+  baseXpYield: number;
   moveset: { slug: string; learnedAt: number }[];
 }
 
@@ -20,6 +21,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       defense: 6,
       speed: 6,
     },
+    baseXpYield: 50,
     moveset: [
       { slug: "scratch", learnedAt: 1 },
       { slug: "ram", learnedAt: 3 },
@@ -35,6 +37,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       defense: 7,
       speed: 5,
     },
+    baseXpYield: 45,
     moveset: [
       { slug: "scratch", learnedAt: 1 },
       { slug: "vineWhip", learnedAt: 3 },
@@ -50,6 +53,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       defense: 5,
       speed: 7,
     },
+    baseXpYield: 55,
     moveset: [
       { slug: "bite", learnedAt: 1 },
       { slug: "ember", learnedAt: 3 },
@@ -65,6 +69,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       defense: 8,
       speed: 4,
     },
+    baseXpYield: 60,
     moveset: [
       { slug: "growl", learnedAt: 1 },
       { slug: "bodySlam", learnedAt: 4 },
@@ -80,6 +85,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       defense: 6,
       speed: 7,
     },
+    baseXpYield: 50,
     moveset: [
       { slug: "ram", learnedAt: 1 },
       { slug: "waterGun", learnedAt: 3 },

@@ -57,6 +57,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private playerNameText!: Phaser.GameObjects.Text;
   private messageText!: Phaser.GameObjects.Text;
   private dpPips: Phaser.GameObjects.Rectangle[] = [];
+  private xpBar!: Phaser.GameObjects.Rectangle;
   private eventQueue: CombatEvent[] = [];
   private processing = false;
 
@@ -190,6 +191,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.dpPips.push(pip);
     }
 
+    // XP bar — below DP pips, player only
+    const xpBarY = dpY + 8;
+    const XP_BAR_H = 4;
+    this.add.text(dpStartX, xpBarY - 2, "XP", { fontSize: "8px", color: "#4488ff" });
+    this.add.rectangle(dpStartX + HP_BAR_W / 2 + 16, xpBarY + 1, HP_BAR_W - 16, XP_BAR_H, 0x222244);
+    this.xpBar = this.add.rectangle(
+      dpStartX + HP_BAR_W / 2 + 16,
+      xpBarY + 1,
+      HP_BAR_W - 16,
+      XP_BAR_H,
+      0x4488ff,
+    );
+
     // --- Two-panel bottom bar ---
     // Left panel: prompt/message area
     this.leftBorder = this.add.nineslice(
@@ -289,6 +303,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.setMenuMode("hidden");
     this.updateHpBars();
     this.updateDpPips();
+    this.updateXpBar();
     this.updateNameLabels();
 
     // Start combat
@@ -342,6 +357,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
   }
 
+  debugSetEnemyHp(hp: number): void {
+    this.machine.enemy.currentHp = Math.max(0, Math.min(hp, this.machine.enemy.maxHp));
+    this.updateHpBars();
+  }
+
   debugIsBlocking(): boolean {
     return this.processing;
   }
@@ -353,6 +373,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       level: mon.level,
       currentHp: mon.currentHp,
       maxHp: mon.maxHp,
+      totalXp: mon.totalXp,
+      xpProgress: mon.xpProgress,
+      techniqueCount: mon.techniques.length,
     });
     return {
       combat: {
@@ -685,6 +708,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     return 0xcc4444;
   }
 
+  private updateXpBar() {
+    const progress = this.machine.player.xpProgress;
+    this.xpBar.setScale(Math.max(0.01, progress), 1);
+  }
+
   private updateDpPips() {
     for (let i = 0; i < this.dpPips.length; i++) {
       if (i < this.machine.darkPower) {
@@ -758,10 +786,16 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.messageText.setText(event.message);
     this.updateHpBars();
     this.updateDpPips();
+    this.updateXpBar();
 
     // Update sprite and name when a new monster is swapped in
     if (event.type === "swap_in") {
       this.updatePlayerSprite();
+      this.updateNameLabels();
+    }
+
+    // Update name label when leveling up (shows new level)
+    if (event.type === "level_up") {
       this.updateNameLabels();
     }
 

@@ -1,6 +1,7 @@
 import { Monster } from "../model/Monster";
+import { MONSTERS } from "../data/monsters";
 import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
-import { calculateDamage, rollAccuracy, rollFleeChance } from "./formula";
+import { calculateDamage, calculateXpReward, rollAccuracy, rollFleeChance } from "./formula";
 import { debugBridge } from "../debug";
 
 export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "FORCE_SWAP" | "END";
@@ -24,7 +25,10 @@ export interface CombatEvent {
     | "dp_empty"
     | "swap_out"
     | "swap_in"
-    | "force_swap";
+    | "force_swap"
+    | "xp_gain"
+    | "level_up"
+    | "move_learned";
   message: string;
 }
 
@@ -135,6 +139,7 @@ export class CombatMachine {
           type: "faint",
           message: `${this.enemy.name} fainted!`,
         });
+        events.push(...this.awardXp());
         this.state = "END";
         this.outcome = "win";
         debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
@@ -187,6 +192,40 @@ export class CombatMachine {
     this.state = "DECISION";
     debugBridge.emit("combat_state", { from: "FORCE_SWAP", to: this.state });
     debugBridge.emit("combat_action", { action: { type: "swap", partyIndex }, events });
+    return events;
+  }
+
+  private awardXp(): CombatEvent[] {
+    const events: CombatEvent[] = [];
+    const enemyDef = MONSTERS[this.enemy.slug];
+    const xp = calculateXpReward(this.enemy.level, enemyDef.baseXpYield);
+    events.push({
+      type: "xp_gain",
+      message: `${this.player.name} gained ${xp} XP!`,
+    });
+    debugBridge.emit("xp_gained", { monster: this.player.slug, xp });
+
+    const levelUps = this.player.addXp(xp);
+    for (const lu of levelUps) {
+      events.push({
+        type: "level_up",
+        message: `${this.player.name} grew to Lv ${lu.newLevel}!`,
+      });
+      debugBridge.emit("level_up", {
+        monster: this.player.slug,
+        level: lu.newLevel,
+        oldStats: lu.oldStats,
+        newStats: lu.newStats,
+      });
+      for (const move of lu.newMoves) {
+        events.push({
+          type: "move_learned",
+          message: `${this.player.name} learned ${move.name}!`,
+        });
+        debugBridge.emit("move_learned", { monster: this.player.slug, move: move.slug });
+      }
+    }
+
     return events;
   }
 

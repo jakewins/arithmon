@@ -1,6 +1,7 @@
 import type { Direction } from "./event/types";
 import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
+import { xpForLevel } from "./combat/formula";
 
 /**
  * Scenes implement this to contribute their state to `A.getState()`.
@@ -22,6 +23,7 @@ export interface DebugCommandHandler {
   debugIsBlocking?(): boolean;
   debugWalkTo?(tileX: number, tileY: number, facing?: Direction): Promise<void>;
   debugStartCombat?(): void;
+  debugSetEnemyHp?(hp: number): void;
 }
 
 export interface DebugEvent {
@@ -117,6 +119,8 @@ export class DebugBridge {
           level: m.level,
           currentHp: m.currentHp,
           maxHp: m.maxHp,
+          totalXp: m.totalXp,
+          xpProgress: m.xpProgress,
         })),
       },
       ...sceneState,
@@ -233,6 +237,25 @@ export class DebugBridge {
     const monster = session.player.monsters[index];
     if (!monster) throw new Error(`No monster at index ${index}`);
     monster.currentHp = Math.max(0, Math.min(hp, monster.maxHp));
+  }
+
+  /** Set the current combat enemy's HP. Only works during combat. */
+  setEnemyHp(hp: number): void {
+    const handler = this.getCommandHandler();
+    if (handler?.debugSetEnemyHp) {
+      handler.debugSetEnemyHp(hp);
+    }
+  }
+
+  /** Set a party monster's total XP by index. Processes any resulting level-ups. */
+  setMonsterXp(index: number, xp: number): void {
+    const monster = session.player.monsters[index];
+    if (!monster) throw new Error(`No monster at index ${index}`);
+    // Set XP directly, then trigger level-up processing via addXp(0)
+    monster.totalXp = xp;
+    while (monster.totalXp >= xpForLevel(monster.level + 1)) {
+      monster.addXp(0);
+    }
   }
 
   private getCommandHandler(): DebugCommandHandler | null {
