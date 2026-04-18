@@ -2,6 +2,9 @@ import { Scene } from "phaser";
 import { CombatMachine, CombatEvent, MAX_DARK_POWER } from "../combat/machine";
 import { Monster } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
+import { type ItemDef } from "../item/item";
+import { type Inventory, getInventoryItems } from "../item/inventory";
+import { canUseItem } from "../item/validation";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 
 const WIDTH = 320;
@@ -37,7 +40,7 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
-type MenuMode = "hidden" | "main" | "techniques" | "party";
+type MenuMode = "hidden" | "main" | "techniques" | "party" | "items" | "item_target";
 
 // 2x2 main menu layout
 const MAIN_MENU_ITEMS = [
@@ -83,6 +86,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private partySelected = 0;
   private forceSwap = false;
 
+  // Item submenu
+  private itemLabels: Phaser.GameObjects.Text[] = [];
+  private itemCursor!: Phaser.GameObjects.Text;
+  private itemSelected = 0;
+  private combatItems: Array<{ item: ItemDef; count: number }> = [];
+
+  // Item target selection (reuses party labels)
+  private pendingItem: ItemDef | null = null;
+  private itemTargetLabels: Phaser.GameObjects.Text[] = [];
+  private itemTargetCursor!: Phaser.GameObjects.Text;
+  private itemTargetSelected = 0;
+
+  private inventory!: Inventory;
   private menuMode: MenuMode = "hidden";
 
   // Key state for edge detection
@@ -114,8 +130,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
   }
 
-  init(data: { playerMonster: Monster; enemyMonster: Monster; party?: Monster[] }) {
-    this.machine = new CombatMachine(data.playerMonster, data.enemyMonster, data.party);
+  init(data: {
+    playerMonster: Monster;
+    enemyMonster: Monster;
+    party?: Monster[];
+    inventory?: Inventory;
+  }) {
+    this.inventory = data.inventory ?? new Map();
+    this.machine = new CombatMachine(
+      data.playerMonster,
+      data.enemyMonster,
+      data.party,
+      this.inventory,
+    );
     this.eventQueue = [];
     this.processing = false;
     this.menuMode = "hidden";
@@ -124,6 +151,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.techSelected = 0;
     this.partySelected = 0;
     this.forceSwap = false;
+    this.itemSelected = 0;
+    this.itemTargetSelected = 0;
+    this.pendingItem = null;
+    this.combatItems = [];
     this.prevKeys = {};
   }
 
@@ -286,6 +317,20 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     });
     this.partyCursor.setDepth(101);
 
+    // Item cursor
+    this.itemCursor = this.add.text(0, 0, CURSOR_CHAR, {
+      fontSize: "11px",
+      color: TEXT_COLOR,
+    });
+    this.itemCursor.setDepth(101);
+
+    // Item target cursor
+    this.itemTargetCursor = this.add.text(0, 0, CURSOR_CHAR, {
+      fontSize: "11px",
+      color: TEXT_COLOR,
+    });
+    this.itemTargetCursor.setDepth(101);
+
     // Setup keyboard
     this.keys = {
       up: this.input.keyboard!.addKey(KEY_UP),
@@ -324,6 +369,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.updateTechMenu();
     } else if (this.menuMode === "party") {
       this.updatePartyMenu();
+    } else if (this.menuMode === "items") {
+      this.updateItemMenu();
+    } else if (this.menuMode === "item_target") {
+      this.updateItemTargetMenu();
     }
 
     // Update prev key state
@@ -353,6 +402,16 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       if (index >= 0 && index < this.machine.party.length) {
         this.partySelected = index;
         this.confirmPartyMenu();
+      }
+    } else if (this.menuMode === "items") {
+      if (index >= 0 && index < this.combatItems.length) {
+        this.itemSelected = index;
+        this.confirmItemMenu();
+      }
+    } else if (this.menuMode === "item_target") {
+      if (index >= 0 && index < this.machine.party.length) {
+        this.itemTargetSelected = index;
+        this.confirmItemTargetMenu();
       }
     }
   }
@@ -426,6 +485,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.techRechargeLabel.setVisible(false);
     this.clearPartyLabels();
     this.partyCursor.setVisible(false);
+    this.clearItemLabels();
+    this.itemCursor.setVisible(false);
+    this.clearItemTargetLabels();
+    this.itemTargetCursor.setVisible(false);
 
     if (mode === "main") {
       this.messageText.setText(`What will ${this.machine.player.name} do?`);
@@ -443,6 +506,16 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.partyCursor.setVisible(true);
       this.updatePartyCursorPosition();
       debugBridge.emit("combat_menu", { mode: "party", forceSwap: this.forceSwap });
+    } else if (mode === "items") {
+      this.buildItemLabels();
+      this.itemCursor.setVisible(true);
+      this.updateItemCursorPosition();
+      debugBridge.emit("combat_menu", { mode: "items" });
+    } else if (mode === "item_target") {
+      this.buildItemTargetLabels();
+      this.itemTargetCursor.setVisible(true);
+      this.updateItemTargetCursorPosition();
+      debugBridge.emit("combat_menu", { mode: "item_target", item: this.pendingItem?.slug });
     }
   }
 
@@ -497,9 +570,18 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.forceSwap = false;
         this.setMenuMode("party");
         break;
-      case "ITEM":
-        this.messageText.setText("No items.");
+      case "ITEM": {
+        this.combatItems = getInventoryItems(this.inventory).filter((e) =>
+          e.item.usableIn.includes("combat"),
+        );
+        if (this.combatItems.length === 0) {
+          this.messageText.setText("No items!");
+          return;
+        }
+        this.itemSelected = 0;
+        this.setMenuMode("items");
         break;
+      }
       case "RUN":
         this.setMenuMode("hidden");
         this.queueEvents(this.machine.submitAction({ type: "run" }));
@@ -682,6 +764,173 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     } else {
       this.queueEvents(this.machine.submitAction({ type: "swap", partyIndex: idx }));
     }
+  }
+
+  // --- Item submenu ---
+
+  private buildItemLabels() {
+    this.clearItemLabels();
+    const baseX = LEFT_W + PAD_X + 12;
+    const baseY = BOX_Y + PAD_Y;
+
+    for (let i = 0; i < this.combatItems.length; i++) {
+      const entry = this.combatItems[i];
+      const label = this.add.text(
+        baseX,
+        baseY + i * OPTION_H,
+        `${entry.item.name} x${entry.count}`,
+        { fontSize: "11px", color: TEXT_COLOR },
+      );
+      label.setDepth(101);
+      this.itemLabels.push(label);
+    }
+
+    this.messageText.setText("Choose an item:");
+  }
+
+  private clearItemLabels() {
+    for (const label of this.itemLabels) label.destroy();
+    this.itemLabels = [];
+  }
+
+  private updateItemMenu() {
+    const count = this.combatItems.length;
+
+    if (this.justPressed("up")) {
+      this.itemSelected = (this.itemSelected - 1 + count) % count;
+      this.updateItemCursorPosition();
+    }
+    if (this.justPressed("down")) {
+      this.itemSelected = (this.itemSelected + 1) % count;
+      this.updateItemCursorPosition();
+    }
+
+    if (this.isBackPressed()) {
+      this.itemSelected = 0;
+      this.setMenuMode("main");
+      return;
+    }
+
+    if (this.isConfirmPressed()) {
+      this.confirmItemMenu();
+    }
+  }
+
+  private updateItemCursorPosition() {
+    const baseX = LEFT_W + PAD_X;
+    const baseY = BOX_Y + PAD_Y;
+    this.itemCursor.setPosition(baseX, baseY + this.itemSelected * OPTION_H);
+  }
+
+  private confirmItemMenu() {
+    const entry = this.combatItems[this.itemSelected];
+    if (!entry) return;
+
+    if (entry.item.category === "capture") {
+      this.messageText.setText("Can't use that yet!");
+      return;
+    }
+
+    // Check if any party member is a valid target
+    const hasTarget = this.machine.party.some((m) => canUseItem(entry.item, m, "combat"));
+    if (!hasTarget) {
+      this.messageText.setText("No valid targets!");
+      return;
+    }
+
+    this.pendingItem = entry.item;
+    this.itemTargetSelected = 0;
+    this.setMenuMode("item_target");
+  }
+
+  // --- Item target selection ---
+
+  private buildItemTargetLabels() {
+    this.clearItemTargetLabels();
+    const party = this.machine.party;
+    const baseX = LEFT_W + PAD_X + 12;
+    const baseY = BOX_Y + PAD_Y;
+    const PARTY_ROW_H = 10;
+
+    for (let i = 0; i < party.length; i++) {
+      const mon = party[i];
+      const valid = this.pendingItem ? canUseItem(this.pendingItem, mon, "combat") : false;
+      let text = `${mon.name} ${mon.currentHp}/${mon.maxHp}`;
+      if (mon.fainted) text += " KO";
+
+      const color = valid ? TEXT_COLOR : DISABLED_COLOR;
+      const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, {
+        fontSize: "9px",
+        color,
+      });
+      label.setDepth(101);
+      this.itemTargetLabels.push(label);
+    }
+
+    this.messageText.setText(`Use ${this.pendingItem?.name} on whom?`);
+  }
+
+  private clearItemTargetLabels() {
+    for (const label of this.itemTargetLabels) label.destroy();
+    this.itemTargetLabels = [];
+  }
+
+  private updateItemTargetMenu() {
+    const count = this.machine.party.length;
+
+    if (this.justPressed("up")) {
+      this.itemTargetSelected = (this.itemTargetSelected - 1 + count) % count;
+      this.updateItemTargetCursorPosition();
+    }
+    if (this.justPressed("down")) {
+      this.itemTargetSelected = (this.itemTargetSelected + 1) % count;
+      this.updateItemTargetCursorPosition();
+    }
+
+    if (this.isBackPressed()) {
+      this.pendingItem = null;
+      this.itemTargetSelected = 0;
+      this.setMenuMode("items");
+      return;
+    }
+
+    if (this.isConfirmPressed()) {
+      this.confirmItemTargetMenu();
+    }
+  }
+
+  private updateItemTargetCursorPosition() {
+    const baseX = LEFT_W + PAD_X;
+    const baseY = BOX_Y + PAD_Y;
+    const PARTY_ROW_H = 10;
+    this.itemTargetCursor.setPosition(baseX, baseY + this.itemTargetSelected * PARTY_ROW_H);
+  }
+
+  private confirmItemTargetMenu() {
+    const item = this.pendingItem;
+    if (!item) return;
+
+    const target = this.machine.party[this.itemTargetSelected];
+    if (!target || !canUseItem(item, target, "combat")) {
+      if (target?.fainted && !item.effects.some((e) => e.type === "revive")) {
+        this.messageText.setText(`${target.name} has fainted!`);
+      } else if (target && !target.fainted && target.currentHp >= target.maxHp) {
+        this.messageText.setText(`${target.name} is already at full HP!`);
+      } else {
+        this.messageText.setText("Can't use that here!");
+      }
+      return;
+    }
+
+    this.pendingItem = null;
+    this.setMenuMode("hidden");
+    this.queueEvents(
+      this.machine.submitAction({
+        type: "item",
+        itemSlug: item.slug,
+        targetIndex: this.itemTargetSelected,
+      }),
+    );
   }
 
   // --- HP / DP / Labels ---

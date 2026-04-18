@@ -1,6 +1,9 @@
 import { Monster } from "../model/Monster";
 import { MONSTERS } from "../data/monsters";
 import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
+import { ITEMS } from "../data/items";
+import { type Inventory, removeItem } from "../item/inventory";
+import { type ItemEffect } from "../item/item";
 import { calculateDamage, calculateXpReward, rollAccuracy, rollFleeChance } from "./formula";
 import { debugBridge } from "../debug";
 
@@ -8,7 +11,8 @@ export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "FORCE_S
 export type PlayerAction =
   | { type: "fight"; technique: string }
   | { type: "run" }
-  | { type: "swap"; partyIndex: number };
+  | { type: "swap"; partyIndex: number }
+  | { type: "item"; itemSlug: string; targetIndex: number };
 export type CombatOutcome = "win" | "lose" | "fled";
 
 export interface CombatEvent {
@@ -28,7 +32,10 @@ export interface CombatEvent {
     | "force_swap"
     | "xp_gain"
     | "level_up"
-    | "move_learned";
+    | "move_learned"
+    | "item_used"
+    | "item_heal"
+    | "item_revive";
   message: string;
 }
 
@@ -38,16 +45,18 @@ export class CombatMachine {
   player: Monster;
   readonly enemy: Monster;
   readonly party: Monster[];
+  readonly inventory: Inventory;
   state: CombatState = "INTRO";
   outcome: CombatOutcome | null = null;
   darkPower: number = MAX_DARK_POWER;
   readonly maxDarkPower: number = MAX_DARK_POWER;
   private fleeAttempts = 0;
 
-  constructor(player: Monster, enemy: Monster, party?: Monster[]) {
+  constructor(player: Monster, enemy: Monster, party?: Monster[], inventory?: Inventory) {
     this.player = player;
     this.enemy = enemy;
     this.party = party ?? [player];
+    this.inventory = inventory ?? new Map();
   }
 
   canFight(): boolean {
@@ -125,6 +134,8 @@ export class CombatMachine {
         type: "swap_in",
         message: `Go, ${this.player.name}!`,
       });
+    } else if (action.type === "item") {
+      events.push(...this.processItemAction(action.itemSlug, action.targetIndex));
     } else {
       const technique = TECHNIQUES[action.technique];
       if (!technique) throw new Error(`Unknown technique: ${action.technique}`);
@@ -193,6 +204,50 @@ export class CombatMachine {
     debugBridge.emit("combat_state", { from: "FORCE_SWAP", to: this.state });
     debugBridge.emit("combat_action", { action: { type: "swap", partyIndex }, events });
     return events;
+  }
+
+  private processItemAction(itemSlug: string, targetIndex: number): CombatEvent[] {
+    const itemDef = ITEMS[itemSlug];
+    if (!itemDef) throw new Error(`Unknown item: ${itemSlug}`);
+    const target = this.party[targetIndex];
+    if (!target) throw new Error(`No monster at party index ${targetIndex}`);
+
+    const events: CombatEvent[] = [];
+    events.push({ type: "item_used", message: `Used ${itemDef.name}!` });
+
+    for (const effect of itemDef.effects) {
+      events.push(...this.applyItemEffect(effect, target));
+    }
+
+    removeItem(this.inventory, itemSlug);
+    return events;
+  }
+
+  private applyItemEffect(effect: ItemEffect, target: Monster): CombatEvent[] {
+    switch (effect.type) {
+      case "heal_hp": {
+        const before = target.currentHp;
+        target.currentHp = Math.min(target.maxHp, target.currentHp + effect.amount);
+        const healed = target.currentHp - before;
+        return [{ type: "item_heal", message: `${target.name} recovered ${healed} HP!` }];
+      }
+      case "heal_hp_percent": {
+        const before = target.currentHp;
+        const amount = Math.floor(target.maxHp * (effect.percent / 100));
+        target.currentHp = Math.min(target.maxHp, target.currentHp + amount);
+        const healed = target.currentHp - before;
+        return [{ type: "item_heal", message: `${target.name} recovered ${healed} HP!` }];
+      }
+      case "revive": {
+        const restored = Math.floor(target.maxHp * (effect.hp_percent / 100));
+        target.currentHp = restored;
+        return [
+          { type: "item_revive", message: `${target.name} was revived with ${restored} HP!` },
+        ];
+      }
+      case "capture":
+        return [];
+    }
   }
 
   private awardXp(): CombatEvent[] {

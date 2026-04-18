@@ -628,6 +628,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       playerMonster: lead,
       enemyMonster,
       party: session.player.monsters,
+      inventory: session.player.inventory,
     });
 
     // Listen for combat scene to stop, then handle post-combat
