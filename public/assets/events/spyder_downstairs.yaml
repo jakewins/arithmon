@@ -1,0 +1,90 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_home
+    actions:
+    - play_music music_home
+
+  # --- NPC spawns ---
+
+  Create Mom:
+    conditions:
+    - not char_exists spyder_papertown_mom
+    actions:
+    - create_npc spyder_papertown_mom,5,5
+
+  # --- Map connections ---
+
+  Go Upstairs:
+    x: 0
+    y: 1
+    conditions:
+    - is char_at player
+    actions:
+    - transition_teleport player,spyder_bedroom.tmx,8,2,0.3
+    - char_face player,down
+
+  Go Outside:
+    x: 4
+    y: 6
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_paper_town.tmx,10,7,0.3
+    - char_face player,down
+
+  # --- NPC dialogs ---
+
+  Talk Mom First:
+    conditions:
+    - is char_facing_char player,spyder_papertown_mom
+    - is button_pressed INTERACT
+    - not variable_set spokenmom:yes
+    actions:
+    - char_face spyder_papertown_mom,player
+    - translated_dialog spyder_papertown_mom1
+    - set_variable spokenmom:yes
+
+  Talk Mom No Monster:
+    conditions:
+    - is char_facing_char player,spyder_papertown_mom
+    - is button_pressed INTERACT
+    - is party_size player,less_than,1
+    - is variable_set spokenmom:yes
+    actions:
+    - char_face spyder_papertown_mom,player
+    - translated_dialog spyder_papertown_mom2
+
+  Talk Mom Has Monster:
+    conditions:
+    - is char_facing_char player,spyder_papertown_mom
+    - is button_pressed INTERACT
+    - is party_size player,greater_than,0
+    - is variable_set spokenmom:yes
+    actions:
+    - char_face spyder_papertown_mom,player
+    - translated_dialog spyder_papertown_mom3
+
+  # --- Interactables ---
+
+  Home Sign:
+    x: 1
+    y: 1
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - translated_dialog spyder_papertown_home
+
+  Watch TV:
+    x: 1
+    y: 5
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    - is button_pressed INTERACT
+    actions:
+    - translated_dialog spyder_papertown_tvwatch

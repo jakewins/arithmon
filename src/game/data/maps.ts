@@ -118,6 +118,16 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
       CORE_OUTDOOR_NATURE,
     ],
   },
+  spyder_healing_center: {
+    jsonKey: "map-spyder_healing_center",
+    jsonPath: "assets/maps/spyder_healing_center.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+  },
+  spyder_route1: {
+    jsonKey: "map-spyder_route1",
+    jsonPath: "assets/maps/spyder_route1.json",
+    tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
+  },
   water_end_of_desert: {
     jsonKey: "map-water_end_of_desert",
     jsonPath: "assets/maps/water_end_of_desert.json",

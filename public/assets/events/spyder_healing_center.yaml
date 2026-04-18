@@ -1,0 +1,45 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_cathedral_theme
+    actions:
+    - play_music music_cathedral_theme
+
+  # --- NPC spawns ---
+
+  Create Nurse:
+    conditions:
+    - not char_exists spyder_healing_center_nurse
+    actions:
+    - create_npc spyder_healing_center_nurse,6,4
+
+  # --- Healing ---
+
+  Heal Party:
+    conditions:
+    - is char_facing_char player,spyder_healing_center_nurse
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_healing_center_nurse,player
+    - dialog Welcome to the healing center!
+    - dialog Let me take care of your monsters...
+    - screen_transition 1
+    - wait 0.5
+    - set_monster_health
+    - set_monster_status
+    - set_teleport_faint player,spyder_healing_center.tmx,6,7
+    - dialog All healed up! Take care out there.
+
+  # --- Map connections ---
+
+  Go Outside:
+    x: 6
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,cotton_town.tmx,22,28,0.3
+    - char_face player,down

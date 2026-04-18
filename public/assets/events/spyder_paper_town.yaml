@@ -31,7 +31,27 @@ events:
     conditions:
     - is char_at player
     actions:
-    - transition_teleport player,spyder_downstairs.tmx,4,6,0.3
+    - transition_teleport player,spyder_downstairs.tmx,4,5,0.3
+    - char_face player,down
+
+  Go To Route 1 West:
+    x: 13
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_route1.tmx,13,18,0.3
+    - char_face player,up
+
+  Go To Route 1 East:
+    x: 14
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_route1.tmx,14,18,0.3
     - char_face player,up
 
   # --- NPC dialogs ---

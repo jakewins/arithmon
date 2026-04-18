@@ -6,6 +6,7 @@ import { loadEventsFromYaml } from "../event/loader";
 import type { Direction, EventContext, NpcState, PendingTeleport } from "../event/types";
 import { getNpcSprite, allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
+import { getEncounterTable, rollEncounter } from "../data/encounters";
 import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
 import { buildGrid, findPath, type CollisionRect } from "../event/pathfinding";
@@ -14,7 +15,8 @@ import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
-const GRASS_TILE_ID = 1552;
+/** Tall-grass tile IDs across different tilesets that trigger encounters. */
+const GRASS_TILE_IDS = new Set([1552, 2797]);
 const ENCOUNTER_RATE = 0.5;
 
 const DEFAULT_MAP = "starter";
@@ -32,7 +34,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private collisionBodies!: Phaser.Physics.Arcade.StaticGroup;
-  private groundLayer?: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer;
+  private tileLayers: (Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer)[] = [];
   private lastTileX = -1;
   private lastTileY = -1;
   private inCombat = false;
@@ -75,7 +77,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.controlsState = { locked: false };
     this.lastTileX = -1;
     this.lastTileY = -1;
-    this.groundLayer = undefined;
+    this.tileLayers = [];
     this.walkToWaypoints = [];
     this.walkToResolve = undefined;
   }
@@ -100,7 +102,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     // Per-map event files — keyed by map name
     this.load.text("events-cotton_town", "assets/events/cotton_town.yaml");
     this.load.text("events-spyder_bedroom", "assets/events/spyder_bedroom.yaml");
+    this.load.text("events-spyder_downstairs", "assets/events/spyder_downstairs.yaml");
+    this.load.text("events-spyder_healing_center", "assets/events/spyder_healing_center.yaml");
     this.load.text("events-spyder_paper_scoop", "assets/events/spyder_paper_scoop.yaml");
+    this.load.text("events-spyder_route1", "assets/events/spyder_route1.yaml");
     this.load.text("events-spyder_paper_town", "assets/events/spyder_paper_town.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
@@ -163,9 +168,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       if (layerData.name.toLowerCase() === "above player") {
         layer.setDepth(10);
       }
-      if (layerData.name === "Ground") {
-        this.groundLayer = layer;
-      }
+      this.tileLayers.push(layer);
     }
 
     // Player — use the session template to pick the spritesheet
@@ -590,8 +593,11 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.lastTileX = tileX;
     this.lastTileY = tileY;
 
-    const tile = this.groundLayer?.getTileAt(tileX, tileY);
-    if (!tile || tile.index !== GRASS_TILE_ID) return;
+    const onGrass = this.tileLayers.some((layer) => {
+      const tile = layer.getTileAt(tileX, tileY);
+      return tile && GRASS_TILE_IDS.has(tile.index);
+    });
+    if (!onGrass) return;
 
     if (Math.random() >= ENCOUNTER_RATE) return;
 
@@ -639,9 +645,8 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.player.setVelocity(0);
     this.player.anims.stop();
 
-    const wildSlugs = ["rockitten", "budaye", "ignibus", "grintot", "dollfin"];
-    const enemySlug = wildSlugs[Math.floor(Math.random() * wildSlugs.length)];
-    const enemyLevel = 4 + Math.floor(Math.random() * 3);
+    const table = getEncounterTable(this.mapKey);
+    const { slug: enemySlug, level: enemyLevel } = rollEncounter(table);
     const enemyMonster = Monster.spawn(enemySlug, enemyLevel);
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 

@@ -17,6 +17,7 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_papertown_silver: { spritesheet: "florist" },
   spyder_papermart_rafael: { spritesheet: "tennisplayer_lapi" },
   spyder_papermanor_princeton: { spritesheet: "maniac" },
+  spyder_healing_center_nurse: { spritesheet: "shopassistant" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

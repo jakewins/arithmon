@@ -71,6 +71,111 @@ events:
     width: 1
     height: 1
 
+  # --- Map connections: healing center ---
+
+  Enter Healing Center:
+    x: 22
+    y: 27
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_healing_center.tmx,6,9,0.3
+    - char_face player,up
+
+  # --- Map connections: south to Route 1 ---
+  # Cotton town south (x=10-18) maps to Route 1 north (x=21-27+)
+
+  Go Route 1 10:
+    x: 10
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,21,1,0.3
+    - char_face player,down
+
+  Go Route 1 11:
+    x: 11
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,22,1,0.3
+    - char_face player,down
+
+  Go Route 1 12:
+    x: 12
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,23,1,0.3
+    - char_face player,down
+
+  Go Route 1 13:
+    x: 13
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,24,1,0.3
+    - char_face player,down
+
+  Go Route 1 14:
+    x: 14
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,25,1,0.3
+    - char_face player,down
+
+  Go Route 1 15:
+    x: 15
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,26,1,0.3
+    - char_face player,down
+
+  Go Route 1 16:
+    x: 16
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,27,1,0.3
+    - char_face player,down
+
+  Go Route 1 17:
+    x: 17
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,27,1,0.3
+    - char_face player,down
+
+  Go Route 1 18:
+    x: 18
+    y: 39
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route1.tmx,27,1,0.3
+    - char_face player,down
+
   Town Sign:
     conditions:
       - is char_facing_tile

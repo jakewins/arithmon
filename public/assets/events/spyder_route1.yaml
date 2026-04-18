@@ -1,0 +1,128 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_the_wild_places
+    actions:
+    - play_music music_the_wild_places
+
+  # --- NPC spawns ---
+
+  Create Bjorn:
+    conditions:
+    - not char_exists spyder_route1_bjorn
+    actions:
+    - create_npc spyder_route1_bjorn,13,11
+
+  # --- Map connections: south to Paper Town ---
+
+  Go Paper Town West:
+    x: 13
+    y: 19
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_paper_town.tmx,13,1,0.3
+
+  Go Paper Town East:
+    x: 14
+    y: 19
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_paper_town.tmx,14,1,0.3
+
+  # --- Map connections: north to Cotton Town ---
+  # Route 1 north edge (x=21-27) maps to cotton_town south (x=10-16)
+
+  Go Cotton Town 21:
+    x: 21
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,10,38,0.3
+    - char_face player,up
+
+  Go Cotton Town 22:
+    x: 22
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,11,38,0.3
+    - char_face player,up
+
+  Go Cotton Town 23:
+    x: 23
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,12,38,0.3
+    - char_face player,up
+
+  Go Cotton Town 24:
+    x: 24
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,13,38,0.3
+    - char_face player,up
+
+  Go Cotton Town 25:
+    x: 25
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,14,38,0.3
+    - char_face player,up
+
+  Go Cotton Town 26:
+    x: 26
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,15,38,0.3
+    - char_face player,up
+
+  Go Cotton Town 27:
+    x: 27
+    y: 0
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,cotton_town.tmx,16,38,0.3
+    - char_face player,up
+
+  # --- NPC dialogs ---
+
+  Talk Bjorn:
+    behav: talk spyder_route1_bjorn
+    actions:
+    - dialog Watch out for wild monsters in the tall grass!
+    - dialog I heard there are some tough ones further north.
+
+  # --- Signs ---
+
+  Route Sign:
+    x: 24
+    y: 17
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route 1 — Paper Town to Cotton Town
