@@ -72,16 +72,22 @@ export class EventEngine {
   }
 
   update(ctx: EventContext, dt: number): void {
-    // Check conditions for non-running events and start new ones
-    for (const def of this.events) {
-      if (this.runningIds.has(def.id)) continue;
-      if (this.checkConditions(ctx, def)) {
-        if (def.conditions.some((c) => c.type === "button_pressed")) {
-          debugBridge.emit("npc_interact", { npc: def.name });
+    // Check conditions for non-running events and start new ones.
+    // Skip starting new events if any running event is currently blocking
+    // (e.g. showing a dialog) to prevent visual overlaps.
+    const anyBlocking = this.running.some((r) => r.blocking);
+
+    if (!anyBlocking) {
+      for (const def of this.events) {
+        if (this.runningIds.has(def.id)) continue;
+        if (this.checkConditions(ctx, def)) {
+          if (def.conditions.some((c) => c.type === "button_pressed")) {
+            debugBridge.emit("npc_interact", { npc: def.name });
+          }
+          const running = new RunningEvent(def);
+          this.running.push(running);
+          this.runningIds.add(def.id);
         }
-        const running = new RunningEvent(def);
-        this.running.push(running);
-        this.runningIds.add(def.id);
       }
     }
 
