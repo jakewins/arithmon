@@ -597,6 +597,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     });
   }
 
+  debugStartCombat(): void {
+    this.startCombat();
+  }
+
   private startCombat() {
     this.inCombat = true;
     this.player.setVelocity(0);

@@ -20,6 +20,7 @@ export interface DebugCommandHandler {
   debugSubmitAnswer?(): void;
   debugIsBlocking?(): boolean;
   debugWalkTo?(tileX: number, tileY: number, facing?: Direction): Promise<void>;
+  debugStartCombat?(): void;
 }
 
 export interface DebugEvent {
@@ -167,6 +168,14 @@ export class DebugBridge {
     const handler = this.getCommandHandler();
     if (handler?.debugWalkTo) {
       return handler.debugWalkTo(tileX, tileY, facing);
+    }
+  }
+
+  /** Trigger a wild combat encounter immediately. */
+  async startCombat(): Promise<void> {
+    const handler = this.getCommandHandler();
+    if (handler?.debugStartCombat) {
+      handler.debugStartCombat();
     }
   }
 

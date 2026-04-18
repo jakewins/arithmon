@@ -1,9 +1,10 @@
 import { Monster } from "../model/Monster";
+import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
 import { calculateDamage, rollAccuracy, rollFleeChance } from "./formula";
 import { debugBridge } from "../debug";
 
 export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "END";
-export type PlayerAction = "fight" | "run";
+export type PlayerAction = { type: "fight"; technique: string } | { type: "run" };
 export type CombatOutcome = "win" | "lose" | "fled";
 
 export interface CombatEvent {
@@ -38,8 +39,11 @@ export class CombatMachine {
   }
 
   canFight(): boolean {
-    const technique = this.player.techniques[0];
-    return technique != null && this.darkPower >= technique.dpCost;
+    return this.player.techniques.some((t) => this.darkPower >= t.dpCost);
+  }
+
+  canAfford(technique: TechniqueDef): boolean {
+    return this.darkPower >= technique.dpCost;
   }
 
   rechargeDarkPower(): void {
@@ -61,7 +65,7 @@ export class CombatMachine {
     debugBridge.emit("combat_state", { from: fromState, to: this.state });
     const events: CombatEvent[] = [];
 
-    if (action === "run") {
+    if (action.type === "run") {
       this.fleeAttempts++;
       if (rollFleeChance(this.fleeAttempts, this.player.level, this.enemy.level)) {
         events.push({
@@ -79,13 +83,14 @@ export class CombatMachine {
         message: "Couldn't escape!",
       });
     } else {
-      const technique = this.player.techniques[0];
+      const technique = TECHNIQUES[action.technique];
+      if (!technique) throw new Error(`Unknown technique: ${action.technique}`);
       this.darkPower = Math.max(0, this.darkPower - technique.dpCost);
       events.push({
         type: "dp_drain",
         message: `${technique.dpCost} Dark Power spent! (${this.darkPower}/${this.maxDarkPower})`,
       });
-      events.push(...this.performAttack(this.player, this.enemy, true));
+      events.push(...this.performAttack(this.player, this.enemy, true, technique));
       if (this.enemy.currentHp <= 0) {
         events.push({
           type: "faint",
@@ -119,9 +124,14 @@ export class CombatMachine {
     return events;
   }
 
-  private performAttack(attacker: Monster, defender: Monster, isPlayer: boolean): CombatEvent[] {
+  private performAttack(
+    attacker: Monster,
+    defender: Monster,
+    isPlayer: boolean,
+    tech?: TechniqueDef,
+  ): CombatEvent[] {
     const events: CombatEvent[] = [];
-    const technique = attacker.techniques[0];
+    const technique = tech ?? attacker.techniques[0];
     const label = isPlayer ? "player_attack" : "enemy_attack";
 
     events.push({

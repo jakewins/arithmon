@@ -17,6 +17,7 @@ interface DebugBridgeAPI {
   interact(): Promise<void>;
   walkTo(x: number, y: number, facing?: string): Promise<void>;
   selectChoice(index: number): Promise<void>;
+  startCombat(): Promise<void>;
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;
 }
@@ -88,6 +89,11 @@ export async function selectChoice(
   index: number,
 ): Promise<void> {
   await page.evaluate((i) => window.A!.selectChoice(i), index);
+}
+
+/** Trigger a wild combat encounter immediately. */
+export async function startCombat(page: Page): Promise<void> {
+  await page.evaluate(() => window.A!.startCombat());
 }
 
 /** Wait until the event engine is no longer blocking. */

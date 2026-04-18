@@ -1,12 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { calculateDamage, rollAccuracy, rollFleeChance } from "../game/combat/formula";
 import { Monster } from "../game/model/Monster";
+import { TECHNIQUES } from "../game/data/techniques";
 
 describe("calculateDamage", () => {
   it("computes damage using the formula", () => {
     const attacker = Monster.spawn("rockitten", 5);
     const defender = Monster.spawn("rockitten", 5);
-    const technique = attacker.techniques[0]; // ram, power 1.5
+    const technique = TECHNIQUES["ram"]; // power 1.5
 
     // floor((7 + 5) * 72 * 1.5 / 72) = floor(12 * 1.5) = floor(18) = 18
     expect(calculateDamage(attacker, technique, defender)).toBe(18);
@@ -15,7 +16,7 @@ describe("calculateDamage", () => {
   it("returns higher damage at higher levels", () => {
     const low = Monster.spawn("rockitten", 2);
     const high = Monster.spawn("rockitten", 10);
-    const tech = low.techniques[0];
+    const tech = TECHNIQUES["ram"];
 
     const lowDmg = calculateDamage(low, tech, low);
     const highDmg = calculateDamage(high, tech, high);

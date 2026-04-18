@@ -33,7 +33,8 @@ describe("CombatMachine", () => {
 
   it("fight deals damage to both sides and returns to DECISION", () => {
     machine.intro();
-    const events = machine.submitAction("fight");
+    const technique = player.techniques[0];
+    const events = machine.submitAction({ type: "fight", technique: technique.slug });
 
     expect(events.some((e) => e.type === "player_attack")).toBe(true);
     expect(events.some((e) => e.type === "enemy_attack")).toBe(true);
@@ -44,30 +45,28 @@ describe("CombatMachine", () => {
 
   it("combat ends with win when enemy HP reaches 0", () => {
     machine.intro();
+    const technique = player.techniques[0];
 
-    // Keep fighting until combat ends
     while (machine.state === "DECISION") {
-      machine.submitAction("fight");
+      machine.submitAction({ type: "fight", technique: technique.slug });
     }
 
-    // With equal stats and both always hitting, one will faint
     expect(machine.state).toBe("END");
     expect(machine.outcome).not.toBeNull();
   });
 
   it("player attacks first — so with equal stats, player wins", () => {
     machine.intro();
+    const technique = player.techniques[0];
     while (machine.state === "DECISION") {
-      machine.submitAction("fight");
+      machine.submitAction({ type: "fight", technique: technique.slug });
     }
-    // Player attacks first each turn, so with equal stats player wins
     expect(machine.outcome).toBe("win");
   });
 
   it("flee succeeds when roll passes", () => {
     machine.intro();
-    // random returns 0.1, flee chance at attempt 1 = 0.4 + 0.15*(1+0) = 0.55 > 0.1
-    const events = machine.submitAction("run");
+    const events = machine.submitAction({ type: "run" });
     expect(events.some((e) => e.type === "flee_success")).toBe(true);
     expect(machine.state).toBe("END");
     expect(machine.outcome).toBe("fled");
@@ -76,16 +75,52 @@ describe("CombatMachine", () => {
   it("flee fails when roll does not pass", () => {
     vi.spyOn(Math, "random").mockReturnValue(0.99);
     machine.intro();
-    const events = machine.submitAction("run");
+    const events = machine.submitAction({ type: "run" });
     expect(events.some((e) => e.type === "flee_fail")).toBe(true);
-    // Enemy still attacks after failed flee
     expect(events.some((e) => e.type === "enemy_attack")).toBe(true);
     expect(machine.state).toBe("DECISION");
   });
 
   it("ignores actions when not in DECISION state", () => {
-    // Still in INTRO state
-    const events = machine.submitAction("fight");
+    const events = machine.submitAction({ type: "fight", technique: "scratch" });
     expect(events).toHaveLength(0);
+  });
+
+  it("uses the specified technique for the attack", () => {
+    machine.intro();
+    const events = machine.submitAction({ type: "fight", technique: "ram" });
+    const attackEvent = events.find((e) => e.type === "player_attack");
+    expect(attackEvent?.message).toContain("Ram");
+  });
+
+  it("drains DP based on technique cost", () => {
+    machine.intro();
+    expect(machine.darkPower).toBe(5);
+    // Scratch costs 1 DP
+    machine.submitAction({ type: "fight", technique: "scratch" });
+    expect(machine.darkPower).toBe(4);
+  });
+
+  it("canAfford returns false when DP is insufficient", () => {
+    machine.intro();
+    machine.darkPower = 1;
+    const scratch = player.techniques.find((t) => t.slug === "scratch")!;
+    const ram = player.techniques.find((t) => t.slug === "ram")!;
+    expect(machine.canAfford(scratch)).toBe(true);
+    expect(machine.canAfford(ram)).toBe(false);
+  });
+
+  it("canFight is true when any technique is affordable", () => {
+    machine.intro();
+    machine.darkPower = 1;
+    // scratch costs 1, ram costs 2 — scratch is still affordable
+    expect(machine.canFight()).toBe(true);
+    machine.darkPower = 0;
+    expect(machine.canFight()).toBe(false);
+  });
+
+  it("player at level 5 has scratch and ram techniques", () => {
+    expect(player.techniques).toHaveLength(2);
+    expect(player.techniques.map((t) => t.slug)).toEqual(["scratch", "ram"]);
   });
 });

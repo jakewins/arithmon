@@ -20,6 +20,10 @@ export const MONSTERS: Record<string, MonsterDef> = {
       defense: 6,
       speed: 6,
     },
-    moveset: [{ slug: "ram", learnedAt: 1 }],
+    moveset: [
+      { slug: "scratch", learnedAt: 1 },
+      { slug: "ram", learnedAt: 3 },
+      { slug: "pounce", learnedAt: 6 },
+    ],
   },
 };
