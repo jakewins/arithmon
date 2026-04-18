@@ -29,7 +29,9 @@ class RenamePlayerAction implements EventAction {
   private name: string;
 
   constructor(args: string[]) {
-    this.name = args[0] ?? "Player";
+    // Tuxemon syntax: rename_player player,random  (args[0]=target, args[1]=name/mode)
+    // Also support single-arg: rename_player random
+    this.name = args[1] ?? args[0] ?? "Player";
   }
 
   start(ctx: EventContext): void {

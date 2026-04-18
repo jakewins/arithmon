@@ -15,9 +15,13 @@ class DialogAction implements EventAction {
   }
 
   start(ctx: EventContext): void {
-    this.box = new DialogBox(ctx.scene, this.text);
+    // Substitute ${{var}} with game variable values and $player with player name
+    const resolved = this.text
+      .replace(/\$player/g, ctx.session.player.name)
+      .replace(/\$\{\{(\w+)\}\}/g, (_m, key) => ctx.variables.get(key) ?? key);
+    this.box = new DialogBox(ctx.scene, resolved);
     this.box.start();
-    debugBridge.emit("dialog_opened", { text: this.text });
+    debugBridge.emit("dialog_opened", { text: resolved });
   }
 
   update(ctx: EventContext, dt: number): void {
