@@ -61,6 +61,8 @@ export class EventEngine {
   private events: EventDef[];
   private running: RunningEvent[] = [];
   private runningIds = new Set<number>();
+  /** Events that just completed get a one-frame cooldown before re-evaluation. */
+  private cooldownIds = new Set<number>();
 
   constructor(events: EventDef[]) {
     this.events = events;
@@ -73,13 +75,14 @@ export class EventEngine {
 
   update(ctx: EventContext, dt: number): void {
     // Check conditions for non-running events and start new ones.
-    // Skip starting new events if any running event is currently blocking
-    // (e.g. showing a dialog) to prevent visual overlaps.
+    // Skip if any running event is blocking (dialog/choice) to prevent
+    // visual overlaps, and skip events on cooldown (just completed last frame).
     const anyBlocking = this.running.some((r) => r.blocking);
 
     if (!anyBlocking) {
       for (const def of this.events) {
         if (this.runningIds.has(def.id)) continue;
+        if (this.cooldownIds.has(def.id)) continue;
         if (this.checkConditions(ctx, def)) {
           if (def.conditions.some((c) => c.type === "button_pressed")) {
             debugBridge.emit("npc_interact", { npc: def.name });
@@ -91,15 +94,21 @@ export class EventEngine {
       }
     }
 
+    // Clear cooldowns — they only block for one frame.
+    this.cooldownIds.clear();
+
     // Step running events
     for (const running of this.running) {
       running.step(ctx, dt);
     }
 
-    // Clean up completed events
+    // Clean up completed events. Put them on one-frame cooldown so that
+    // single-frame sibling events (variable setters) that also completed
+    // this frame can update state before this event is re-evaluated.
     this.running = this.running.filter((r) => {
       if (r.done) {
         this.runningIds.delete(r.def.id);
+        this.cooldownIds.add(r.def.id);
         return false;
       }
       return true;

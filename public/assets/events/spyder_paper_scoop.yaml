@@ -152,6 +152,23 @@ events:
     y: 5
 
   # --- Monster choice flow ---
+  # Note: single-frame variable-setting events must appear before blocking
+  # events (dialog/choice) so they run first when multiple conditions match.
+
+  Confirm Monster No:
+    actions:
+    - set_variable choice_phase:yes
+    - set_variable areyousure:none
+    conditions:
+    - is variable_set areyousure:no
+    type: event
+
+  Confirm Monster Yes:
+    actions:
+    - set_variable choice_phase:progress
+    conditions:
+    - is variable_set areyousure:yes
+    type: event
 
   Choice:
     actions:
@@ -167,21 +184,6 @@ events:
     - translated_dialog_choice yes:no,areyousure
     conditions:
     - is variable_set choice_phase:next
-    type: event
-
-  Confirm Monster No:
-    actions:
-    - set_variable choice_phase:yes
-    - set_variable areyousure:none
-    conditions:
-    - is variable_set areyousure:no
-    type: event
-
-  Confirm Monster Yes:
-    actions:
-    - set_variable choice_phase:progress
-    conditions:
-    - is variable_set areyousure:yes
     type: event
 
   # --- Billie choice routing ---
