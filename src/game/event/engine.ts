@@ -47,6 +47,7 @@ import "./actions/pathfindToChar";
 import "./actions/playSound";
 import "./actions/openJournal";
 import "./actions/choiceMonster";
+import "./actions/startBattle";
 import "./conditions/partySize";
 import "./conditions/hasItem";
 import "./conditions/hasMonster";

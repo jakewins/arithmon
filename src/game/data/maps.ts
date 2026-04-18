@@ -59,6 +59,16 @@ const CORE_INDOOR_WALLS: TilesetAsset = {
   imageKey: "core_indoor_walls",
   imagePath: "assets/maps/core_indoor_walls.png",
 };
+const CORE_OUTDOOR_WATER: TilesetAsset = {
+  name: "core_outdoor_water",
+  imageKey: "core_outdoor_water",
+  imagePath: "assets/maps/core_outdoor_water.png",
+};
+const CORE_OUTDOOR_NATURE: TilesetAsset = {
+  name: "core_outdoor_nature",
+  imageKey: "core_outdoor_nature",
+  imagePath: "assets/maps/core_outdoor_nature.png",
+};
 const OCEANSET_OUTSIDE: TilesetAsset = {
   name: "oceanset_outside.tiles",
   imageKey: "oceanset_outside_tiles",
@@ -90,6 +100,18 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonKey: "map-spyder_paper_scoop",
     jsonPath: "assets/maps/spyder_paper_scoop.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+  },
+  spyder_paper_town: {
+    jsonKey: "map-spyder_paper_town",
+    jsonPath: "assets/maps/spyder_paper_town.json",
+    tilesets: [
+      CORE_CITY_AND_COUNTRY,
+      CORE_OUTDOOR,
+      CORE_SET_PIECES,
+      CORE_BUILDINGS,
+      CORE_OUTDOOR_WATER,
+      CORE_OUTDOOR_NATURE,
+    ],
   },
   water_end_of_desert: {
     jsonKey: "map-water_end_of_desert",

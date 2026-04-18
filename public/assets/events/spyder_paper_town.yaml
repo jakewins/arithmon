@@ -1,0 +1,98 @@
+events:
+  # --- NPC spawns ---
+
+  Create Silver:
+    conditions:
+    - not char_exists spyder_papertown_silver
+    actions:
+    - create_npc spyder_papertown_silver,10,14
+
+  Create Granny Piper:
+    conditions:
+    - not char_exists spyder_grannypiper
+    actions:
+    - create_npc spyder_grannypiper,26,8
+
+  # --- Map connections ---
+
+  Enter Paper Scoop:
+    x: 19
+    y: 12
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_paper_scoop.tmx,6,9,0.3
+    - char_face player,up
+
+  Enter House:
+    x: 10
+    y: 6
+    conditions:
+    - is char_at player
+    actions:
+    - transition_teleport player,spyder_downstairs.tmx,4,6,0.3
+    - char_face player,up
+
+  # --- NPC dialogs ---
+
+  Talk Granny:
+    behav: talk spyder_grannypiper
+    actions:
+    - dialog This town used to be much busier before the storms.
+
+  Talk Silver No Battle:
+    conditions:
+    - is char_facing_char player,spyder_papertown_silver
+    - is button_pressed INTERACT
+    - not variable_set silver_battle:ready
+    - not battle_outcome player,spyder_papertown_silver,won
+    actions:
+    - char_face spyder_papertown_silver,player
+    - dialog I'm Silver. I've been training my monsters nearby.
+    - dialog Think you can take me on? Come talk to me when you're ready!
+    - set_variable silver_battle:ready
+
+  # --- Trainer battle with Silver ---
+
+  Talk Silver Ready:
+    conditions:
+    - is char_facing_char player,spyder_papertown_silver
+    - is button_pressed INTERACT
+    - is variable_set silver_battle:ready
+    - not battle_outcome player,spyder_papertown_silver,won
+    actions:
+    - char_face spyder_papertown_silver,player
+    - lock_controls
+    - dialog Let's see what you've got!
+    - start_battle spyder_papertown_silver
+    - unlock_controls
+
+  Silver Post Win:
+    conditions:
+    - is char_facing_char player,spyder_papertown_silver
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_papertown_silver,won
+    actions:
+    - char_face spyder_papertown_silver,player
+    - dialog Not bad! You really showed me. I'll have to train harder next time.
+
+  # --- Signs ---
+
+  Mart Sign:
+    x: 16
+    y: 12
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Paper Scoop - Supplies & More
+
+  Town Sign:
+    x: 12
+    y: 1
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Welcome to Paper Town!

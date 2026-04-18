@@ -140,6 +140,7 @@ export class DebugBridge {
           seen: [...session.monsterRegistry.seen],
           caught: [...session.monsterRegistry.caught],
         },
+        battleOutcomes: Object.fromEntries(session.battleOutcomes),
       },
       ...sceneState,
     };
@@ -284,6 +285,33 @@ export class DebugBridge {
   /** Mark a monster species as caught in the journal. */
   markMonsterCaught(slug: string): void {
     markCaught(session.monsterRegistry, slug);
+  }
+
+  /** Teleport the player to a map at the given tile. Restarts OverworldScene. */
+  async teleport(mapKey: string, tileX: number, tileY: number): Promise<void> {
+    if (!this.activeScene) throw new Error("No active scene");
+    const scene = this.activeScene.scene;
+    // Stop any combat scene that might be running
+    if (scene.isActive("CombatScene")) {
+      scene.stop("CombatScene");
+    }
+    scene.start("OverworldScene", { mapKey, spawnTileX: tileX, spawnTileY: tileY });
+    // Wait for the new scene to be ready
+    return new Promise((resolve) => {
+      const check = () => {
+        if (this.activeScene?.scene.key === "OverworldScene") {
+          resolve();
+          return;
+        }
+        nextFrame(check);
+      };
+      nextFrame(check);
+    });
+  }
+
+  /** Set a game variable. */
+  setVariable(key: string, value: string): void {
+    session.player.gameVariables.set(key, value);
   }
 
   private getCommandHandler(): DebugCommandHandler | null {

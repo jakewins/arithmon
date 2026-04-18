@@ -54,10 +54,13 @@ export const MAX_DARK_POWER = 5;
 
 export class CombatMachine {
   player: Monster;
-  readonly enemy: Monster;
+  enemy: Monster;
+  readonly enemyParty: Monster[];
   readonly party: Monster[];
   readonly inventory: Inventory;
   readonly isWild: boolean;
+  /** Display name for trainer battles (e.g. "Silver"). */
+  readonly trainerName: string | null;
   /** Callback invoked on successful capture to add the monster to party/storage. */
   onCapture: ((monster: Monster) => void) | null = null;
   state: CombatState = "INTRO";
@@ -72,12 +75,16 @@ export class CombatMachine {
     party?: Monster[],
     inventory?: Inventory,
     isWild = true,
+    enemyParty?: Monster[],
+    trainerName?: string,
   ) {
     this.player = player;
     this.enemy = enemy;
+    this.enemyParty = enemyParty ?? [enemy];
     this.party = party ?? [player];
     this.inventory = inventory ?? new Map();
     this.isWild = isWild;
+    this.trainerName = trainerName ?? null;
   }
 
   canFight(): boolean {
@@ -96,7 +103,10 @@ export class CombatMachine {
     const from = this.state;
     this.state = "DECISION";
     debugBridge.emit("combat_state", { from, to: this.state });
-    return [{ type: "intro", message: `A wild ${this.enemy.name} appeared!` }];
+    const message = this.trainerName
+      ? `Trainer ${this.trainerName} wants to battle!`
+      : `A wild ${this.enemy.name} appeared!`;
+    return [{ type: "intro", message }];
   }
 
   /** Check if a party index is valid for swapping to. */
@@ -122,6 +132,16 @@ export class CombatMachine {
     const events: CombatEvent[] = [];
 
     if (action.type === "run") {
+      if (!this.isWild) {
+        events.push({
+          type: "flee_fail",
+          message: "Can't escape from a trainer battle!",
+        });
+        this.state = "DECISION";
+        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+        debugBridge.emit("combat_action", { action, events });
+        return events;
+      }
       this.fleeAttempts++;
       if (rollFleeChance(this.fleeAttempts, this.player.level, this.enemy.level)) {
         events.push({
@@ -158,6 +178,16 @@ export class CombatMachine {
     } else if (action.type === "item") {
       events.push(...this.processItemAction(action.itemSlug, action.targetIndex));
     } else if (action.type === "capture") {
+      if (!this.isWild) {
+        events.push({
+          type: "capture_fail",
+          message: "Can't use that in a trainer battle!",
+        });
+        this.state = "DECISION";
+        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+        debugBridge.emit("combat_action", { action, events });
+        return events;
+      }
       const captureEvents = this.processCaptureAction(action.itemSlug);
       events.push(...captureEvents);
       if (this.outcome !== null) {
@@ -179,6 +209,23 @@ export class CombatMachine {
           message: `${this.enemy.name} fainted!`,
         });
         events.push(...this.awardXp());
+
+        // Check if trainer has more monsters
+        const nextEnemy = this.enemyParty.find((m) => m !== this.enemy && !m.fainted);
+        if (nextEnemy) {
+          this.enemy = nextEnemy;
+          events.push({
+            type: "swap_in",
+            message: this.trainerName
+              ? `${this.trainerName} sent out ${nextEnemy.name}!`
+              : `A new ${nextEnemy.name} appeared!`,
+          });
+          this.state = "DECISION";
+          debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+          debugBridge.emit("combat_action", { action, events });
+          return events;
+        }
+
         this.state = "END";
         this.outcome = "win";
         debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
@@ -187,8 +234,11 @@ export class CombatMachine {
       }
     }
 
-    // Enemy turn
-    events.push(...this.performAttack(this.enemy, this.player, false));
+    // Enemy turn — trainers pick a random technique, wild monsters use their first
+    const enemyTech = !this.isWild
+      ? this.enemy.techniques[Math.floor(Math.random() * this.enemy.techniques.length)]
+      : undefined;
+    events.push(...this.performAttack(this.enemy, this.player, false, enemyTech));
     if (this.player.currentHp <= 0) {
       events.push({
         type: "faint",

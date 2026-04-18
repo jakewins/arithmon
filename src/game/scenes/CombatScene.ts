@@ -137,6 +137,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     enemyMonster: Monster;
     party?: Monster[];
     inventory?: Inventory;
+    isWild?: boolean;
+    enemyParty?: Monster[];
+    trainerName?: string;
   }) {
     this.inventory = data.inventory ?? new Map();
     this.machine = new CombatMachine(
@@ -144,6 +147,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       data.enemyMonster,
       data.party,
       this.inventory,
+      data.isWild ?? true,
+      data.enemyParty,
+      data.trainerName,
     );
     // Mark enemy species as seen in the journal
     markSeen(session.monsterRegistry, data.enemyMonster.slug);
@@ -455,6 +461,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         outcome: m.outcome,
         darkPower: m.darkPower,
         maxDarkPower: m.maxDarkPower,
+        isWild: m.isWild,
+        trainerName: m.trainerName,
         menuMode: this.menuMode,
         forceSwap: this.forceSwap,
         playerMonster: monsterSnapshot(m.player),
@@ -462,6 +470,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         party: m.party.map((mon) => ({
           ...monsterSnapshot(mon),
           active: mon === m.player,
+        })),
+        enemyParty: m.enemyParty.map((mon) => ({
+          ...monsterSnapshot(mon),
+          active: mon === m.enemy,
         })),
       },
     };
@@ -506,6 +518,13 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     if (mode === "main") {
       this.messageText.setText(`What will ${this.machine.player.name} do?`);
       for (const label of this.mainMenuLabels) label.setVisible(true);
+      // Grey out RUN label in trainer battles
+      const runIdx = MAIN_ROWS * MAIN_COLS - 1; // bottom-right = RUN
+      if (!this.machine.isWild) {
+        this.mainMenuLabels[runIdx].setColor(DISABLED_COLOR);
+      } else {
+        this.mainMenuLabels[runIdx].setColor(TEXT_COLOR);
+      }
       this.mainCursor.setVisible(true);
       this.updateMainCursorPosition();
       debugBridge.emit("combat_menu", { mode: "main" });
@@ -596,6 +615,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         break;
       }
       case "RUN":
+        if (!this.machine.isWild) {
+          this.messageText.setText("Can't escape from a trainer battle!");
+          return;
+        }
         this.setMenuMode("hidden");
         this.queueEvents(this.machine.submitAction({ type: "run" }));
         break;
@@ -995,6 +1018,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.playerSprite.setTexture(texture, 0);
   }
 
+  private updateEnemySprite() {
+    const texture = `${this.machine.enemy.slug}-battle`;
+    this.enemySprite.setTexture(texture, 1);
+  }
+
   // --- Recharge ---
 
   private onRecharge() {
@@ -1058,6 +1086,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // Update sprite and name when a new monster is swapped in
     if (event.type === "swap_in") {
       this.updatePlayerSprite();
+      this.updateEnemySprite();
       this.updateNameLabels();
     }
 
@@ -1072,11 +1101,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private showEndMessage() {
     const outcome = this.machine.outcome;
     let msg = "";
-    if (outcome === "win") msg = "You won the battle!";
-    else if (outcome === "lose") msg = "You lost...";
+    if (outcome === "win") {
+      msg = this.machine.trainerName
+        ? `You defeated ${this.machine.trainerName}!`
+        : "You won the battle!";
+    } else if (outcome === "lose") msg = "You lost...";
     else if (outcome === "fled") msg = "Got away safely!";
 
     this.messageText.setText(msg);
+
+    // Store outcome in scene data so start_battle action can read it
+    if (outcome) {
+      this.data.set("outcome", outcome);
+    }
 
     this.time.delayedCall(2000, () => {
       this.scene.stop("CombatScene");
