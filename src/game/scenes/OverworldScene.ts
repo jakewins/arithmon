@@ -261,6 +261,21 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       if (!this.inCombat) this.startCutscene();
     });
 
+    // Pause menu
+    this.input.keyboard!.on("keydown-ESC", () => {
+      if (
+        !this.inCombat &&
+        !this.eventEngine.blocking &&
+        !this.controlsState.locked &&
+        !this.teleporting
+      ) {
+        this.player.setVelocity(0);
+        this.player.anims.stop();
+        this.scene.pause();
+        this.scene.launch("PauseMenuScene");
+      }
+    });
+
     // Event engine — load per-map YAML events by naming convention
     const eventsYaml = this.cache.text.get(`events-${this.mapKey}`) as string | undefined;
     const events = eventsYaml ? loadEventsFromYaml(eventsYaml) : [];

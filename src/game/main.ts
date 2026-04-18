@@ -3,6 +3,7 @@ import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
 import { MathProblemScene } from "./scenes/MathProblemScene";
 import { CutsceneScene } from "./scenes/CutsceneScene";
+import { PauseMenuScene } from "./scenes/PauseMenuScene";
 import { debugBridge } from "./debug";
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -21,7 +22,7 @@ const config: Phaser.Types.Core.GameConfig = {
       gravity: { x: 0, y: 0 },
     },
   },
-  scene: [OverworldScene, CombatScene, MathProblemScene, CutsceneScene],
+  scene: [OverworldScene, CombatScene, MathProblemScene, CutsceneScene, PauseMenuScene],
 };
 
 const StartGame = (parent: string) => {
