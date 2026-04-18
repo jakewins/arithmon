@@ -76,6 +76,11 @@ const OCEANSET_OUTSIDE: TilesetAsset = {
 };
 
 export const MAP_REGISTRY: Record<string, MapDef> = {
+  starter: {
+    jsonKey: "map-starter",
+    jsonPath: "assets/maps/starter.json",
+    tilesets: [CORE_OUTDOOR],
+  },
   cotton_town: {
     jsonKey: "map-cotton_town",
     jsonPath: "assets/maps/cotton_town.json",

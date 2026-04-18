@@ -17,8 +17,8 @@ const TILE_SIZE = 16;
 const GRASS_TILE_ID = 1552;
 const ENCOUNTER_RATE = 0.5;
 
-const DEFAULT_MAP = "cotton_town";
-const DEFAULT_SPAWN = { tileX: 20, tileY: 19, facing: "down" as Direction };
+const DEFAULT_MAP = "starter";
+const DEFAULT_SPAWN = { tileX: 10, tileY: 7, facing: "down" as Direction };
 
 export interface OverworldInitData {
   mapKey?: string;
@@ -293,6 +293,11 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.events.once("shutdown", () => {
       debugBridge.emit("scene_stopped", { scene: "OverworldScene" });
     });
+
+    // Auto-launch character selection on first load (new game)
+    if (!session.player.gameVariables.has("scenario_choice")) {
+      this.startCutscene();
+    }
   }
 
   getDebugState(): Record<string, unknown> {

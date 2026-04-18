@@ -85,7 +85,7 @@ function createSession(): GameSession {
       name: "Player",
       gender: null,
       template: "adventurer",
-      monsters: [Monster.spawn("rockitten", 5)],
+      monsters: [],
       inventory,
       gameVariables: new GameVariablesImpl(),
     },
