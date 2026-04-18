@@ -218,16 +218,15 @@ describe("rename_player action", () => {
     expect(session.player.name).toBe("Luna");
   });
 
-  it("picks a random name when 'random' is specified", () => {
+  it("handles two-arg syntax (target, name)", () => {
     triggerEvent({
       id: 141,
-      name: "Random name",
+      name: "Rename two-arg",
       conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
-      actions: [{ type: "rename_player", args: ["random"] }],
+      actions: [{ type: "rename_player", args: ["player", "Sparky"] }],
       ...inZone(),
     });
-    expect(session.player.name).not.toBe("Player");
-    expect(session.player.name.length).toBeGreaterThan(0);
+    expect(session.player.name).toBe("Sparky");
   });
 });
 

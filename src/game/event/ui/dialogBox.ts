@@ -80,9 +80,9 @@ export class DialogBox {
     );
     this.border.setDepth(100).setScrollFactor(0);
 
-    // Text label — we create it with the full text first to let Phaser word-wrap,
-    // then read back the wrapped result for pagination, then clear it for typewriter.
-    this.label = scene.add.text(PAD_X, BOX_Y + PAD_Y, this.fullText, {
+    // Text label — start empty to avoid a flash of full text, then use
+    // getWrappedText with the full string for pagination.
+    this.label = scene.add.text(PAD_X, BOX_Y + PAD_Y, "", {
       fontSize: `${FONT_SIZE}px`,
       color: this.textColor,
       wordWrap: { width: TEXT_WIDTH },
@@ -90,13 +90,10 @@ export class DialogBox {
     });
     this.label.setDepth(101).setScrollFactor(0);
 
-    // Paginate from the Phaser-wrapped text
+    // Paginate from the Phaser-wrapped text (doesn't need to be in the label)
     const wrappedText = this.label.getWrappedText(this.fullText).join("\n");
     this.pages = paginate(wrappedText, MAX_LINES_PER_PAGE);
     this.pageIndex = 0;
-
-    // Clear label for typewriter
-    this.label.setText("");
 
     // Prompt indicator
     this.prompt = scene.add.text(WIDTH - 20, BOX_Y + BOX_H - 16, "\u25bc", {

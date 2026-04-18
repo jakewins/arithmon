@@ -84,7 +84,7 @@ events:
     - char_face spyder_dante,left
     - translated_dialog spyder_intro_question_name
     - rename_player player,random
-    - dialog Nice to meet you, $player! Now, choose your first monster!
+    - dialog Welcome, $player! Now, choose your first monster!
     - set_variable choice_phase:yes
     - unlock_controls
     conditions:
