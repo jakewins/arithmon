@@ -5,10 +5,12 @@ import { debugBridge } from "../../debug";
 
 const WIDTH = 320;
 const HEIGHT = 240;
-const BOX_H = 84;
-const OPTION_H = 12;
+const BOX_H = 64;
+const OPTION_H = 13;
 const PAD_X = 12;
 const PAD_Y = 6;
+const BORDER_TEXTURE = "dialog-border";
+const BORDER_SLICE = 3;
 
 // Key codes to avoid referencing the Phaser global at module level
 const KEY_UP = 38;
@@ -21,7 +23,7 @@ class TranslatedDialogChoiceAction implements EventAction {
   private options: string[];
   private variable: string;
   private selected = 0;
-  private bg!: Phaser.GameObjects.Rectangle;
+  private bg!: Phaser.GameObjects.NineSlice;
   private labels: Phaser.GameObjects.Text[] = [];
   private cursor!: Phaser.GameObjects.Text;
   private upKey!: Phaser.Input.Keyboard.Key;
@@ -45,28 +47,32 @@ class TranslatedDialogChoiceAction implements EventAction {
     const boxHeight = Math.max(BOX_H, this.options.length * OPTION_H + PAD_Y * 2);
     const boxY = HEIGHT - boxHeight;
 
-    this.bg = scene.add.rectangle(
+    this.bg = scene.add.nineslice(
       WIDTH / 2,
       boxY + boxHeight / 2,
+      BORDER_TEXTURE,
+      undefined,
       WIDTH,
       boxHeight,
-      0x111111,
-      0.92,
+      BORDER_SLICE,
+      BORDER_SLICE,
+      BORDER_SLICE,
+      BORDER_SLICE,
     );
     this.bg.setDepth(100).setScrollFactor(0);
 
     for (let i = 0; i < this.options.length; i++) {
-      const label = scene.add.text(PAD_X + 12, boxY + PAD_Y + i * OPTION_H, t(this.options[i]), {
-        fontSize: "9px",
-        color: "#ffffff",
+      const label = scene.add.text(PAD_X + 16, boxY + PAD_Y + i * OPTION_H, t(this.options[i]), {
+        fontSize: "11px",
+        color: "#1a1a1a",
       });
       label.setDepth(101).setScrollFactor(0);
       this.labels.push(label);
     }
 
     this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", {
-      fontSize: "10px",
-      color: "#ffffff",
+      fontSize: "11px",
+      color: "#1a1a1a",
     });
     this.cursor.setDepth(101).setScrollFactor(0);
 

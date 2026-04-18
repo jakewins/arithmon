@@ -106,6 +106,9 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     // i18n translations
     this.load.text("i18n-en", "assets/l10n/en_US.po");
 
+    // Dialog box nine-slice border
+    this.load.image("dialog-border", "assets/ui/dialog-border.png");
+
     // Background images used by change_bg image overlay
     this.load.image("choice_gender", "assets/ui/background/choice_gender.png");
     this.load.image("spyder_tumble", "assets/ui/background/spyder_tumble.png");

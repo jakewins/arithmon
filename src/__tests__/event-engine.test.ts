@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { EventContext, EventDef, NpcState, Direction } from "../game/event/types";
 import { EventEngine } from "../game/event/engine";
+import { paginate } from "../game/event/ui/dialogBox";
 import { session } from "../game/session";
 import { loadEventsFromYaml } from "../game/event/loader";
 import { loadPO } from "../game/i18n";
@@ -23,6 +24,8 @@ function stubSceneWithUI(): Phaser.Scene {
       setY: vi.fn().mockReturnThis(),
       setText: vi.fn().mockReturnThis(),
       destroy: vi.fn(),
+      // getWrappedText: return each word on its own line to simulate wrapping
+      getWrappedText: vi.fn((text: string) => text.split("\n")),
       y: 192,
       height: 48,
       ...overrides,
@@ -35,6 +38,7 @@ function stubSceneWithUI(): Phaser.Scene {
     add: {
       rectangle: vi.fn(() => makeObj()),
       text: vi.fn(() => makeObj()),
+      nineslice: vi.fn(() => makeObj()),
     },
     input: {
       keyboard: {
@@ -1608,5 +1612,99 @@ events:
     for (let i = 0; i < 10; i++) tick();
 
     expect(controls.pendingTeleport).toBeUndefined();
+  });
+});
+
+describe("paginate", () => {
+  it("returns a single page for short text", () => {
+    const pages = paginate("Hello world", 4);
+    expect(pages).toEqual(["Hello world"]);
+  });
+
+  it("splits text into pages of maxLines lines", () => {
+    const text = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7";
+    const pages = paginate(text, 4);
+    expect(pages).toEqual(["Line 1\nLine 2\nLine 3\nLine 4", "Line 5\nLine 6\nLine 7"]);
+  });
+
+  it("handles exact multiple of maxLines", () => {
+    const text = "A\nB\nC\nD";
+    const pages = paginate(text, 4);
+    expect(pages).toEqual(["A\nB\nC\nD"]);
+  });
+
+  it("handles empty text", () => {
+    const pages = paginate("", 4);
+    expect(pages).toEqual([""]);
+  });
+});
+
+describe("dialog pagination (multi-page)", () => {
+  it("multi-page dialog advances on interact and dismisses on last page", () => {
+    const scene = stubSceneWithUI();
+    // 8 lines of text → should split into 2 pages (6 lines per page at default settings)
+    const longText =
+      "Line one\nLine two\nLine three\nLine four\nLine five\nLine six\nLine seven\nLine eight";
+    const event: EventDef = {
+      id: 90,
+      name: "Long dialog",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [
+        { type: "dialog", args: [longText] },
+        { type: "set_variable", args: ["long_dialog_done:yes"] },
+      ],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    // Trigger event
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+
+    // Fast-forward typewriter on first page, then press interact to advance page
+    // (skip typewriter with interact, then advance to next page with another interact)
+    engine.update(makeCtx({ scene, interactPressed: true }), 0.016); // skip typewriter
+    expect(engine.blocking).toBe(true); // still on page 1, showing full text
+
+    engine.update(makeCtx({ scene, interactPressed: true }), 0.016); // advance to page 2
+    expect(engine.blocking).toBe(true); // now on page 2
+
+    engine.update(makeCtx({ scene, interactPressed: true }), 0.016); // skip typewriter on page 2
+    expect(engine.blocking).toBe(true); // page 2 fully shown
+
+    engine.update(makeCtx({ scene, interactPressed: true }), 0.016); // dismiss (last page)
+    expect(engine.blocking).toBe(false);
+    expect(gameVariables.get("long_dialog_done")).toBe("yes");
+    gameVariables.remove("long_dialog_done");
+  });
+
+  it("single-page dialog works without regression", () => {
+    const scene = stubSceneWithUI();
+    const event: EventDef = {
+      id: 91,
+      name: "Short dialog",
+      conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+      actions: [{ type: "dialog", args: ["Hello!"] }],
+      x: 19,
+      y: 18,
+      width: 3,
+      height: 3,
+    };
+    const engine = new EventEngine([event]);
+
+    engine.update(makeCtx({ scene, player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
+    expect(engine.blocking).toBe(true);
+
+    // Skip + dismiss
+    for (let i = 0; i < 100; i++) {
+      engine.update(makeCtx({ scene }), 0.05);
+      if (!engine.blocking) break;
+      engine.update(makeCtx({ scene, interactPressed: true }), 0.05);
+      if (!engine.blocking) break;
+    }
+    expect(engine.blocking).toBe(false);
   });
 });
