@@ -58,7 +58,7 @@ export class PauseMenuScene extends Scene {
       {
         label: "Tuxemon",
         visible: () => session.player.monsters.length > 0,
-        action: () => this.showStub("No party screen yet!"),
+        action: () => this.openPartyScreen(),
       },
       {
         label: "Bag",
@@ -198,6 +198,12 @@ export class PauseMenuScene extends Scene {
         this.stubMessage = null;
       }
     });
+  }
+
+  private openPartyScreen() {
+    debugBridge.emit("menu_option_selected", { option: "Tuxemon" });
+    this.scene.pause();
+    this.scene.launch("PartyScreen");
   }
 
   private closeMenu() {
