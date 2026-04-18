@@ -24,6 +24,7 @@ function makeSession(): GameSession {
     skillEncounter: 0,
     monsterStorage: [],
     monsterRegistry: { seen: new Set(), caught: new Set() },
+    battleOutcomes: new Map(),
   };
 }
 

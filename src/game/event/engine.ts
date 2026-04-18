@@ -35,6 +35,26 @@ import "./actions/setTeleportFaint";
 import "./actions/playMusic";
 import "./actions/accessPc";
 import "./conditions/musicPlaying";
+import "./actions/clearVariable";
+import "./actions/formatVariable";
+import "./actions/addItem";
+import "./actions/addMonster";
+import "./actions/removeMonster";
+import "./actions/renamePlayer";
+import "./actions/charPosition";
+import "./actions/charStop";
+import "./actions/pathfindToChar";
+import "./actions/playSound";
+import "./actions/openJournal";
+import "./actions/choiceMonster";
+import "./conditions/partySize";
+import "./conditions/hasItem";
+import "./conditions/hasMonster";
+import "./conditions/charFacing";
+import "./conditions/checkCharParameter";
+import "./conditions/battleOutcome";
+import "./conditions/charDefeated";
+import "./conditions/currentState";
 
 export class EventEngine {
   private events: EventDef[];

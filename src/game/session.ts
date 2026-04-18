@@ -30,6 +30,8 @@ export interface SkillState {
   lastSeen: number;
 }
 
+export type CombatOutcome = "won" | "lost" | "fled";
+
 /**
  * Top-level game state — mirrors Tuxemon's SaveData.
  * In-memory only for now (resets on browser refresh).
@@ -45,6 +47,8 @@ export interface GameSession {
   monsterStorage: Monster[];
   /** Tracks which monster species have been seen/caught. */
   monsterRegistry: MonsterRegistry;
+  /** Tracks last battle outcome per NPC slug. Written by start_battle, read by battle_outcome condition. */
+  battleOutcomes: Map<string, CombatOutcome>;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -89,6 +93,7 @@ function createSession(): GameSession {
     skillEncounter: 0,
     monsterStorage: [],
     monsterRegistry: createMonsterRegistry(),
+    battleOutcomes: new Map(),
   };
 }
 
