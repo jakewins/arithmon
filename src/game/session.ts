@@ -40,6 +40,8 @@ export interface GameSession {
   skillStates: Record<string, SkillState>;
   /** Global encounter counter for skill practice. */
   skillEncounter: number;
+  /** Overflow storage for captured monsters when party is full. */
+  monsterStorage: Monster[];
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -82,6 +84,7 @@ function createSession(): GameSession {
     },
     skillStates: {},
     skillEncounter: 0,
+    monsterStorage: [],
   };
 }
 

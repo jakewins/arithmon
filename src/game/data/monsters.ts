@@ -8,6 +8,7 @@ export interface MonsterDef {
     speed: number;
   };
   baseXpYield: number;
+  catchRate: number;
   moveset: { slug: string; learnedAt: number }[];
 }
 
@@ -22,6 +23,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       speed: 6,
     },
     baseXpYield: 50,
+    catchRate: 255,
     moveset: [
       { slug: "scratch", learnedAt: 1 },
       { slug: "ram", learnedAt: 3 },
@@ -38,6 +40,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       speed: 5,
     },
     baseXpYield: 45,
+    catchRate: 255,
     moveset: [
       { slug: "scratch", learnedAt: 1 },
       { slug: "vineWhip", learnedAt: 3 },
@@ -54,6 +57,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       speed: 7,
     },
     baseXpYield: 55,
+    catchRate: 255,
     moveset: [
       { slug: "bite", learnedAt: 1 },
       { slug: "ember", learnedAt: 3 },
@@ -70,6 +74,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       speed: 4,
     },
     baseXpYield: 60,
+    catchRate: 255,
     moveset: [
       { slug: "growl", learnedAt: 1 },
       { slug: "bodySlam", learnedAt: 4 },
@@ -86,6 +91,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       speed: 7,
     },
     baseXpYield: 50,
+    catchRate: 255,
     moveset: [
       { slug: "ram", learnedAt: 1 },
       { slug: "waterGun", learnedAt: 3 },

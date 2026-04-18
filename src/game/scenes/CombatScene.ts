@@ -1,11 +1,12 @@
 import { Scene } from "phaser";
 import { CombatMachine, CombatEvent, MAX_DARK_POWER } from "../combat/machine";
-import { Monster } from "../model/Monster";
+import { Monster, PARTY_LIMIT } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
 import { type ItemDef } from "../item/item";
 import { type Inventory, getInventoryItems } from "../item/inventory";
 import { canUseItem } from "../item/validation";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
+import { session } from "../session";
 
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -143,6 +144,13 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       data.party,
       this.inventory,
     );
+    this.machine.onCapture = (monster: Monster) => {
+      if (session.player.monsters.length < PARTY_LIMIT) {
+        session.player.monsters.push(monster);
+      } else {
+        session.monsterStorage.push(monster);
+      }
+    };
     this.eventQueue = [];
     this.processing = false;
     this.menuMode = "hidden";
@@ -827,7 +835,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     if (!entry) return;
 
     if (entry.item.category === "capture") {
-      this.messageText.setText("Can't use that yet!");
+      if (!this.machine.isWild) {
+        this.messageText.setText("Can't capture trainer monsters!");
+        return;
+      }
+      this.setMenuMode("hidden");
+      this.queueEvents(this.machine.submitAction({ type: "capture", itemSlug: entry.item.slug }));
       return;
     }
 

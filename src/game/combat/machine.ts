@@ -4,7 +4,14 @@ import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
 import { ITEMS } from "../data/items";
 import { type Inventory, removeItem } from "../item/inventory";
 import { type ItemEffect } from "../item/item";
-import { calculateDamage, calculateXpReward, rollAccuracy, rollFleeChance } from "./formula";
+import {
+  calculateDamage,
+  calculateXpReward,
+  rollAccuracy,
+  rollFleeChance,
+  shakeCheck,
+  attemptCapture,
+} from "./formula";
 import { debugBridge } from "../debug";
 
 export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "FORCE_SWAP" | "END";
@@ -12,7 +19,8 @@ export type PlayerAction =
   | { type: "fight"; technique: string }
   | { type: "run" }
   | { type: "swap"; partyIndex: number }
-  | { type: "item"; itemSlug: string; targetIndex: number };
+  | { type: "item"; itemSlug: string; targetIndex: number }
+  | { type: "capture"; itemSlug: string };
 export type CombatOutcome = "win" | "lose" | "fled";
 
 export interface CombatEvent {
@@ -35,7 +43,10 @@ export interface CombatEvent {
     | "move_learned"
     | "item_used"
     | "item_heal"
-    | "item_revive";
+    | "item_revive"
+    | "capture_shake"
+    | "capture_success"
+    | "capture_fail";
   message: string;
 }
 
@@ -46,17 +57,27 @@ export class CombatMachine {
   readonly enemy: Monster;
   readonly party: Monster[];
   readonly inventory: Inventory;
+  readonly isWild: boolean;
+  /** Callback invoked on successful capture to add the monster to party/storage. */
+  onCapture: ((monster: Monster) => void) | null = null;
   state: CombatState = "INTRO";
   outcome: CombatOutcome | null = null;
   darkPower: number = MAX_DARK_POWER;
   readonly maxDarkPower: number = MAX_DARK_POWER;
   private fleeAttempts = 0;
 
-  constructor(player: Monster, enemy: Monster, party?: Monster[], inventory?: Inventory) {
+  constructor(
+    player: Monster,
+    enemy: Monster,
+    party?: Monster[],
+    inventory?: Inventory,
+    isWild = true,
+  ) {
     this.player = player;
     this.enemy = enemy;
     this.party = party ?? [player];
     this.inventory = inventory ?? new Map();
+    this.isWild = isWild;
   }
 
   canFight(): boolean {
@@ -136,6 +157,13 @@ export class CombatMachine {
       });
     } else if (action.type === "item") {
       events.push(...this.processItemAction(action.itemSlug, action.targetIndex));
+    } else if (action.type === "capture") {
+      const captureEvents = this.processCaptureAction(action.itemSlug);
+      events.push(...captureEvents);
+      if (this.outcome !== null) {
+        debugBridge.emit("combat_action", { action, events });
+        return events;
+      }
     } else {
       const technique = TECHNIQUES[action.technique];
       if (!technique) throw new Error(`Unknown technique: ${action.technique}`);
@@ -248,6 +276,45 @@ export class CombatMachine {
       case "capture":
         return [];
     }
+  }
+
+  private processCaptureAction(itemSlug: string): CombatEvent[] {
+    const itemDef = ITEMS[itemSlug];
+    if (!itemDef) throw new Error(`Unknown item: ${itemSlug}`);
+
+    const events: CombatEvent[] = [];
+    events.push({ type: "item_used", message: `You threw a ${itemDef.name}!` });
+    removeItem(this.inventory, itemSlug);
+
+    const captureEffect = itemDef.effects.find((e) => e.type === "capture");
+    const ballModifier = captureEffect?.type === "capture" ? captureEffect.modifier : 1.0;
+
+    const sv = shakeCheck(this.enemy, ballModifier);
+    const result = attemptCapture(sv);
+
+    for (let i = 0; i < result.shakes; i++) {
+      events.push({ type: "capture_shake", message: "Shake..." });
+    }
+
+    if (result.success) {
+      events.push({
+        type: "capture_success",
+        message: `Gotcha! ${this.enemy.name} was caught!`,
+      });
+      if (this.onCapture) {
+        this.onCapture(this.enemy);
+      }
+      this.state = "END";
+      this.outcome = "win";
+      debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+    } else {
+      events.push({
+        type: "capture_fail",
+        message: `${this.enemy.name} broke free!`,
+      });
+    }
+
+    return events;
   }
 
   private awardXp(): CombatEvent[] {

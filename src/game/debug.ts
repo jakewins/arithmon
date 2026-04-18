@@ -128,6 +128,13 @@ export class DebugBridge {
           name: e.item.name,
           count: e.count,
         })),
+        monsterStorage: session.monsterStorage.map((m) => ({
+          id: m.id,
+          slug: m.slug,
+          level: m.level,
+          currentHp: m.currentHp,
+          maxHp: m.maxHp,
+        })),
       },
       ...sceneState,
     };

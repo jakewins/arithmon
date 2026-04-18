@@ -22,6 +22,7 @@ function makeSession(): GameSession {
     },
     skillStates: {},
     skillEncounter: 0,
+    monsterStorage: [],
   };
 }
 
