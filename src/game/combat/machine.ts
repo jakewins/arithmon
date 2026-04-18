@@ -3,8 +3,11 @@ import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
 import { calculateDamage, rollAccuracy, rollFleeChance } from "./formula";
 import { debugBridge } from "../debug";
 
-export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "END";
-export type PlayerAction = { type: "fight"; technique: string } | { type: "run" };
+export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "FORCE_SWAP" | "END";
+export type PlayerAction =
+  | { type: "fight"; technique: string }
+  | { type: "run" }
+  | { type: "swap"; partyIndex: number };
 export type CombatOutcome = "win" | "lose" | "fled";
 
 export interface CombatEvent {
@@ -18,24 +21,29 @@ export interface CombatEvent {
     | "flee_success"
     | "flee_fail"
     | "dp_drain"
-    | "dp_empty";
+    | "dp_empty"
+    | "swap_out"
+    | "swap_in"
+    | "force_swap";
   message: string;
 }
 
 export const MAX_DARK_POWER = 5;
 
 export class CombatMachine {
-  readonly player: Monster;
+  player: Monster;
   readonly enemy: Monster;
+  readonly party: Monster[];
   state: CombatState = "INTRO";
   outcome: CombatOutcome | null = null;
   darkPower: number = MAX_DARK_POWER;
   readonly maxDarkPower: number = MAX_DARK_POWER;
   private fleeAttempts = 0;
 
-  constructor(player: Monster, enemy: Monster) {
+  constructor(player: Monster, enemy: Monster, party?: Monster[]) {
     this.player = player;
     this.enemy = enemy;
+    this.party = party ?? [player];
   }
 
   canFight(): boolean {
@@ -55,6 +63,20 @@ export class CombatMachine {
     this.state = "DECISION";
     debugBridge.emit("combat_state", { from, to: this.state });
     return [{ type: "intro", message: `A wild ${this.enemy.name} appeared!` }];
+  }
+
+  /** Check if a party index is valid for swapping to. */
+  canSwapTo(partyIndex: number): boolean {
+    const target = this.party[partyIndex];
+    if (!target) return false;
+    if (target === this.player) return false;
+    if (target.fainted) return false;
+    return true;
+  }
+
+  /** Returns true if the party has non-fainted monsters other than the active one. */
+  hasSwapTargets(): boolean {
+    return this.party.some((m) => m !== this.player && !m.fainted);
   }
 
   submitAction(action: PlayerAction): CombatEvent[] {
@@ -81,6 +103,23 @@ export class CombatMachine {
       events.push({
         type: "flee_fail",
         message: "Couldn't escape!",
+      });
+    } else if (action.type === "swap") {
+      const target = this.party[action.partyIndex];
+      if (!target || target.fainted || target === this.player) {
+        this.state = "DECISION";
+        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+        return [];
+      }
+      const oldName = this.player.name;
+      this.player = target;
+      events.push({
+        type: "swap_out",
+        message: `${oldName}, come back!`,
+      });
+      events.push({
+        type: "swap_in",
+        message: `Go, ${this.player.name}!`,
       });
     } else {
       const technique = TECHNIQUES[action.technique];
@@ -111,6 +150,17 @@ export class CombatMachine {
         type: "faint",
         message: `${this.player.name} fainted!`,
       });
+      // Check if there are other non-fainted party members
+      if (this.hasSwapTargets()) {
+        this.state = "FORCE_SWAP";
+        events.push({
+          type: "force_swap",
+          message: "Choose a monster to send out!",
+        });
+        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+        debugBridge.emit("combat_action", { action, events });
+        return events;
+      }
       this.state = "END";
       this.outcome = "lose";
       debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
@@ -121,6 +171,22 @@ export class CombatMachine {
     this.state = "DECISION";
     debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
     debugBridge.emit("combat_action", { action, events });
+    return events;
+  }
+
+  /** Forced swap after the active monster faints. Does NOT cost a turn. */
+  submitForceSwap(partyIndex: number): CombatEvent[] {
+    if (this.state !== "FORCE_SWAP") return [];
+
+    const target = this.party[partyIndex];
+    if (!target || target.fainted) return [];
+
+    this.player = target;
+    const events: CombatEvent[] = [{ type: "swap_in", message: `Go, ${this.player.name}!` }];
+
+    this.state = "DECISION";
+    debugBridge.emit("combat_state", { from: "FORCE_SWAP", to: this.state });
+    debugBridge.emit("combat_action", { action: { type: "swap", partyIndex }, events });
     return events;
   }
 

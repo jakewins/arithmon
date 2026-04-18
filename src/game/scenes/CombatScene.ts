@@ -37,7 +37,7 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
-type MenuMode = "hidden" | "main" | "techniques";
+type MenuMode = "hidden" | "main" | "techniques" | "party";
 
 // 2x2 main menu layout
 const MAIN_MENU_ITEMS = [
@@ -76,6 +76,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private techSelected = 0;
   private techRechargeLabel!: Phaser.GameObjects.Text;
 
+  // Party submenu
+  private partyLabels: Phaser.GameObjects.Text[] = [];
+  private partyCursor!: Phaser.GameObjects.Text;
+  private partySelected = 0;
+  private forceSwap = false;
+
   private menuMode: MenuMode = "hidden";
 
   // Key state for edge detection
@@ -107,14 +113,16 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
   }
 
-  init(data: { playerMonster: Monster; enemyMonster: Monster }) {
-    this.machine = new CombatMachine(data.playerMonster, data.enemyMonster);
+  init(data: { playerMonster: Monster; enemyMonster: Monster; party?: Monster[] }) {
+    this.machine = new CombatMachine(data.playerMonster, data.enemyMonster, data.party);
     this.eventQueue = [];
     this.processing = false;
     this.menuMode = "hidden";
     this.mainRow = 0;
     this.mainCol = 0;
     this.techSelected = 0;
+    this.partySelected = 0;
+    this.forceSwap = false;
     this.prevKeys = {};
   }
 
@@ -257,6 +265,13 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     });
     this.techRechargeLabel.setDepth(101);
 
+    // Party cursor
+    this.partyCursor = this.add.text(0, 0, CURSOR_CHAR, {
+      fontSize: "11px",
+      color: TEXT_COLOR,
+    });
+    this.partyCursor.setDepth(101);
+
     // Setup keyboard
     this.keys = {
       up: this.input.keyboard!.addKey(KEY_UP),
@@ -292,6 +307,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.updateMainMenu();
     } else if (this.menuMode === "techniques") {
       this.updateTechMenu();
+    } else if (this.menuMode === "party") {
+      this.updatePartyMenu();
     }
 
     // Update prev key state
@@ -317,6 +334,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.techSelected = index;
         this.confirmTechMenu();
       }
+    } else if (this.menuMode === "party") {
+      if (index >= 0 && index < this.machine.party.length) {
+        this.partySelected = index;
+        this.confirmPartyMenu();
+      }
     }
   }
 
@@ -339,8 +361,13 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         darkPower: m.darkPower,
         maxDarkPower: m.maxDarkPower,
         menuMode: this.menuMode,
+        forceSwap: this.forceSwap,
         playerMonster: monsterSnapshot(m.player),
         enemyMonster: monsterSnapshot(m.enemy),
+        party: m.party.map((mon) => ({
+          ...monsterSnapshot(mon),
+          active: mon === m.player,
+        })),
       },
     };
   }
@@ -374,6 +401,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.clearTechLabels();
     this.techCursor.setVisible(false);
     this.techRechargeLabel.setVisible(false);
+    this.clearPartyLabels();
+    this.partyCursor.setVisible(false);
 
     if (mode === "main") {
       this.messageText.setText(`What will ${this.machine.player.name} do?`);
@@ -386,6 +415,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.techCursor.setVisible(true);
       this.updateTechCursorPosition();
       debugBridge.emit("combat_menu", { mode: "techniques" });
+    } else if (mode === "party") {
+      this.buildPartyLabels();
+      this.partyCursor.setVisible(true);
+      this.updatePartyCursorPosition();
+      debugBridge.emit("combat_menu", { mode: "party", forceSwap: this.forceSwap });
     }
   }
 
@@ -432,7 +466,13 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.setMenuMode("techniques");
         break;
       case "TUXEMON":
-        this.messageText.setText("Not yet available.");
+        if (!this.machine.hasSwapTargets()) {
+          this.messageText.setText("No other monsters!");
+          return;
+        }
+        this.partySelected = 0;
+        this.forceSwap = false;
+        this.setMenuMode("party");
         break;
       case "ITEM":
         this.messageText.setText("No items.");
@@ -535,6 +575,92 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
   }
 
+  // --- Party submenu ---
+
+  private buildPartyLabels() {
+    this.clearPartyLabels();
+    const party = this.machine.party;
+    const baseX = LEFT_W + PAD_X + 12;
+    const baseY = BOX_Y + PAD_Y;
+    const PARTY_ROW_H = 10;
+
+    for (let i = 0; i < party.length; i++) {
+      const mon = party[i];
+      const isActive = mon === this.machine.player;
+      const isFainted = mon.fainted;
+      let text = `${mon.name} ${mon.currentHp}/${mon.maxHp}`;
+      if (isActive) text += " \u2605";
+      if (isFainted) text += " KO";
+
+      const color = isFainted || isActive ? DISABLED_COLOR : TEXT_COLOR;
+      const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, {
+        fontSize: "9px",
+        color,
+      });
+      label.setDepth(101);
+      this.partyLabels.push(label);
+    }
+
+    this.messageText.setText(this.forceSwap ? "Choose a replacement!" : "Choose a monster:");
+  }
+
+  private clearPartyLabels() {
+    for (const label of this.partyLabels) label.destroy();
+    this.partyLabels = [];
+  }
+
+  private updatePartyMenu() {
+    const count = this.machine.party.length;
+
+    if (this.justPressed("up")) {
+      this.partySelected = (this.partySelected - 1 + count) % count;
+      this.updatePartyCursorPosition();
+    }
+    if (this.justPressed("down")) {
+      this.partySelected = (this.partySelected + 1) % count;
+      this.updatePartyCursorPosition();
+    }
+
+    if (!this.forceSwap && this.isBackPressed()) {
+      this.partySelected = 0;
+      this.setMenuMode("main");
+      return;
+    }
+
+    if (this.isConfirmPressed()) {
+      this.confirmPartyMenu();
+    }
+  }
+
+  private updatePartyCursorPosition() {
+    const baseX = LEFT_W + PAD_X;
+    const baseY = BOX_Y + PAD_Y;
+    const PARTY_ROW_H = 10;
+    this.partyCursor.setPosition(baseX, baseY + this.partySelected * PARTY_ROW_H);
+  }
+
+  private confirmPartyMenu() {
+    const idx = this.partySelected;
+    if (!this.machine.canSwapTo(idx)) {
+      const mon = this.machine.party[idx];
+      if (mon === this.machine.player) {
+        this.messageText.setText(`${mon.name} is already in battle!`);
+      } else if (mon?.fainted) {
+        this.messageText.setText(`${mon.name} has fainted!`);
+      }
+      return;
+    }
+
+    this.setMenuMode("hidden");
+    if (this.forceSwap) {
+      const events = this.machine.submitForceSwap(idx);
+      this.forceSwap = false;
+      this.queueEvents(events);
+    } else {
+      this.queueEvents(this.machine.submitAction({ type: "swap", partyIndex: idx }));
+    }
+  }
+
   // --- HP / DP / Labels ---
 
   private updateNameLabels() {
@@ -567,6 +693,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.dpPips[i].setFillStyle(0x332244);
       }
     }
+  }
+
+  private updatePlayerSprite() {
+    const texture = `${this.machine.player.slug}-battle`;
+    this.playerSprite.setTexture(texture, 0);
   }
 
   // --- Recharge ---
@@ -612,6 +743,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.updateHpBars();
       if (this.machine.state === "DECISION") {
         this.setMenuMode("main");
+      } else if (this.machine.state === "FORCE_SWAP") {
+        this.forceSwap = true;
+        this.partySelected = 0;
+        this.setMenuMode("party");
       } else if (this.machine.state === "END") {
         this.showEndMessage();
       }
@@ -623,6 +758,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.messageText.setText(event.message);
     this.updateHpBars();
     this.updateDpPips();
+
+    // Update sprite and name when a new monster is swapped in
+    if (event.type === "swap_in") {
+      this.updatePlayerSprite();
+      this.updateNameLabels();
+    }
 
     this.time.delayedCall(1000, () => this.processNextEvent());
   }

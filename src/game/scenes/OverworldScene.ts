@@ -624,7 +624,11 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 
     this.scene.pause();
-    this.scene.launch("CombatScene", { playerMonster: lead, enemyMonster });
+    this.scene.launch("CombatScene", {
+      playerMonster: lead,
+      enemyMonster,
+      party: session.player.monsters,
+    });
 
     // Listen for combat scene to stop, then handle post-combat
     this.scene.get("CombatScene").events.once("shutdown", () => {
