@@ -12,11 +12,11 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_route2_roddick: { spritesheet: "tennisplayer_fiery" },
   spyder_papermart_harith: { spritesheet: "beachcomber" },
   spyder_billie: { spritesheet: "fashionista" },
-  spyder_grannypiper: { spritesheet: "granny" },
-  spyder_papertown_mom: { spritesheet: "homemaker" },
-  spyder_papertown_silver: { spritesheet: "florist" },
-  spyder_papermart_rafael: { spritesheet: "tennisplayer_lapi" },
-  spyder_papermanor_princeton: { spritesheet: "maniac" },
+  spyder_grannypiper: { spritesheet: "picnicker" },
+  spyder_papertown_mom: { spritesheet: "fashionista" },
+  spyder_papertown_silver: { spritesheet: "tennisplayer_green" },
+  spyder_papermart_rafael: { spritesheet: "beachcomber" },
+  spyder_papermanor_princeton: { spritesheet: "magician" },
   spyder_healing_center_nurse: { spritesheet: "shopassistant" },
 };
 
