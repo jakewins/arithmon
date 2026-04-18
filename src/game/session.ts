@@ -1,4 +1,5 @@
 import type { GameVariables } from "./event/types";
+import { type Inventory, createInventory, addItem } from "./item/inventory";
 import { Monster } from "./model/Monster";
 
 /**
@@ -11,6 +12,7 @@ export interface PlayerState {
   gender: string | null;
   template: string;
   monsters: Monster[];
+  inventory: Inventory;
   gameVariables: GameVariables;
 }
 
@@ -65,12 +67,17 @@ class GameVariablesImpl implements GameVariables {
 }
 
 function createSession(): GameSession {
+  const inventory = createInventory();
+  addItem(inventory, "potion", 3);
+  addItem(inventory, "tuxeball", 5);
+
   return {
     player: {
       name: "Player",
       gender: null,
       template: "adventurer",
       monsters: [Monster.spawn("rockitten", 5)],
+      inventory,
       gameVariables: new GameVariablesImpl(),
     },
     skillStates: {},

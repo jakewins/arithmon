@@ -2,6 +2,7 @@ import type { Direction } from "./event/types";
 import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
+import { getInventoryItems } from "./item/inventory";
 
 /**
  * Scenes implement this to contribute their state to `A.getState()`.
@@ -121,6 +122,11 @@ export class DebugBridge {
           maxHp: m.maxHp,
           totalXp: m.totalXp,
           xpProgress: m.xpProgress,
+        })),
+        inventory: getInventoryItems(p.inventory).map((e) => ({
+          slug: e.item.slug,
+          name: e.item.name,
+          count: e.count,
         })),
       },
       ...sceneState,
