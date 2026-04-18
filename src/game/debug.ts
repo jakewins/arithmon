@@ -3,6 +3,7 @@ import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
 import { getInventoryItems } from "./item/inventory";
+import { markSeen, markCaught } from "./model/monsterRegistry";
 
 /**
  * Scenes implement this to contribute their state to `A.getState()`.
@@ -135,6 +136,10 @@ export class DebugBridge {
           currentHp: m.currentHp,
           maxHp: m.maxHp,
         })),
+        monsterRegistry: {
+          seen: [...session.monsterRegistry.seen],
+          caught: [...session.monsterRegistry.caught],
+        },
       },
       ...sceneState,
     };
@@ -269,6 +274,16 @@ export class DebugBridge {
     while (monster.totalXp >= xpForLevel(monster.level + 1)) {
       monster.addXp(0);
     }
+  }
+
+  /** Mark a monster species as seen in the journal. */
+  markMonsterSeen(slug: string): void {
+    markSeen(session.monsterRegistry, slug);
+  }
+
+  /** Mark a monster species as caught in the journal. */
+  markMonsterCaught(slug: string): void {
+    markCaught(session.monsterRegistry, slug);
   }
 
   private getCommandHandler(): DebugCommandHandler | null {

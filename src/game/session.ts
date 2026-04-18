@@ -1,6 +1,7 @@
 import type { GameVariables } from "./event/types";
 import { type Inventory, createInventory, addItem } from "./item/inventory";
 import { Monster } from "./model/Monster";
+import { type MonsterRegistry, createMonsterRegistry } from "./model/monsterRegistry";
 
 /**
  * Typed player state — mirrors Tuxemon's NPCState for the player character.
@@ -42,6 +43,8 @@ export interface GameSession {
   skillEncounter: number;
   /** Overflow storage for captured monsters when party is full. */
   monsterStorage: Monster[];
+  /** Tracks which monster species have been seen/caught. */
+  monsterRegistry: MonsterRegistry;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -85,6 +88,7 @@ function createSession(): GameSession {
     skillStates: {},
     skillEncounter: 0,
     monsterStorage: [],
+    monsterRegistry: createMonsterRegistry(),
   };
 }
 

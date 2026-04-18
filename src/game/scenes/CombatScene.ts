@@ -7,6 +7,7 @@ import { type Inventory, getInventoryItems } from "../item/inventory";
 import { canUseItem } from "../item/validation";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { session } from "../session";
+import { markSeen, markCaught } from "../model/monsterRegistry";
 
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -144,7 +145,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       data.party,
       this.inventory,
     );
+    // Mark enemy species as seen in the journal
+    markSeen(session.monsterRegistry, data.enemyMonster.slug);
+
     this.machine.onCapture = (monster: Monster) => {
+      markCaught(session.monsterRegistry, monster.slug);
       if (session.player.monsters.length < PARTY_LIMIT) {
         session.player.monsters.push(monster);
       } else {

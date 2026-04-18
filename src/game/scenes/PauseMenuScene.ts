@@ -61,6 +61,11 @@ export class PauseMenuScene extends Scene {
         action: () => this.openPartyScreen(),
       },
       {
+        label: "Journal",
+        visible: () => true,
+        action: () => this.openJournal(),
+      },
+      {
         label: "Bag",
         visible: () => true,
         action: () => this.showStub("No bag screen yet!"),
@@ -198,6 +203,12 @@ export class PauseMenuScene extends Scene {
         this.stubMessage = null;
       }
     });
+  }
+
+  private openJournal() {
+    debugBridge.emit("menu_option_selected", { option: "Journal" });
+    this.scene.pause();
+    this.scene.launch("JournalScene");
   }
 
   private openPartyScreen() {

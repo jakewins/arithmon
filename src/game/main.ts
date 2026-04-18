@@ -5,6 +5,7 @@ import { MathProblemScene } from "./scenes/MathProblemScene";
 import { CutsceneScene } from "./scenes/CutsceneScene";
 import { PauseMenuScene } from "./scenes/PauseMenuScene";
 import { PartyScreen } from "./scenes/PartyScreen";
+import { JournalScene } from "./scenes/JournalScene";
 import { debugBridge } from "./debug";
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -30,6 +31,7 @@ const config: Phaser.Types.Core.GameConfig = {
     CutsceneScene,
     PauseMenuScene,
     PartyScreen,
+    JournalScene,
   ],
 };
 
