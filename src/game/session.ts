@@ -1,5 +1,5 @@
 import type { GameVariables } from "./event/types";
-import type { Monster } from "./model/Monster";
+import { Monster } from "./model/Monster";
 
 /**
  * Typed player state — mirrors Tuxemon's NPCState for the player character.
@@ -70,7 +70,7 @@ function createSession(): GameSession {
       name: "Player",
       gender: null,
       template: "adventurer",
-      monsters: [],
+      monsters: [Monster.spawn("rockitten", 5)],
       gameVariables: new GameVariablesImpl(),
     },
     skillStates: {},

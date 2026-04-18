@@ -1,7 +1,10 @@
 import { MONSTERS } from "../data/monsters";
 import { TECHNIQUES, TechniqueDef } from "../data/techniques";
 
+let nextMonsterId = 1;
+
 export class Monster {
+  readonly id: string;
   readonly slug: string;
   readonly name: string;
   readonly level: number;
@@ -23,6 +26,7 @@ export class Monster {
     speed: number,
     techniques: TechniqueDef[],
   ) {
+    this.id = `mon-${nextMonsterId++}`;
     this.slug = slug;
     this.name = name;
     this.level = level;
@@ -59,4 +63,15 @@ export class Monster {
       techniques,
     );
   }
+
+  get fainted(): boolean {
+    return this.currentHp <= 0;
+  }
+}
+
+export const PARTY_LIMIT = 6;
+
+/** Returns the first non-fainted monster in the party, or null if all fainted. */
+export function getLeadMonster(party: Monster[]): Monster | null {
+  return party.find((m) => !m.fainted) ?? null;
 }

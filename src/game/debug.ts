@@ -1,5 +1,6 @@
 import type { Direction } from "./event/types";
 import { session } from "./session";
+import { Monster, PARTY_LIMIT } from "./model/Monster";
 
 /**
  * Scenes implement this to contribute their state to `A.getState()`.
@@ -111,6 +112,7 @@ export class DebugBridge {
         variables: p.gameVariables.toRecord(),
         darkPower: session.skillEncounter,
         monsters: p.monsters.map((m) => ({
+          id: m.id,
           slug: m.slug,
           level: m.level,
           currentHp: m.currentHp,
@@ -216,6 +218,21 @@ export class DebugBridge {
         }
       });
     });
+  }
+
+  /** Add a monster to the player's party. Returns false if party is full. */
+  addMonster(slug: string, level: number): boolean {
+    if (session.player.monsters.length >= PARTY_LIMIT) return false;
+    const monster = Monster.spawn(slug, level);
+    session.player.monsters.push(monster);
+    return true;
+  }
+
+  /** Set a party monster's HP by index. */
+  setMonsterHp(index: number, hp: number): void {
+    const monster = session.player.monsters[index];
+    if (!monster) throw new Error(`No monster at index ${index}`);
+    monster.currentHp = Math.max(0, Math.min(hp, monster.maxHp));
   }
 
   private getCommandHandler(): DebugCommandHandler | null {

@@ -87,11 +87,20 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   }
 
   preload() {
+    // Battle sprites are preloaded by OverworldScene, but load if missing (e.g. direct launch)
     if (!this.textures.exists("rockitten-battle")) {
       this.load.spritesheet("rockitten-battle", "assets/sprites/rockitten-sheet.png", {
         frameWidth: 64,
-        frameHeight: 64,
+        frameHeight: 44,
       });
+    }
+    for (const slug of ["dollfin", "ignibus", "memnomnom", "budaye", "grintot"]) {
+      if (!this.textures.exists(`${slug}-battle`)) {
+        this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
+          frameWidth: 64,
+          frameHeight: 44,
+        });
+      }
     }
     if (!this.textures.exists(BORDER_TEXTURE)) {
       this.load.image(BORDER_TEXTURE, "assets/ui/dialog-border.png");
@@ -112,12 +121,15 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   create() {
     this.cameras.main.setBackgroundColor("#2a4a3a");
 
+    const enemyTexture = `${this.machine.enemy.slug}-battle`;
+    const playerTexture = `${this.machine.player.slug}-battle`;
+
     // Enemy sprite (front) — upper right
-    this.enemySprite = this.add.image(WIDTH - 72, 48, "rockitten-battle", 1);
+    this.enemySprite = this.add.image(WIDTH - 72, 48, enemyTexture, 1);
     this.enemySprite.setScale(2);
 
     // Player sprite (back) — lower left
-    this.playerSprite = this.add.image(72, BOX_Y - 48, "rockitten-battle", 0);
+    this.playerSprite = this.add.image(72, BOX_Y - 48, playerTexture, 0);
     this.playerSprite.setScale(2);
 
     // Enemy HP bar + name

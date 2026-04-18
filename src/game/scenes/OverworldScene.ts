@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import { Monster } from "../model/Monster";
+import { Monster, getLeadMonster } from "../model/Monster";
 import { EventEngine } from "../event/engine";
 import { session } from "../session";
 import { loadEventsFromYaml } from "../event/loader";
@@ -122,7 +122,11 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       { frameWidth: 32, frameHeight: 32 },
     );
 
-    // Monster battle sprites for change_bg_monster overlay (64×44 frames)
+    // Monster battle sprites (64×44 frames)
+    this.load.spritesheet("rockitten-battle", "assets/sprites/rockitten-sheet.png", {
+      frameWidth: 64,
+      frameHeight: 44,
+    });
     for (const slug of ["dollfin", "ignibus", "memnomnom", "budaye", "grintot"]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
@@ -264,6 +268,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
 
     debugBridge.setScene(this);
     debugBridge.emit("scene_started", { scene: "OverworldScene" });
+
+    this.events.on("resume", () => {
+      debugBridge.setScene(this);
+    });
 
     this.events.once("shutdown", () => {
       debugBridge.emit("scene_stopped", { scene: "OverworldScene" });
@@ -602,21 +610,48 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   }
 
   private startCombat() {
+    const lead = getLeadMonster(session.player.monsters);
+    if (!lead) return; // no usable monsters
+
     this.inCombat = true;
     this.player.setVelocity(0);
     this.player.anims.stop();
 
-    const playerMonster = Monster.spawn("rockitten", 5);
+    const wildSlugs = ["rockitten", "budaye", "ignibus", "grintot", "dollfin"];
+    const enemySlug = wildSlugs[Math.floor(Math.random() * wildSlugs.length)];
     const enemyLevel = 4 + Math.floor(Math.random() * 3);
-    const enemyMonster = Monster.spawn("rockitten", enemyLevel);
-    debugBridge.emit("encounter_started", { monster: "rockitten", level: enemyLevel });
+    const enemyMonster = Monster.spawn(enemySlug, enemyLevel);
+    debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 
     this.scene.pause();
-    this.scene.launch("CombatScene", { playerMonster, enemyMonster });
+    this.scene.launch("CombatScene", { playerMonster: lead, enemyMonster });
 
-    // Listen for combat scene to stop, then resume
+    // Listen for combat scene to stop, then handle post-combat
     this.scene.get("CombatScene").events.once("shutdown", () => {
       this.inCombat = false;
+
+      // Check for whiteout — all party monsters fainted
+      const allFainted = session.player.monsters.every((m) => m.fainted);
+      if (allFainted) {
+        this.triggerWhiteout();
+      }
     });
+  }
+
+  private triggerWhiteout() {
+    // Heal all party monsters to full
+    for (const m of session.player.monsters) {
+      m.currentHp = m.maxHp;
+    }
+
+    // Teleport to faint location if set
+    const ft = session.faintTeleport;
+    if (ft) {
+      this.scene.restart({
+        mapKey: ft.mapKey,
+        spawnTileX: ft.tileX,
+        spawnTileY: ft.tileY,
+      } satisfies OverworldInitData);
+    }
   }
 }
