@@ -1,0 +1,55 @@
+events:
+  Play Music:
+    conditions:
+    - not music_playing music_the_wild_places
+    actions:
+    - play_music music_the_wild_places
+
+  Go Route 5 10:
+    x: 2
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_route5.tmx,26,10,0.3
+    - char_face player,left
+
+  Go Route 5 11:
+    x: 2
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_route5.tmx,26,11,0.3
+    - char_face player,left
+
+  Go Leather Town 10:
+    x: 27
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_leather_town.tmx,2,11,0.3
+    - char_face player,right
+
+  Go Leather Town 11:
+    x: 27
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_leather_town.tmx,2,12,0.3
+    - char_face player,right
+
+  Route Sign:
+    x: 3
+    y: 9
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route 6 — Route 5 / Leather Town

@@ -37,6 +37,22 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 250,
   },
+  spyder_leather_chad: {
+    name: "Chad",
+    monsters: [
+      { slug: "foofle", level: 18 },
+      { slug: "capiti", level: 19 },
+    ],
+    goldReward: 500,
+  },
+  spyder_leather_brad: {
+    name: "Brad",
+    monsters: [
+      { slug: "vamporm", level: 19 },
+      { slug: "dandylion", level: 20 },
+    ],
+    goldReward: 500,
+  },
   spyder_route4_hiker: {
     name: "Hiker",
     monsters: [

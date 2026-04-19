@@ -1,0 +1,28 @@
+events:
+  Go Shaft 1:
+    x: 10
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_leather_shaft1.tmx,1,9,0.3
+    - char_face player,down
+
+  Go Outside:
+    x: 1
+    y: 10
+    conditions:
+    - is char_at player
+    actions:
+    - transition_teleport player,spyder_leather_town.tmx,30,16,0.3
+    - char_face player,down
+
+  Deep Crystal:
+    x: 5
+    y: 8
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A glowing crystal embedded in the rock. It pulses with strange energy.

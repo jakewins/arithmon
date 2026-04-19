@@ -28,6 +28,10 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_timber_nurse: { spritesheet: "shopassistant" },
   spyder_timber_shopkeeper: { spritesheet: "shopkeeper" },
   spyder_timber_beaverbrook: { spritesheet: "homemaker" },
+  spyder_leather_nurse: { spritesheet: "shopassistant" },
+  spyder_leather_chad: { spritesheet: "tennisplayer_green" },
+  spyder_leather_brad: { spritesheet: "tennisplayer_fiery" },
+  spyder_leather_guide: { spritesheet: "picnicker" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

@@ -1,0 +1,55 @@
+events:
+  Play Music:
+    conditions:
+    - not music_playing music_the_wild_places
+    actions:
+    - play_music music_the_wild_places
+
+  Go Timber Town 10:
+    x: 2
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_timber_town.tmx,32,11,0.3
+    - char_face player,left
+
+  Go Timber Town 11:
+    x: 2
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_timber_town.tmx,32,12,0.3
+    - char_face player,left
+
+  Go Route 6 10:
+    x: 27
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route6.tmx,2,10,0.3
+    - char_face player,right
+
+  Go Route 6 11:
+    x: 27
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route6.tmx,2,11,0.3
+    - char_face player,right
+
+  Route Sign:
+    x: 3
+    y: 9
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route 5 — Timber Town / Route 6

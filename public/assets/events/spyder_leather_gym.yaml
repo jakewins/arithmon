@@ -1,0 +1,82 @@
+events:
+  Create Chad:
+    conditions:
+    - not char_exists spyder_leather_chad
+    actions:
+    - create_npc spyder_leather_chad,5,6
+    - char_face spyder_leather_chad,right
+
+  Create Brad:
+    conditions:
+    - not char_exists spyder_leather_brad
+    actions:
+    - create_npc spyder_leather_brad,9,6
+    - char_face spyder_leather_brad,left
+
+  Talk Chad Pre Battle:
+    conditions:
+    - is char_facing_char player,spyder_leather_chad
+    - is button_pressed INTERACT
+    - not battle_outcome player,spyder_leather_chad,won
+    actions:
+    - char_face spyder_leather_chad,player
+    - lock_controls
+    - dialog I'm Chad! Think you can beat me? Let's go!
+    - start_battle spyder_leather_chad
+    - unlock_controls
+
+  Chad Win:
+    conditions:
+    - is battle_outcome player,spyder_leather_chad,won
+    - not variable_set gym_chad_counted:yes
+    actions:
+    - variable_math gym_points,+,1
+    - set_variable gym_chad_counted:yes
+
+  Talk Chad Post Win:
+    conditions:
+    - is char_facing_char player,spyder_leather_chad
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_leather_chad,won
+    actions:
+    - char_face spyder_leather_chad,player
+    - dialog Not bad! You got a point from me.
+
+  Talk Brad Pre Battle:
+    conditions:
+    - is char_facing_char player,spyder_leather_brad
+    - is button_pressed INTERACT
+    - not battle_outcome player,spyder_leather_brad,won
+    actions:
+    - char_face spyder_leather_brad,player
+    - lock_controls
+    - dialog I'm Brad! My monsters are way stronger than Chad's!
+    - start_battle spyder_leather_brad
+    - unlock_controls
+
+  Brad Win:
+    conditions:
+    - is battle_outcome player,spyder_leather_brad,won
+    - not variable_set gym_brad_counted:yes
+    actions:
+    - variable_math gym_points,+,1
+    - set_variable gym_brad_counted:yes
+
+  Talk Brad Post Win:
+    conditions:
+    - is char_facing_char player,spyder_leather_brad
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_leather_brad,won
+    actions:
+    - char_face spyder_leather_brad,player
+    - dialog Ugh, you win. That's another point for you.
+
+  Go Outside:
+    x: 7
+    y: 12
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_leather_town.tmx,20,8,0.3
+    - char_face player,down

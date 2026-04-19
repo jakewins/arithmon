@@ -60,6 +60,25 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "katapill", minLevel: 12, maxLevel: 15, weight: 2.0 },
     { slug: "anoleaf", minLevel: 13, maxLevel: 15, weight: 1.0 },
   ],
+  spyder_route5: [
+    { slug: "foofle", minLevel: 16, maxLevel: 23, weight: 2.0 },
+    { slug: "vamporm", minLevel: 17, maxLevel: 23, weight: 2.0 },
+    { slug: "dracune", minLevel: 18, maxLevel: 23, weight: 0.5 },
+  ],
+  spyder_route6: [
+    { slug: "dandicub", minLevel: 19, maxLevel: 23, weight: 2.5 },
+    { slug: "dandylion", minLevel: 20, maxLevel: 23, weight: 1.0 },
+    { slug: "capiti", minLevel: 19, maxLevel: 23, weight: 2.0 },
+  ],
+  spyder_leather_shaft1: [
+    { slug: "capiti", minLevel: 20, maxLevel: 25, weight: 2.0 },
+    { slug: "polyrock", minLevel: 20, maxLevel: 25, weight: 2.0 },
+  ],
+  spyder_leather_shaft2: [
+    { slug: "capiti", minLevel: 22, maxLevel: 27, weight: 2.0 },
+    { slug: "polyrock", minLevel: 22, maxLevel: 27, weight: 1.5 },
+    { slug: "dracune", minLevel: 23, maxLevel: 27, weight: 0.5 },
+  ],
 };
 
 /** Default encounter pool used when no map-specific table exists. */

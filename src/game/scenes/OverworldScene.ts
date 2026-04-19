@@ -140,6 +140,14 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.text("events-spyder_timber_center", "assets/events/spyder_timber_center.yaml");
     this.load.text("events-spyder_timber_cafe", "assets/events/spyder_timber_cafe.yaml");
     this.load.text("events-spyder_timber_scoop", "assets/events/spyder_timber_scoop.yaml");
+    this.load.text("events-spyder_route5", "assets/events/spyder_route5.yaml");
+    this.load.text("events-spyder_route6", "assets/events/spyder_route6.yaml");
+    this.load.text("events-spyder_leather_town", "assets/events/spyder_leather_town.yaml");
+    this.load.text("events-spyder_leather_center", "assets/events/spyder_leather_center.yaml");
+    this.load.text("events-spyder_leather_gym", "assets/events/spyder_leather_gym.yaml");
+    this.load.text("events-spyder_leather_museum", "assets/events/spyder_leather_museum.yaml");
+    this.load.text("events-spyder_leather_shaft1", "assets/events/spyder_leather_shaft1.yaml");
+    this.load.text("events-spyder_leather_shaft2", "assets/events/spyder_leather_shaft2.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
@@ -188,6 +196,12 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "sapsnap",
       "katapill",
       "anoleaf",
+      "foofle",
+      "vamporm",
+      "dracune",
+      "dandicub",
+      "dandylion",
+      "capiti",
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,

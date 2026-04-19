@@ -5,32 +5,24 @@ events:
     actions:
     - play_music music_town_theme
 
-  Set Seen Timber:
-    conditions:
-    - not variable_set seentimber:yes
-    actions:
-    - set_variable seentimber:yes
-
-  # --- Map connections ---
-
-  Go Route 4 11:
+  Go Route 6 11:
     x: 0
     y: 11
     conditions:
     - is char_at player
     - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route4.tmx,26,10,0.3
+    - transition_teleport player,spyder_route6.tmx,26,10,0.3
     - char_face player,left
 
-  Go Route 4 12:
+  Go Route 6 12:
     x: 0
     y: 12
     conditions:
     - is char_at player
     - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route4.tmx,26,11,0.3
+    - transition_teleport player,spyder_route6.tmx,26,11,0.3
     - char_face player,left
 
   Enter Center:
@@ -40,50 +32,48 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_timber_center.tmx,6,9,0.3
+    - transition_teleport player,spyder_leather_center.tmx,6,9,0.3
     - char_face player,up
 
-  Enter Cafe:
+  Enter Gym:
     x: 20
     y: 7
     conditions:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_timber_cafe.tmx,5,7,0.3
+    - transition_teleport player,spyder_leather_gym.tmx,7,11,0.3
     - char_face player,up
 
-  Enter Scoop:
+  Enter Museum:
     x: 15
     y: 15
     conditions:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_timber_scoop.tmx,6,9,0.3
+    - transition_teleport player,spyder_leather_museum.tmx,7,10,0.3
     - char_face player,up
 
-  Go Route 5 11:
-    x: 32
-    y: 11
+  Enter Shaft 1:
+    x: 25
+    y: 15
     conditions:
     - is char_at player
-    - is char_facing player,right
+    - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_route5.tmx,2,10,0.3
-    - char_face player,right
+    - transition_teleport player,spyder_leather_shaft1.tmx,5,4,0.3
+    - char_face player,down
 
-  Go Route 5 12:
-    x: 32
-    y: 12
+  Enter Shaft 2:
+    x: 30
+    y: 15
     conditions:
     - is char_at player
-    - is char_facing player,right
+    - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_route5.tmx,2,11,0.3
-    - char_face player,right
-
-  # --- Signs ---
+    - transition_teleport player,spyder_leather_shaft2.tmx,5,4,0.3
+    - char_face player,down
 
   Town Sign:
     x: 5
@@ -92,31 +82,22 @@ events:
     - is char_facing_tile player
     - is button_pressed INTERACT
     actions:
-    - dialog Welcome to Timber Town!
+    - dialog Welcome to Leather Town — Mining Capital of Fondent!
 
-  Center Sign:
-    x: 12
-    y: 7
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog Timber Healing Center
-
-  Cafe Sign:
+  Gym Sign:
     x: 22
     y: 7
     conditions:
     - is char_facing_tile player
     - is button_pressed INTERACT
     actions:
-    - dialog Timber Cafe — Rest and Refresh
+    - dialog Leather Gym — Test Your Skills!
 
-  Scoop Sign:
+  Museum Sign:
     x: 17
     y: 15
     conditions:
     - is char_facing_tile player
     - is button_pressed INTERACT
     actions:
-    - dialog Timber Scoop — Supplies & More
+    - dialog Leather Museum — Admission 50g
