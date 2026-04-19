@@ -158,6 +158,24 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
     environment: "forest",
   },
+  spyder_route2: {
+    jsonKey: "map-spyder_route2",
+    jsonPath: "assets/maps/spyder_route2.json",
+    tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
+    environment: "forest",
+  },
+  spyder_citypark: {
+    jsonKey: "map-spyder_citypark",
+    jsonPath: "assets/maps/spyder_citypark.json",
+    tilesets: [
+      CORE_OUTDOOR,
+      CORE_SET_PIECES,
+      CORE_OUTDOOR_WATER,
+      CORE_OUTDOOR_NATURE,
+      CORE_CITY_AND_COUNTRY,
+    ],
+    environment: "grass",
+  },
   spyder_paper_manor: {
     jsonKey: "map-spyder_paper_manor",
     jsonPath: "assets/maps/spyder_paper_manor.json",

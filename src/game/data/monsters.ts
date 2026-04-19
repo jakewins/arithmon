@@ -201,4 +201,21 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "psybeam", learnedAt: 6 },
     ],
   },
+  axolightl: {
+    slug: "axolightl",
+    name: "Axolightl",
+    baseStats: {
+      hp: 8,
+      attack: 5,
+      defense: 6,
+      speed: 6,
+    },
+    baseXpYield: 65,
+    catchRate: 120,
+    moveset: [
+      { slug: "waterGun", learnedAt: 1 },
+      { slug: "bite", learnedAt: 4 },
+      { slug: "aquaJet", learnedAt: 8 },
+    ],
+  },
 };

@@ -270,7 +270,39 @@ events:
     - is char_facing_tile player
     - is button_pressed INTERACT
     actions:
-    - dialog Route 2 — Flower City (Road closed)
+    - dialog Route 2 — City Park
+
+  # --- Map connections: east to Route 2 ---
+
+  Go Route 2 17:
+    x: 38
+    y: 17
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route2.tmx,2,10,0.3
+    - char_face player,right
+
+  Go Route 2 18:
+    x: 38
+    y: 18
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route2.tmx,2,11,0.3
+    - char_face player,right
+
+  Go Route 2 19:
+    x: 38
+    y: 19
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route2.tmx,2,10,0.3
+    - char_face player,right
 
   # --- Locked doors ---
 

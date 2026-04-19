@@ -16,10 +16,18 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "cataspike", minLevel: 2, maxLevel: 4, weight: 3.5 },
   ],
   spyder_route2: [
-    { slug: "cardiling", minLevel: 3, maxLevel: 6, weight: 2.5 },
-    { slug: "aardorn", minLevel: 3, maxLevel: 6, weight: 2.5 },
-    { slug: "eyenemy", minLevel: 3, maxLevel: 6, weight: 2.5 },
-    { slug: "cataspike", minLevel: 3, maxLevel: 6, weight: 2.5 },
+    { slug: "cardiling", minLevel: 3, maxLevel: 8, weight: 2.5 },
+    { slug: "aardorn", minLevel: 3, maxLevel: 8, weight: 2.5 },
+    { slug: "eyenemy", minLevel: 3, maxLevel: 6, weight: 1.5 },
+    { slug: "axolightl", minLevel: 4, maxLevel: 8, weight: 1.0 },
+    { slug: "cataspike", minLevel: 3, maxLevel: 7, weight: 2.0 },
+  ],
+  spyder_citypark: [
+    { slug: "cardiling", minLevel: 5, maxLevel: 11, weight: 2.0 },
+    { slug: "aardorn", minLevel: 5, maxLevel: 11, weight: 2.0 },
+    { slug: "eyenemy", minLevel: 6, maxLevel: 11, weight: 2.0 },
+    { slug: "axolightl", minLevel: 6, maxLevel: 10, weight: 1.5 },
+    { slug: "cataspike", minLevel: 5, maxLevel: 9, weight: 2.0 },
   ],
 };
 

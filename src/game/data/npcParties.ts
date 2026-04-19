@@ -29,6 +29,23 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     monsters: [{ slug: "aardorn", level: 3 }],
     goldReward: 100,
   },
+  spyder_route2_roddick: {
+    name: "Roddick",
+    monsters: [
+      { slug: "cardiling", level: 6 },
+      { slug: "eyenemy", level: 5 },
+    ],
+    goldReward: 250,
+  },
+  spyder_citypark_ranger: {
+    name: "Ranger",
+    monsters: [
+      { slug: "aardorn", level: 8 },
+      { slug: "cataspike", level: 7 },
+      { slug: "axolightl", level: 9 },
+    ],
+    goldReward: 400,
+  },
 };
 
 export function getNpcParty(npcSlug: string): NpcPartyDef | undefined {

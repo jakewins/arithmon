@@ -128,6 +128,8 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "events-spyder_paper_rival_office",
       "assets/events/spyder_paper_rival_office.yaml",
     );
+    this.load.text("events-spyder_route2", "assets/events/spyder_route2.yaml");
+    this.load.text("events-spyder_citypark", "assets/events/spyder_citypark.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
@@ -166,6 +168,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "cataspike",
       "cardiling",
       "eyenemy",
+      "axolightl",
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
