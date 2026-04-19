@@ -14,6 +14,7 @@ export interface PlayerState {
   template: string;
   monsters: Monster[];
   inventory: Inventory;
+  money: number;
   gameVariables: GameVariables;
 }
 
@@ -87,6 +88,7 @@ function createSession(): GameSession {
       template: "adventurer",
       monsters: [],
       inventory,
+      money: 500,
       gameVariables: new GameVariablesImpl(),
     },
     skillStates: {},

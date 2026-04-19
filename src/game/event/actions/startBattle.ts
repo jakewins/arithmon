@@ -58,6 +58,7 @@ class StartBattleAction implements EventAction {
       isWild: false,
       enemyParty,
       trainerName: partyDef.name,
+      goldReward: partyDef.goldReward,
     });
 
     ctx.scene.scene.get("CombatScene").events.once("shutdown", () => {

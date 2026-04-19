@@ -101,6 +101,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private itemTargetSelected = 0;
 
   private inventory!: Inventory;
+  private goldReward = 0;
   private menuMode: MenuMode = "hidden";
 
   // Key state for edge detection
@@ -151,7 +152,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     isWild?: boolean;
     enemyParty?: Monster[];
     trainerName?: string;
+    goldReward?: number;
   }) {
+    this.goldReward = data.goldReward ?? 0;
     this.inventory = data.inventory ?? new Map();
     this.machine = new CombatMachine(
       data.playerMonster,
@@ -1113,9 +1116,14 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     const outcome = this.machine.outcome;
     let msg = "";
     if (outcome === "win") {
-      msg = this.machine.trainerName
-        ? `You defeated ${this.machine.trainerName}!`
-        : "You won the battle!";
+      if (this.machine.trainerName && this.goldReward > 0) {
+        session.player.money += this.goldReward;
+        msg = `You defeated ${this.machine.trainerName}! Got ${this.goldReward}G!`;
+      } else if (this.machine.trainerName) {
+        msg = `You defeated ${this.machine.trainerName}!`;
+      } else {
+        msg = "You won the battle!";
+      }
     } else if (outcome === "lose") msg = "You lost...";
     else if (outcome === "fled") msg = "Got away safely!";
 

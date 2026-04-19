@@ -12,6 +12,7 @@ function makeSession(): GameSession {
       template: "adventurer",
       monsters: [],
       inventory: new Map(),
+      money: 500,
       gameVariables: {
         get: () => undefined,
         set: () => {},

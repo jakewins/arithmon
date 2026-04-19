@@ -114,6 +114,7 @@ export class DebugBridge {
         gender: p.gender,
         template: p.template,
         variables: p.gameVariables.toRecord(),
+        money: p.money,
         darkPower: session.skillEncounter,
         monsters: p.monsters.map((m) => ({
           id: m.id,

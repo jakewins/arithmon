@@ -9,6 +9,7 @@ export const ITEMS: Record<string, ItemDef> = {
     sprite: "item/potion",
     usableIn: ["combat", "overworld"],
     effects: [{ type: "heal_hp", amount: 20 }],
+    buyPrice: 50,
   },
   super_potion: {
     slug: "super_potion",
@@ -18,6 +19,7 @@ export const ITEMS: Record<string, ItemDef> = {
     sprite: "item/super_potion",
     usableIn: ["combat", "overworld"],
     effects: [{ type: "heal_hp", amount: 60 }],
+    buyPrice: 200,
   },
   tuxeball: {
     slug: "tuxeball",
@@ -27,6 +29,7 @@ export const ITEMS: Record<string, ItemDef> = {
     sprite: "item/tuxeball",
     usableIn: ["combat"],
     effects: [{ type: "capture", modifier: 1.0 }],
+    buyPrice: 100,
   },
   revive: {
     slug: "revive",
@@ -36,5 +39,6 @@ export const ITEMS: Record<string, ItemDef> = {
     sprite: "item/revive",
     usableIn: ["combat", "overworld"],
     effects: [{ type: "revive", hp_percent: 50 }],
+    buyPrice: 100,
   },
 };

@@ -11,6 +11,8 @@ export interface NpcPartyDef {
   /** Display name shown in battle intro/victory messages. */
   name: string;
   monsters: NpcPartyEntry[];
+  /** Gold awarded to the player on victory. */
+  goldReward: number;
 }
 
 const NPC_PARTIES: Record<string, NpcPartyDef> = {
@@ -20,6 +22,7 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
       { slug: "rockitten", level: 5 },
       { slug: "budaye", level: 4 },
     ],
+    goldReward: 200,
   },
 };
 

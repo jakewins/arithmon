@@ -14,4 +14,5 @@ export interface ItemDef {
   sprite: string;
   usableIn: ("combat" | "overworld")[];
   effects: ItemEffect[];
+  buyPrice: number;
 }
