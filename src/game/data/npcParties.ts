@@ -37,6 +37,14 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 250,
   },
+  spyder_route3_zoolander: {
+    name: "Zoolander",
+    monsters: [
+      { slug: "elofly", level: 9 },
+      { slug: "shybulb", level: 10 },
+    ],
+    goldReward: 350,
+  },
   spyder_citypark_ranger: {
     name: "Ranger",
     monsters: [

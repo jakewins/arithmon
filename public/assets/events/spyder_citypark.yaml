@@ -62,22 +62,24 @@ events:
     - char_face player,left
 
   Go Route 3 11:
-    x: 34
+    x: 33
     y: 11
     conditions:
     - is char_at player
     - is char_facing player,right
     actions:
-    - dialog The path to Route 3 is not yet open.
+    - transition_teleport player,spyder_route3.tmx,2,10,0.3
+    - char_face player,right
 
   Go Route 3 12:
-    x: 34
+    x: 33
     y: 12
     conditions:
     - is char_at player
     - is char_facing player,right
     actions:
-    - dialog The path to Route 3 is not yet open.
+    - transition_teleport player,spyder_route3.tmx,2,11,0.3
+    - char_face player,right
 
   # --- Signs ---
 

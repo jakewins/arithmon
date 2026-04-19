@@ -29,6 +29,26 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "axolightl", minLevel: 6, maxLevel: 10, weight: 1.5 },
     { slug: "cataspike", minLevel: 5, maxLevel: 9, weight: 2.0 },
   ],
+  spyder_route3: [
+    { slug: "cardiling", minLevel: 7, maxLevel: 12, weight: 2.0 },
+    { slug: "elofly", minLevel: 7, maxLevel: 11, weight: 2.0 },
+    { slug: "squabbit", minLevel: 8, maxLevel: 12, weight: 1.0 },
+    { slug: "shybulb", minLevel: 7, maxLevel: 11, weight: 2.5 },
+  ],
+  spyder_mansion: [
+    { slug: "cairfrey", minLevel: 13, maxLevel: 17, weight: 2.0 },
+    { slug: "polyrock", minLevel: 13, maxLevel: 16, weight: 2.0 },
+    { slug: "djinnbo", minLevel: 14, maxLevel: 17, weight: 0.8 },
+  ],
+  spyder_mansion_basement: [
+    { slug: "cairfrey", minLevel: 14, maxLevel: 17, weight: 2.0 },
+    { slug: "polyrock", minLevel: 14, maxLevel: 17, weight: 2.5 },
+    { slug: "djinnbo", minLevel: 15, maxLevel: 17, weight: 1.0 },
+  ],
+  spyder_mansion_top: [
+    { slug: "djinnbo", minLevel: 15, maxLevel: 17, weight: 2.0 },
+    { slug: "cairfrey", minLevel: 15, maxLevel: 17, weight: 1.5 },
+  ],
 };
 
 /** Default encounter pool used when no map-specific table exists. */

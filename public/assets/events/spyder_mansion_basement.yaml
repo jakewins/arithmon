@@ -1,0 +1,34 @@
+events:
+  # --- Map connections ---
+
+  Go Upstairs:
+    x: 10
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_mansion.tmx,1,4,0.3
+    - char_face player,down
+
+  # --- Interactables ---
+
+  Old Crates:
+    x: 3
+    y: 5
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Old storage crates. You hear scratching from inside...
+
+  Shelves:
+    x: 7
+    y: 8
+    width: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Shelves of preserved specimens. Some jars are broken.

@@ -1,0 +1,54 @@
+events:
+  # --- Map connections ---
+
+  Go Outside:
+    x: 7
+    y: 14
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_route3.tmx,22,11,0.3
+    - char_face player,down
+
+  Go Basement:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_mansion_basement.tmx,10,4,0.3
+    - char_face player,down
+
+  Go Top Floor:
+    x: 13
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_mansion_top.tmx,1,4,0.3
+    - char_face player,down
+
+  # --- Interactables ---
+
+  Left Bookshelf:
+    x: 2
+    y: 2
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Dusty old books. Something moves in the shadows...
+
+  Right Bookshelf:
+    x: 10
+    y: 2
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Research notes about monster evolution. Many pages are torn.

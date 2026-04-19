@@ -1,0 +1,82 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_the_wild_places
+    actions:
+    - play_music music_the_wild_places
+
+  # --- NPC spawns ---
+
+  Create Zoolander:
+    conditions:
+    - not char_exists spyder_route3_zoolander
+    actions:
+    - create_npc spyder_route3_zoolander,12,9
+
+  # --- Trainer battle ---
+
+  Talk Zoolander Pre Battle:
+    conditions:
+    - is char_facing_char player,spyder_route3_zoolander
+    - is button_pressed INTERACT
+    - not battle_outcome player,spyder_route3_zoolander,won
+    actions:
+    - char_face spyder_route3_zoolander,player
+    - lock_controls
+    - dialog You dare approach the Mansion? First, face me!
+    - start_battle spyder_route3_zoolander
+    - unlock_controls
+
+  Talk Zoolander Post Win:
+    conditions:
+    - is char_facing_char player,spyder_route3_zoolander
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_route3_zoolander,won
+    actions:
+    - char_face spyder_route3_zoolander,player
+    - dialog The Mansion lies ahead. Be careful in there...
+
+  # --- Map connections ---
+
+  Go City Park 10:
+    x: 2
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_citypark.tmx,32,11,0.3
+    - char_face player,left
+
+  Go City Park 11:
+    x: 2
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_citypark.tmx,32,12,0.3
+    - char_face player,left
+
+  Enter Mansion:
+    x: 22
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_mansion.tmx,7,13,0.3
+    - char_face player,up
+
+  # --- Signs ---
+
+  Route Sign:
+    x: 3
+    y: 9
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route 3 — City Park / Mansion

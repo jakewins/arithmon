@@ -130,6 +130,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     );
     this.load.text("events-spyder_route2", "assets/events/spyder_route2.yaml");
     this.load.text("events-spyder_citypark", "assets/events/spyder_citypark.yaml");
+    this.load.text("events-spyder_route3", "assets/events/spyder_route3.yaml");
+    this.load.text("events-spyder_mansion", "assets/events/spyder_mansion.yaml");
+    this.load.text("events-spyder_mansion_basement", "assets/events/spyder_mansion_basement.yaml");
+    this.load.text("events-spyder_mansion_top", "assets/events/spyder_mansion_top.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
@@ -169,6 +173,12 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "cardiling",
       "eyenemy",
       "axolightl",
+      "elofly",
+      "squabbit",
+      "shybulb",
+      "cairfrey",
+      "polyrock",
+      "djinnbo",
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,

@@ -176,6 +176,33 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     ],
     environment: "grass",
   },
+  spyder_route3: {
+    jsonKey: "map-spyder_route3",
+    jsonPath: "assets/maps/spyder_route3.json",
+    tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
+    environment: "forest",
+  },
+  spyder_mansion: {
+    jsonKey: "map-spyder_mansion",
+    jsonPath: "assets/maps/spyder_mansion.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
+    inside: true,
+  },
+  spyder_mansion_basement: {
+    jsonKey: "map-spyder_mansion_basement",
+    jsonPath: "assets/maps/spyder_mansion_basement.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
+    inside: true,
+  },
+  spyder_mansion_top: {
+    jsonKey: "map-spyder_mansion_top",
+    jsonPath: "assets/maps/spyder_mansion_top.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
+    inside: true,
+  },
   spyder_paper_manor: {
     jsonKey: "map-spyder_paper_manor",
     jsonPath: "assets/maps/spyder_paper_manor.json",

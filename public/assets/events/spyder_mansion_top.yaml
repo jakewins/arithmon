@@ -1,0 +1,35 @@
+events:
+  # --- Map connections ---
+
+  Go Downstairs:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_mansion.tmx,13,4,0.3
+    - char_face player,down
+
+  # --- Interactables ---
+
+  Lore Bookshelves:
+    x: 5
+    y: 2
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Ancient texts about the Spyder organization and their experiments with monster DNA.
+    - dialog One passage reads "The data center holds the key to everything..."
+
+  Research Desk:
+    x: 9
+    y: 5
+    width: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A desk with scattered papers. Notes about rare Djinnbo sightings in this area.
