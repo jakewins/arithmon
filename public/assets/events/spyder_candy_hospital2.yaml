@@ -1,0 +1,19 @@
+events:
+  Go Down:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_hospital1.tmx,11,4,0.3
+    - char_face player,down
+  Go Up:
+    x: 11
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_hospital3.tmx,1,4,0.3
+    - char_face player,down

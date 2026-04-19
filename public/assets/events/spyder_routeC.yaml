@@ -1,0 +1,25 @@
+events:
+  Play Music:
+    conditions:
+    - not music_playing music_the_wild_places
+    actions:
+    - play_music music_the_wild_places
+
+  Go Diamond Hill:
+    x: 2
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_diamond_hill.tmx,17,10,0.3
+    - char_face player,left
+
+  Route Sign:
+    x: 3
+    y: 9
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route C — Sea Route (Surfboard required)

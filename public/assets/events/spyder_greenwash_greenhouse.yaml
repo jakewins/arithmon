@@ -1,0 +1,19 @@
+events:
+  Go Level 3:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_greenwash_level3.tmx,13,4,0.3
+    - char_face player,down
+
+  Specimen:
+    x: 7
+    y: 6
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Strange mutated plants grow in abandoned grow-beds. Some still pulse with energy.

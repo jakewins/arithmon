@@ -1,0 +1,20 @@
+events:
+  Go Middle:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_nimrod_middle.tmx,13,4,0.3
+    - char_face player,down
+
+  Go Room:
+    x: 13
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_nimrod_room.tmx,1,4,0.3
+    - char_face player,down

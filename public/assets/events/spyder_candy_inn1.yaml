@@ -1,0 +1,35 @@
+events:
+  Create Innkeeper:
+    conditions:
+    - not char_exists spyder_candy_innkeeper
+    actions:
+    - create_npc spyder_candy_innkeeper,5,4
+    - char_face spyder_candy_innkeeper,down
+
+  Talk Innkeeper:
+    conditions:
+    - is char_facing_char player,spyder_candy_innkeeper
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_candy_innkeeper,player
+    - dialog Welcome to the Candy Inn! Rest your weary bones.
+
+  Go Upstairs:
+    x: 9
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_inn2.tmx,1,4,0.3
+    - char_face player,down
+
+  Go Outside:
+    x: 5
+    y: 8
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_candy_town.tmx,15,10,0.3
+    - char_face player,down

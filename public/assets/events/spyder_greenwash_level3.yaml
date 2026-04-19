@@ -1,0 +1,51 @@
+events:
+  Create Guard:
+    conditions:
+    - not char_exists spyder_greenwash_guard
+    actions:
+    - create_npc spyder_greenwash_guard,7,6
+    - char_face spyder_greenwash_guard,down
+
+  Talk Guard:
+    conditions:
+    - is char_facing_char player,spyder_greenwash_guard
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_greenwash_guard,player
+    - dialog This facility was shut down years ago. The experiments here... they changed everything.
+
+  Go Level 2:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_greenwash_level2.tmx,13,4,0.3
+    - char_face player,down
+
+  Go Greenhouse:
+    x: 13
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_greenwash_greenhouse.tmx,1,4,0.3
+    - char_face player,down
+
+  Flashback Trigger:
+    x: 7
+    y: 8
+    conditions:
+    - is char_at player
+    - not variable_set greenwash_flashback:done
+    actions:
+    - lock_controls
+    - set_layer 102,51,0,128
+    - dialog [Flashback] The scientists gathered around the containment unit...
+    - dialog [Flashback] "The DNA splicing is complete," Dr. Venom announced.
+    - dialog [Flashback] Something went terribly wrong that day.
+    - set_layer
+    - set_variable greenwash_flashback:done
+    - unlock_controls

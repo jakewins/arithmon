@@ -79,6 +79,36 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "polyrock", minLevel: 22, maxLevel: 27, weight: 1.5 },
     { slug: "dracune", minLevel: 23, maxLevel: 27, weight: 0.5 },
   ],
+  spyder_cotton_tunnel: [
+    { slug: "dinoflop", minLevel: 25, maxLevel: 40, weight: 2.0 },
+    { slug: "furnursus", minLevel: 28, maxLevel: 40, weight: 1.5 },
+    { slug: "boltnu", minLevel: 25, maxLevel: 38, weight: 2.0 },
+    { slug: "metesaur", minLevel: 30, maxLevel: 40, weight: 1.0 },
+  ],
+  spyder_dragons_cave: [
+    { slug: "agnite", minLevel: 20, maxLevel: 28, weight: 2.5 },
+    { slug: "agnidon", minLevel: 24, maxLevel: 28, weight: 0.5 },
+    { slug: "embra", minLevel: 22, maxLevel: 28, weight: 2.0 },
+  ],
+  spyder_dryads_grove: [
+    { slug: "coleorus", minLevel: 22, maxLevel: 28, weight: 0.8 },
+    { slug: "tourbidi", minLevel: 20, maxLevel: 28, weight: 2.0 },
+    { slug: "shybulb", minLevel: 20, maxLevel: 26, weight: 2.5 },
+  ],
+  spyder_routeB: [
+    { slug: "toufigel", minLevel: 20, maxLevel: 28, weight: 2.0 },
+    { slug: "pipis", minLevel: 20, maxLevel: 26, weight: 2.5 },
+    { slug: "strella", minLevel: 22, maxLevel: 28, weight: 0.8 },
+  ],
+  spyder_routeC: [
+    { slug: "pipis", minLevel: 22, maxLevel: 28, weight: 2.0 },
+    { slug: "toufigel", minLevel: 22, maxLevel: 28, weight: 2.0 },
+  ],
+  spyder_datacenter: [
+    { slug: "pythwire", minLevel: 40, maxLevel: 50, weight: 1.0 },
+    { slug: "ouroboutlet", minLevel: 42, maxLevel: 50, weight: 0.8 },
+    { slug: "sockeserp", minLevel: 40, maxLevel: 48, weight: 1.0 },
+  ],
 };
 
 /** Default encounter pool used when no map-specific table exists. */

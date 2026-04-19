@@ -1,0 +1,46 @@
+events:
+  Go Nimrod Room:
+    x: 10
+    y: 14
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_nimrod_room.tmx,10,4,0.3
+    - char_face player,down
+
+  Terminal 1:
+    x: 5
+    y: 4
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog ACCESS GRANTED. Spyder Network Status... ALL NODES ONLINE.
+
+  Terminal 2:
+    x: 8
+    y: 4
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog PROJECT GENOME... Status COMPLETE. Monster DNA catalog uploaded.
+
+  Terminal 3:
+    x: 11
+    y: 4
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog WARNING. Containment breach detected in sectors 7 through 12.
+
+  Terminal 4:
+    x: 14
+    y: 4
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog FINAL LOG. The data center holds all our research. Whoever finds this... use it wisely.

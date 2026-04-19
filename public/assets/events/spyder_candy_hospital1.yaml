@@ -1,0 +1,19 @@
+events:
+  Go Outside:
+    x: 6
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_candy_town.tmx,15,19,0.3
+    - char_face player,down
+  Go Up:
+    x: 11
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_hospital2.tmx,1,4,0.3
+    - char_face player,down

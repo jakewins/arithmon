@@ -1,0 +1,30 @@
+events:
+  Create Barista:
+    conditions:
+    - not char_exists spyder_candy_barista
+    actions:
+    - create_npc spyder_candy_barista,5,4
+    - char_face spyder_candy_barista,down
+
+  Talk Barista:
+    conditions:
+    - is char_facing_char player,spyder_candy_barista
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_candy_barista,player
+    - dialog Welcome to the cafe! Would you like some healing tea?
+    - screen_transition 1
+    - wait 0.5
+    - set_monster_health
+    - set_monster_status
+    - dialog Your monsters feel refreshed!
+
+  Go Outside:
+    x: 5
+    y: 8
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_candy_town.tmx,22,10,0.3
+    - char_face player,down

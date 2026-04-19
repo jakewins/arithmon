@@ -1,0 +1,10 @@
+events:
+  Go Downstairs:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_inn1.tmx,9,4,0.3
+    - char_face player,down

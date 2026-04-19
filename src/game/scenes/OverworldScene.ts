@@ -158,6 +158,33 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.text("events-spyder_dojo2", "assets/events/spyder_dojo2.yaml");
     this.load.text("events-spyder_dojo3", "assets/events/spyder_dojo3.yaml");
     this.load.text("events-spyder_dojo4", "assets/events/spyder_dojo4.yaml");
+    this.load.text("events-spyder_candy_town", "assets/events/spyder_candy_town.yaml");
+    this.load.text("events-spyder_candy_port", "assets/events/spyder_candy_port.yaml");
+    this.load.text("events-spyder_candy_inn1", "assets/events/spyder_candy_inn1.yaml");
+    this.load.text("events-spyder_candy_inn2", "assets/events/spyder_candy_inn2.yaml");
+    this.load.text("events-spyder_candy_cafe", "assets/events/spyder_candy_cafe.yaml");
+    this.load.text("events-spyder_candy_center", "assets/events/spyder_candy_center.yaml");
+    this.load.text("events-spyder_candy_hospital1", "assets/events/spyder_candy_hospital1.yaml");
+    this.load.text("events-spyder_candy_hospital2", "assets/events/spyder_candy_hospital2.yaml");
+    this.load.text("events-spyder_candy_hospital3", "assets/events/spyder_candy_hospital3.yaml");
+    this.load.text("events-spyder_greenwash", "assets/events/spyder_greenwash.yaml");
+    this.load.text("events-spyder_greenwash_level2", "assets/events/spyder_greenwash_level2.yaml");
+    this.load.text("events-spyder_greenwash_level3", "assets/events/spyder_greenwash_level3.yaml");
+    this.load.text(
+      "events-spyder_greenwash_greenhouse",
+      "assets/events/spyder_greenwash_greenhouse.yaml",
+    );
+    this.load.text("events-spyder_cotton_tunnel", "assets/events/spyder_cotton_tunnel.yaml");
+    this.load.text("events-spyder_dragons_cave", "assets/events/spyder_dragons_cave.yaml");
+    this.load.text("events-spyder_dryads_grove", "assets/events/spyder_dryads_grove.yaml");
+    this.load.text("events-spyder_nimrod_bottom", "assets/events/spyder_nimrod_bottom.yaml");
+    this.load.text("events-spyder_nimrod_middle", "assets/events/spyder_nimrod_middle.yaml");
+    this.load.text("events-spyder_nimrod_top", "assets/events/spyder_nimrod_top.yaml");
+    this.load.text("events-spyder_nimrod_room", "assets/events/spyder_nimrod_room.yaml");
+    this.load.text("events-spyder_datacenter", "assets/events/spyder_datacenter.yaml");
+    this.load.text("events-spyder_routeB", "assets/events/spyder_routeB.yaml");
+    this.load.text("events-spyder_routeC", "assets/events/spyder_routeC.yaml");
+    this.load.text("events-spyder_diamond_hill", "assets/events/spyder_diamond_hill.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
@@ -212,6 +239,21 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "dandicub",
       "dandylion",
       "capiti",
+      "dinoflop",
+      "furnursus",
+      "boltnu",
+      "metesaur",
+      "agnite",
+      "agnidon",
+      "embra",
+      "coleorus",
+      "tourbidi",
+      "pythwire",
+      "ouroboutlet",
+      "sockeserp",
+      "toufigel",
+      "pipis",
+      "strella",
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,

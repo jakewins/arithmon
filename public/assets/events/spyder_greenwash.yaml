@@ -1,0 +1,20 @@
+events:
+  Go Outside:
+    x: 7
+    y: 12
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_candy_town.tmx,38,13,0.3
+    - char_face player,left
+
+  Go Level 2:
+    x: 13
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_greenwash_level2.tmx,1,4,0.3
+    - char_face player,down

@@ -5,105 +5,111 @@ events:
     actions:
     - play_music music_town_theme
 
-  Go Leather Town 13:
+  Set Seen Candy:
+    conditions:
+    - not variable_set seencandy:yes
+    actions:
+    - set_variable seencandy:yes
+
+  Go Flower City 13:
     x: 0
     y: 13
     conditions:
     - is char_at player
     - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_leather_town.tmx,32,11,0.3
+    - transition_teleport player,spyder_flower_city.tmx,37,13,0.3
     - char_face player,left
 
-  Go Leather Town 14:
+  Go Flower City 14:
     x: 0
     y: 14
     conditions:
     - is char_at player
     - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_leather_town.tmx,32,12,0.3
+    - transition_teleport player,spyder_flower_city.tmx,37,14,0.3
     - char_face player,left
+
+  Enter Port:
+    x: 8
+    y: 9
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_port.tmx,7,10,0.3
+    - char_face player,up
+
+  Enter Inn:
+    x: 15
+    y: 9
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_inn1.tmx,5,7,0.3
+    - char_face player,up
+
+  Enter Cafe:
+    x: 22
+    y: 9
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_candy_cafe.tmx,5,7,0.3
+    - char_face player,up
 
   Enter Center:
-    x: 10
+    x: 29
     y: 9
     conditions:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_flower_center.tmx,6,9,0.3
+    - transition_teleport player,spyder_candy_center.tmx,6,9,0.3
     - char_face player,up
 
-  Enter Pet Shop:
-    x: 18
-    y: 9
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_flower_petshop.tmx,5,7,0.3
-    - char_face player,up
-
-  Enter Scoop:
-    x: 26
-    y: 9
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_flower_scoop.tmx,6,9,0.3
-    - char_face player,up
-
-  Enter House 1:
-    x: 10
+  Enter Hospital:
+    x: 15
     y: 18
     conditions:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_flower_house1.tmx,4,6,0.3
+    - transition_teleport player,spyder_candy_hospital1.tmx,6,9,0.3
     - char_face player,up
 
-  Enter House 2:
-    x: 18
-    y: 18
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_flower_house2.tmx,4,6,0.3
-    - char_face player,up
-
-  Enter Dojo:
-    x: 30
-    y: 18
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_dojo1.tmx,6,8,0.3
-    - char_face player,up
-
-  Go Candy Town 13:
+  Go Greenwash:
     x: 37
     y: 13
     conditions:
     - is char_at player
     - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_candy_town.tmx,2,13,0.3
+    - transition_teleport player,spyder_greenwash.tmx,7,11,0.3
     - char_face player,right
 
-  Go Candy Town 14:
+  Go Greenwash 14:
     x: 37
     y: 14
     conditions:
     - is char_at player
     - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_candy_town.tmx,2,14,0.3
+    - transition_teleport player,spyder_greenwash.tmx,7,11,0.3
     - char_face player,right
+
+  Go Diamond Hill:
+    x: 20
+    y: 27
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_diamond_hill.tmx,10,2,0.3
+    - char_face player,down
 
   Town Sign:
     x: 5
@@ -112,13 +118,4 @@ events:
     - is char_facing_tile player
     - is button_pressed INTERACT
     actions:
-    - dialog Welcome to Flower City!
-
-  Dojo Sign:
-    x: 32
-    y: 18
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog The Dojo — Train, Evolve, Master
+    - dialog Welcome to Candy Town — Hub of the Fondent Region!
