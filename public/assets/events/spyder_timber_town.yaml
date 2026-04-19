@@ -1,0 +1,102 @@
+events:
+  Play Music:
+    conditions:
+    - not music_playing music_town_theme
+    actions:
+    - play_music music_town_theme
+
+  Set Seen Timber:
+    conditions:
+    - not variable_set seentimber:yes
+    actions:
+    - set_variable seentimber:yes
+
+  # --- Map connections ---
+
+  Go Route 4 11:
+    x: 0
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_route4.tmx,26,10,0.3
+    - char_face player,left
+
+  Go Route 4 12:
+    x: 0
+    y: 12
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    actions:
+    - transition_teleport player,spyder_route4.tmx,26,11,0.3
+    - char_face player,left
+
+  Enter Center:
+    x: 10
+    y: 7
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_timber_center.tmx,6,9,0.3
+    - char_face player,up
+
+  Enter Cafe:
+    x: 20
+    y: 7
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_timber_cafe.tmx,5,7,0.3
+    - char_face player,up
+
+  Enter Scoop:
+    x: 15
+    y: 15
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_timber_scoop.tmx,6,9,0.3
+    - char_face player,up
+
+  # --- Signs ---
+
+  Town Sign:
+    x: 5
+    y: 10
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Welcome to Timber Town!
+
+  Center Sign:
+    x: 12
+    y: 7
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Timber Healing Center
+
+  Cafe Sign:
+    x: 22
+    y: 7
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Timber Cafe — Rest and Refresh
+
+  Scoop Sign:
+    x: 17
+    y: 15
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Timber Scoop — Supplies & More

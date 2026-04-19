@@ -290,4 +290,40 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "fireball", learnedAt: 10 },
     ],
   },
+  sapsnap: {
+    slug: "sapsnap",
+    name: "Sapsnap",
+    baseStats: { hp: 6, attack: 8, defense: 5, speed: 7 },
+    baseXpYield: 60,
+    catchRate: 140,
+    moveset: [
+      { slug: "bite", learnedAt: 1 },
+      { slug: "vineWhip", learnedAt: 4 },
+      { slug: "leafStorm", learnedAt: 9 },
+    ],
+  },
+  katapill: {
+    slug: "katapill",
+    name: "Katapill",
+    baseStats: { hp: 6, attack: 4, defense: 6, speed: 5 },
+    baseXpYield: 40,
+    catchRate: 255,
+    moveset: [
+      { slug: "tackle", learnedAt: 1 },
+      { slug: "poisonSting", learnedAt: 3 },
+      { slug: "spikeLaunch", learnedAt: 7 },
+    ],
+  },
+  anoleaf: {
+    slug: "anoleaf",
+    name: "Anoleaf",
+    baseStats: { hp: 7, attack: 6, defense: 7, speed: 6 },
+    baseXpYield: 65,
+    catchRate: 130,
+    moveset: [
+      { slug: "scratch", learnedAt: 1 },
+      { slug: "vineWhip", learnedAt: 4 },
+      { slug: "leafStorm", learnedAt: 9 },
+    ],
+  },
 };

@@ -24,6 +24,10 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   cotton_town_florist: { spritesheet: "florist" },
   spyder_citypark_ranger: { spritesheet: "tennisplayer_lapi" },
   spyder_route3_zoolander: { spritesheet: "tennisplayer_fiery" },
+  spyder_route4_hiker: { spritesheet: "beachcomber" },
+  spyder_timber_nurse: { spritesheet: "shopassistant" },
+  spyder_timber_shopkeeper: { spritesheet: "shopkeeper" },
+  spyder_timber_beaverbrook: { spritesheet: "homemaker" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

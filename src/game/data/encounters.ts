@@ -49,6 +49,17 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "djinnbo", minLevel: 15, maxLevel: 17, weight: 2.0 },
     { slug: "cairfrey", minLevel: 15, maxLevel: 17, weight: 1.5 },
   ],
+  spyder_route4: [
+    { slug: "elofly", minLevel: 11, maxLevel: 16, weight: 2.0 },
+    { slug: "sapsnap", minLevel: 12, maxLevel: 16, weight: 1.0 },
+    { slug: "aardorn", minLevel: 11, maxLevel: 15, weight: 2.5 },
+    { slug: "katapill", minLevel: 11, maxLevel: 14, weight: 2.0 },
+  ],
+  spyder_routeA: [
+    { slug: "shybulb", minLevel: 12, maxLevel: 15, weight: 2.5 },
+    { slug: "katapill", minLevel: 12, maxLevel: 15, weight: 2.0 },
+    { slug: "anoleaf", minLevel: 13, maxLevel: 15, weight: 1.0 },
+  ],
 };
 
 /** Default encounter pool used when no map-specific table exists. */

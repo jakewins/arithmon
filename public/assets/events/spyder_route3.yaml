@@ -70,6 +70,26 @@ events:
     - transition_teleport player,spyder_mansion.tmx,7,13,0.3
     - char_face player,up
 
+  Go Route 4 10:
+    x: 22
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route4.tmx,2,10,0.3
+    - char_face player,right
+
+  Go Route 4 11:
+    x: 22
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_route4.tmx,2,11,0.3
+    - char_face player,right
+
   # --- Signs ---
 
   Route Sign:

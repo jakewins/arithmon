@@ -134,6 +134,12 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.text("events-spyder_mansion", "assets/events/spyder_mansion.yaml");
     this.load.text("events-spyder_mansion_basement", "assets/events/spyder_mansion_basement.yaml");
     this.load.text("events-spyder_mansion_top", "assets/events/spyder_mansion_top.yaml");
+    this.load.text("events-spyder_route4", "assets/events/spyder_route4.yaml");
+    this.load.text("events-spyder_routeA", "assets/events/spyder_routeA.yaml");
+    this.load.text("events-spyder_timber_town", "assets/events/spyder_timber_town.yaml");
+    this.load.text("events-spyder_timber_center", "assets/events/spyder_timber_center.yaml");
+    this.load.text("events-spyder_timber_cafe", "assets/events/spyder_timber_cafe.yaml");
+    this.load.text("events-spyder_timber_scoop", "assets/events/spyder_timber_scoop.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 
@@ -179,6 +185,9 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "cairfrey",
       "polyrock",
       "djinnbo",
+      "sapsnap",
+      "katapill",
+      "anoleaf",
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
