@@ -48,6 +48,7 @@ import "./actions/playSound";
 import "./actions/openJournal";
 import "./actions/choiceMonster";
 import "./actions/startBattle";
+import "./actions/openShop";
 import "./conditions/partySize";
 import "./conditions/hasItem";
 import "./conditions/hasMonster";
