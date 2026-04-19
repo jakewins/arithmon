@@ -148,6 +148,16 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.text("events-spyder_leather_museum", "assets/events/spyder_leather_museum.yaml");
     this.load.text("events-spyder_leather_shaft1", "assets/events/spyder_leather_shaft1.yaml");
     this.load.text("events-spyder_leather_shaft2", "assets/events/spyder_leather_shaft2.yaml");
+    this.load.text("events-spyder_flower_city", "assets/events/spyder_flower_city.yaml");
+    this.load.text("events-spyder_flower_center", "assets/events/spyder_flower_center.yaml");
+    this.load.text("events-spyder_flower_petshop", "assets/events/spyder_flower_petshop.yaml");
+    this.load.text("events-spyder_flower_house1", "assets/events/spyder_flower_house1.yaml");
+    this.load.text("events-spyder_flower_house2", "assets/events/spyder_flower_house2.yaml");
+    this.load.text("events-spyder_flower_scoop", "assets/events/spyder_flower_scoop.yaml");
+    this.load.text("events-spyder_dojo1", "assets/events/spyder_dojo1.yaml");
+    this.load.text("events-spyder_dojo2", "assets/events/spyder_dojo2.yaml");
+    this.load.text("events-spyder_dojo3", "assets/events/spyder_dojo3.yaml");
+    this.load.text("events-spyder_dojo4", "assets/events/spyder_dojo4.yaml");
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 

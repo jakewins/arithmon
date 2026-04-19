@@ -1,0 +1,39 @@
+events:
+  Create Zhao:
+    conditions:
+    - not char_exists spyder_dojo_zhao
+    actions:
+    - create_npc spyder_dojo_zhao,6,5
+    - char_face spyder_dojo_zhao,down
+
+  Talk Zhao Pre Battle:
+    conditions:
+    - is char_facing_char player,spyder_dojo_zhao
+    - is button_pressed INTERACT
+    - not battle_outcome player,spyder_dojo_zhao,won
+    actions:
+    - char_face spyder_dojo_zhao,player
+    - lock_controls
+    - dialog I am Master Zhao, guardian of the Dojo. Only the worthy may claim mastery here.
+    - dialog Prepare yourself!
+    - start_battle spyder_dojo_zhao
+    - unlock_controls
+
+  Talk Zhao Post Win:
+    conditions:
+    - is char_facing_char player,spyder_dojo_zhao
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_dojo_zhao,won
+    actions:
+    - char_face spyder_dojo_zhao,player
+    - dialog You have proven yourself worthy. The path ahead is clear.
+
+  Go Floor 3:
+    x: 1
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_dojo3.tmx,10,4,0.3
+    - char_face player,down

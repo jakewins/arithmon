@@ -32,6 +32,15 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_leather_chad: { spritesheet: "tennisplayer_green" },
   spyder_leather_brad: { spritesheet: "tennisplayer_fiery" },
   spyder_leather_guide: { spritesheet: "picnicker" },
+  spyder_flower_nurse: { spritesheet: "shopassistant" },
+  spyder_flower_petkeeper: { spritesheet: "florist" },
+  spyder_flower_shopkeeper: { spritesheet: "shopkeeper" },
+  spyder_flower_soldier: { spritesheet: "maniac" },
+  spyder_flower_scientist: { spritesheet: "magician" },
+  spyder_dojo_fu: { spritesheet: "beachcomber" },
+  spyder_dojo_yin: { spritesheet: "picnicker" },
+  spyder_dojo_xiang: { spritesheet: "granny" },
+  spyder_dojo_zhao: { spritesheet: "homemaker" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

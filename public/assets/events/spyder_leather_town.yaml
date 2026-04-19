@@ -75,6 +75,26 @@ events:
     - transition_teleport player,spyder_leather_shaft2.tmx,5,4,0.3
     - char_face player,down
 
+  Go Flower City 11:
+    x: 32
+    y: 11
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_flower_city.tmx,2,13,0.3
+    - char_face player,right
+
+  Go Flower City 12:
+    x: 32
+    y: 12
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_flower_city.tmx,2,14,0.3
+    - char_face player,right
+
   Town Sign:
     x: 5
     y: 10

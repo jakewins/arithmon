@@ -37,6 +37,15 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 250,
   },
+  spyder_dojo_zhao: {
+    name: "Master Zhao",
+    monsters: [
+      { slug: "dracune", level: 25 },
+      { slug: "djinnbo", level: 24 },
+      { slug: "dandylion", level: 23 },
+    ],
+    goldReward: 1000,
+  },
   spyder_leather_chad: {
     name: "Chad",
     monsters: [

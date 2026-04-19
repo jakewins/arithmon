@@ -1,0 +1,31 @@
+events:
+  Create Nurse:
+    conditions:
+    - not char_exists spyder_flower_nurse
+    actions:
+    - create_npc spyder_flower_nurse,6,4
+    - char_face spyder_flower_nurse,down
+
+  Talk Nurse:
+    conditions:
+    - is char_facing_char player,spyder_flower_nurse
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_flower_nurse,player
+    - dialog Welcome to Flower City Healing Center!
+    - screen_transition 1
+    - wait 0.5
+    - set_monster_health
+    - set_monster_status
+    - dialog Your monsters are fully healed!
+    - set_teleport_faint player,spyder_flower_center.tmx,6,7
+
+  Go Outside:
+    x: 6
+    y: 10
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_flower_city.tmx,10,10,0.3
+    - char_face player,down

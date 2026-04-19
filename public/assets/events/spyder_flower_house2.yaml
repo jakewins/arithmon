@@ -1,0 +1,26 @@
+events:
+  Create Scientist:
+    conditions:
+    - not char_exists spyder_flower_scientist
+    actions:
+    - create_npc spyder_flower_scientist,4,4
+    - char_face spyder_flower_scientist,down
+
+  Talk Scientist:
+    conditions:
+    - is char_facing_char player,spyder_flower_scientist
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_flower_scientist,player
+    - dialog I'm researching monster evolution patterns. Fascinating stuff!
+    - dialog Did you know that some monsters only evolve under specific conditions?
+
+  Go Outside:
+    x: 4
+    y: 7
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_flower_city.tmx,18,19,0.3
+    - char_face player,down

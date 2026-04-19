@@ -1,0 +1,36 @@
+events:
+  Create Fu:
+    conditions:
+    - not char_exists spyder_dojo_fu
+    actions:
+    - create_npc spyder_dojo_fu,6,5
+    - char_face spyder_dojo_fu,down
+
+  Talk Fu:
+    conditions:
+    - is char_facing_char player,spyder_dojo_fu
+    - is button_pressed INTERACT
+    actions:
+    - char_face spyder_dojo_fu,player
+    - dialog I am Master Fu. I specialize in monster evolution.
+    - dialog When your monsters are ready to evolve, bring them to me. The cost is 500 gold.
+
+  Go Outside:
+    x: 6
+    y: 9
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_flower_city.tmx,30,19,0.3
+    - char_face player,down
+
+  Go Floor 2:
+    x: 10
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_dojo2.tmx,1,4,0.3
+    - char_face player,down
