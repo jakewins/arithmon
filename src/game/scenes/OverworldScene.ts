@@ -12,6 +12,8 @@ import { loadPO } from "../i18n";
 import { buildGrid, findPath, type CollisionRect } from "../event/pathfinding";
 import type PF from "pathfinding";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
+import { updateSaveLocation, saveGame } from "../save";
+import { consumeSavedLocation } from "../save";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -66,10 +68,14 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   }
 
   init(data: OverworldInitData = {}) {
-    this.mapKey = data.mapKey ?? DEFAULT_MAP;
-    this.spawnTileX = data.spawnTileX ?? DEFAULT_SPAWN.tileX;
-    this.spawnTileY = data.spawnTileY ?? DEFAULT_SPAWN.tileY;
-    this.spawnFacing = data.spawnFacing ?? DEFAULT_SPAWN.facing;
+    // On first boot, check for a saved location to resume from
+    const saved = consumeSavedLocation();
+    this.mapKey = data.mapKey ?? saved?.mapKey ?? DEFAULT_MAP;
+    this.spawnTileX = data.spawnTileX ?? saved?.tileX ?? DEFAULT_SPAWN.tileX;
+    this.spawnTileY = data.spawnTileY ?? saved?.tileY ?? DEFAULT_SPAWN.tileY;
+    this.spawnFacing = data.spawnFacing ?? (saved?.facing as Direction) ?? DEFAULT_SPAWN.facing;
+    updateSaveLocation(this.mapKey, this.spawnTileX, this.spawnTileY, this.spawnFacing);
+    saveGame();
     this.teleporting = false;
     this.inCombat = false;
     this.interactPressed = false;

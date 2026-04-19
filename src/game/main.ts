@@ -8,6 +8,11 @@ import { PartyScreen } from "./scenes/PartyScreen";
 import { JournalScene } from "./scenes/JournalScene";
 import { ShopScene } from "./scenes/ShopScene";
 import { debugBridge } from "./debug";
+import { loadGame } from "./save";
+
+// Restore saved session state (monsters, inventory, variables, etc.)
+// before Phaser boots, so OverworldScene.init sees the restored data.
+loadGame();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
