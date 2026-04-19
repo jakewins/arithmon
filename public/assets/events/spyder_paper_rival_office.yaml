@@ -1,0 +1,61 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_home
+    actions:
+    - play_music music_home
+
+  # --- Map connections ---
+
+  Go To Bedroom:
+    x: 8
+    y: 7
+    conditions:
+    - is char_at player
+    actions:
+    - transition_teleport player,spyder_paper_rival_bedroom.tmx,1,3,0.3
+    - char_face player,right
+
+  # --- Interactables ---
+
+  Haiku Display:
+    x: 3
+    y: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog "A framed haiku hangs on the wall:"
+    - dialog "Monsters in the mist / training bonds that never break / friendship is our strength"
+
+  Desk:
+    x: 3
+    y: 3
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A large desk covered in research notes about monster evolution.
+
+  Bookshelf Left:
+    x: 1
+    y: 2
+    width: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Scientific journals about monster biology and behavior.
+
+  Bookshelf Right:
+    x: 6
+    y: 2
+    width: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Historical records of the Fondent region and its legendary monsters.

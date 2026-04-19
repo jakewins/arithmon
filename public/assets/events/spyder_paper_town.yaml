@@ -54,6 +54,58 @@ events:
     - transition_teleport player,spyder_route1.tmx,14,18,0.3
     - char_face player,up
 
+  Enter Manor:
+    x: 10
+    y: 12
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_paper_manor.tmx,6,7,0.3
+    - char_face player,up
+
+  Enter Daycare:
+    x: 20
+    y: 4
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    - is variable_set seentimber:yes
+    actions:
+    - transition_teleport player,spyder_paper_daycare.tmx,3,8,0.3
+    - char_face player,up
+
+  Daycare Locked:
+    x: 20
+    y: 4
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    - not variable_set seentimber:yes
+    actions:
+    - dialog The daycare isn't open yet. Try coming back later.
+
+  Enter Daycare Back:
+    x: 21
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    - is variable_set seentimber:yes
+    actions:
+    - transition_teleport player,spyder_paper_daycare.tmx,13,7,0.3
+    - char_face player,left
+
+  Enter Rival House:
+    x: 32
+    y: 5
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_paper_rival_downstairs.tmx,1,11,0.3
+    - char_face player,up
+
   # --- NPC dialogs ---
 
   Talk Granny:

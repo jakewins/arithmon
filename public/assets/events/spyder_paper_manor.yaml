@@ -1,0 +1,80 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_town_theme
+    actions:
+    - play_music music_town_theme
+
+  # --- NPC spawns ---
+
+  Create Princeton:
+    conditions:
+    - not char_exists spyder_papermanor_princeton
+    actions:
+    - create_npc spyder_papermanor_princeton,4,5
+    - char_face spyder_papermanor_princeton,down
+
+  # --- Map connections ---
+
+  Go Outside:
+    x: 6
+    y: 8
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_paper_town.tmx,10,13,0.3
+    - char_face player,down
+
+  # --- NPC dialogs ---
+
+  Talk Princeton Early:
+    conditions:
+    - is char_facing_char player,spyder_papermanor_princeton
+    - is button_pressed INTERACT
+    - not variable_set got_starter:yes
+    actions:
+    - char_face spyder_papermanor_princeton,player
+    - dialog Welcome! I'm Princeton. You should visit the Scoop shop to get your first monster.
+
+  Talk Princeton Has Monster:
+    conditions:
+    - is char_facing_char player,spyder_papermanor_princeton
+    - is button_pressed INTERACT
+    - is variable_set got_starter:yes
+    - not variable_set seentimber:yes
+    actions:
+    - char_face spyder_papermanor_princeton,player
+    - dialog Splendid! Now that you have a monster, head north to Route 1. There's a whole world to explore!
+
+  Talk Princeton Post Timber:
+    conditions:
+    - is char_facing_char player,spyder_papermanor_princeton
+    - is button_pressed INTERACT
+    - is variable_set seentimber:yes
+    actions:
+    - char_face spyder_papermanor_princeton,player
+    - dialog You've been to Timber Town? Wonderful! The daycare next door should be open now. Granny Piper runs a fine operation.
+
+  # --- Interactables ---
+
+  Kitchen Counter:
+    x: 5
+    y: 3
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A tidy kitchen counter. Something smells good.
+
+  Bookshelf:
+    x: 1
+    y: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Books about monster care and local history.

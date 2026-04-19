@@ -114,6 +114,20 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.text("events-spyder_route1", "assets/events/spyder_route1.yaml");
     this.load.text("events-spyder_paper_town", "assets/events/spyder_paper_town.yaml");
     this.load.text("events-spyder_cotton_scoop", "assets/events/spyder_cotton_scoop.yaml");
+    this.load.text("events-spyder_paper_manor", "assets/events/spyder_paper_manor.yaml");
+    this.load.text("events-spyder_paper_daycare", "assets/events/spyder_paper_daycare.yaml");
+    this.load.text(
+      "events-spyder_paper_rival_downstairs",
+      "assets/events/spyder_paper_rival_downstairs.yaml",
+    );
+    this.load.text(
+      "events-spyder_paper_rival_bedroom",
+      "assets/events/spyder_paper_rival_bedroom.yaml",
+    );
+    this.load.text(
+      "events-spyder_paper_rival_office",
+      "assets/events/spyder_paper_rival_office.yaml",
+    );
 
     this.load.text("start-tuxemon", "assets/events/start_tuxemon.yaml");
 

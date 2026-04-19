@@ -1,0 +1,99 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_town_theme
+    actions:
+    - play_music music_town_theme
+
+  # --- NPC spawns ---
+
+  Create Granny Piper:
+    conditions:
+    - not char_exists spyder_grannypiper
+    actions:
+    - create_npc spyder_grannypiper,7,5
+    - char_face spyder_grannypiper,down
+
+  # --- Map connections ---
+
+  Go Outside Front:
+    x: 3
+    y: 9
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_paper_town.tmx,20,5,0.3
+    - char_face player,down
+
+  Go Outside Back:
+    x: 14
+    y: 7
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_paper_town.tmx,22,3,0.3
+    - char_face player,right
+
+  # --- NPC dialogs ---
+
+  Talk Granny Piper:
+    conditions:
+    - is char_facing_char player,spyder_grannypiper
+    - is button_pressed INTERACT
+    - is variable_set seentimber:yes
+    actions:
+    - char_face spyder_grannypiper,player
+    - dialog Welcome to the daycare, dearie! Leave your monsters here and they'll be well looked after while you're away.
+
+  Talk Granny Piper Not Ready:
+    conditions:
+    - is char_facing_char player,spyder_grannypiper
+    - is button_pressed INTERACT
+    - not variable_set seentimber:yes
+    actions:
+    - char_face spyder_grannypiper,player
+    - dialog We're still setting up, dearie. Come back once you've seen a bit more of the world!
+
+  # --- Interactables ---
+
+  Monster Pen Left:
+    x: 2
+    y: 6
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A cozy pen for small monsters. Bedding and toys inside.
+
+  Monster Pen Right:
+    x: 10
+    y: 6
+    width: 3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Another pen, this one with a water dish and scratching post.
+
+  Shelf Left:
+    x: 2
+    y: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Monster food and supplements, neatly organized.
+
+  Shelf Right:
+    x: 10
+    y: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Grooming supplies and health records.

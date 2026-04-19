@@ -1,0 +1,67 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_home
+    actions:
+    - play_music music_home
+
+  # --- Map connections ---
+
+  Go Downstairs:
+    x: 7
+    y: 7
+    conditions:
+    - is char_at player
+    actions:
+    - transition_teleport player,spyder_paper_rival_downstairs.tmx,8,3,0.3
+    - char_face player,down
+
+  Go To Office:
+    x: 0
+    y: 2
+    conditions:
+    - is char_at player
+    actions:
+    - transition_teleport player,spyder_paper_rival_office.tmx,8,6,0.3
+    - char_face player,left
+
+  # --- Interactables ---
+
+  Use Radio:
+    x: 6
+    y: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog ...and the weather continues to be unpredictable across the Fondent region...
+
+  Use Computer:
+    x: 4
+    y: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A computer showing a monster encyclopedia. Many entries are still blank.
+
+  Bookshelf:
+    x: 1
+    y: 4
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Monster training manuals and school textbooks.
+
+  Bed:
+    x: 1
+    y: 2
+    width: 2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog A neatly made bed. Whoever lives here keeps things tidy.
