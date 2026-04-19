@@ -119,7 +119,18 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         frameHeight: 44,
       });
     }
-    for (const slug of ["dollfin", "ignibus", "memnomnom", "budaye", "grintot"]) {
+    for (const slug of [
+      "dollfin",
+      "ignibus",
+      "memnomnom",
+      "budaye",
+      "grintot",
+      "pairagrin",
+      "aardorn",
+      "cataspike",
+      "cardiling",
+      "eyenemy",
+    ]) {
       if (!this.textures.exists(`${slug}-battle`)) {
         this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
           frameWidth: 64,

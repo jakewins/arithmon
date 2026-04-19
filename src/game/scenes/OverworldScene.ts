@@ -134,7 +134,18 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       frameWidth: 64,
       frameHeight: 44,
     });
-    for (const slug of ["dollfin", "ignibus", "memnomnom", "budaye", "grintot"]) {
+    for (const slug of [
+      "dollfin",
+      "ignibus",
+      "memnomnom",
+      "budaye",
+      "grintot",
+      "pairagrin",
+      "aardorn",
+      "cataspike",
+      "cardiling",
+      "eyenemy",
+    ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
         frameHeight: 44,

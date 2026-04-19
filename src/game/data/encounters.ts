@@ -11,9 +11,15 @@ export interface EncounterEntry {
 
 const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
   spyder_route1: [
-    { slug: "rockitten", minLevel: 2, maxLevel: 4, weight: 3.5 },
-    { slug: "budaye", minLevel: 2, maxLevel: 4, weight: 3.5 },
-    { slug: "dollfin", minLevel: 2, maxLevel: 4, weight: 3.5 },
+    { slug: "pairagrin", minLevel: 2, maxLevel: 4, weight: 3.5 },
+    { slug: "aardorn", minLevel: 2, maxLevel: 4, weight: 3.5 },
+    { slug: "cataspike", minLevel: 2, maxLevel: 4, weight: 3.5 },
+  ],
+  spyder_route2: [
+    { slug: "cardiling", minLevel: 3, maxLevel: 6, weight: 2.5 },
+    { slug: "aardorn", minLevel: 3, maxLevel: 6, weight: 2.5 },
+    { slug: "eyenemy", minLevel: 3, maxLevel: 6, weight: 2.5 },
+    { slug: "cataspike", minLevel: 3, maxLevel: 6, weight: 2.5 },
   ],
 };
 
