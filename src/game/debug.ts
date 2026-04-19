@@ -123,6 +123,7 @@ export class DebugBridge {
         template: p.template,
         variables: p.gameVariables.toRecord(),
         money: p.money,
+        bills: { ...session.bills },
         darkPower: session.skillEncounter,
         monsters: p.monsters.map((m) => ({
           id: m.id,
@@ -340,6 +341,31 @@ export class DebugBridge {
   /** Set a game variable. */
   setVariable(key: string, value: string): void {
     session.player.gameVariables.set(key, value);
+  }
+
+  /** Apply a screen overlay (set_layer action). Pass empty string to clear. */
+  setLayer(rgba?: string): void {
+    if (!this.activeScene) return;
+    const scene = this.activeScene;
+    const OVERLAY_KEY = "__layerOverlay";
+    const existing = (scene as unknown as Record<string, Phaser.GameObjects.Rectangle>)[
+      OVERLAY_KEY
+    ];
+    if (existing) {
+      existing.destroy();
+      delete (scene as unknown as Record<string, unknown>)[OVERLAY_KEY];
+    }
+    if (rgba) {
+      const parts = rgba.split(":").map(Number);
+      const cam = scene.cameras.main;
+      const color = (parts[0] << 16) | (parts[1] << 8) | parts[2];
+      const overlay = scene.add
+        .rectangle(0, 0, cam.width, cam.height, color, parts[3] / 255)
+        .setOrigin(0, 0)
+        .setDepth(50)
+        .setScrollFactor(0);
+      (scene as unknown as Record<string, unknown>)[OVERLAY_KEY] = overlay;
+    }
   }
 
   private getCommandHandler(): DebugCommandHandler | null {

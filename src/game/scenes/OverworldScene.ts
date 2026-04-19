@@ -174,6 +174,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     if (poText) loadPO(poText);
 
     const mapDef = getMapDef(this.mapKey);
+    session.mapKey = this.mapKey;
+    session.environment = mapDef.environment ?? "grass";
+    session.inside = mapDef.inside ?? false;
+    session.locationType = mapDef.locationType ?? "";
     const map = this.make.tilemap({ key: mapDef.jsonKey });
 
     const tilesets = mapDef.tilesets.map((t) => map.addTilesetImage(t.name, t.imageKey)!);
@@ -549,6 +553,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       collisionBodies: this.collisionBodies,
       walkGrid: this.walkGrid,
       debugChoiceOverride: this.pendingChoiceOverride,
+      addEvents: (events) => this.eventEngine.mergeEvents(events),
     };
 
     this.eventEngine.update(ctx, delta / 1000);

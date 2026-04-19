@@ -21,6 +21,10 @@ export interface MapDef {
   tilesets: TilesetAsset[];
   /** Battle environment for this map (determines background + islands). */
   environment?: string;
+  /** True for indoor/roofed maps (exempt from night tinting). */
+  inside?: boolean;
+  /** Map type tag for location conditions (e.g. "clinic", "shop", "town"). */
+  locationType?: string;
 }
 
 /** Tilesets used by cotton_town + the indoor set needed by player_house_bedroom. */
@@ -95,24 +99,29 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonPath: "assets/maps/player_house_bedroom.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
+    inside: true,
   },
   spyder_bedroom: {
     jsonKey: "map-spyder_bedroom",
     jsonPath: "assets/maps/spyder_bedroom.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
+    inside: true,
   },
   spyder_downstairs: {
     jsonKey: "map-spyder_downstairs",
     jsonPath: "assets/maps/spyder_downstairs.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
+    inside: true,
   },
   spyder_paper_scoop: {
     jsonKey: "map-spyder_paper_scoop",
     jsonPath: "assets/maps/spyder_paper_scoop.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
+    inside: true,
+    locationType: "shop",
   },
   spyder_paper_town: {
     jsonKey: "map-spyder_paper_town",
@@ -132,12 +141,16 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonPath: "assets/maps/spyder_healing_center.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
+    inside: true,
+    locationType: "clinic",
   },
   spyder_cotton_scoop: {
     jsonKey: "map-spyder_cotton_scoop",
     jsonPath: "assets/maps/spyder_cotton_scoop.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
+    inside: true,
+    locationType: "shop",
   },
   spyder_route1: {
     jsonKey: "map-spyder_route1",

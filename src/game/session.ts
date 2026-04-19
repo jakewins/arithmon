@@ -50,6 +50,20 @@ export interface GameSession {
   monsterRegistry: MonsterRegistry;
   /** Tracks last battle outcome per NPC slug. Written by start_battle, read by battle_outcome condition. */
   battleOutcomes: Map<string, CombatOutcome>;
+  /** Cathedral billing accounts, keyed by bill name (e.g. "bill_cathedral"). */
+  bills: Record<string, number>;
+  /** Current map environment (can be overridden by set_environment action). */
+  environment: string;
+  /** Whether the current map is indoors. */
+  inside: boolean;
+  /** Current map type tag (e.g. "clinic", "shop"). */
+  locationType: string;
+  /** Current map key. */
+  mapKey: string;
+  /** Current time-of-day stage. */
+  timeStage: "dawn" | "morning" | "day" | "dusk" | "night";
+  /** Named kennels for monster storage. */
+  kennels: Record<string, { monsters: Monster[]; visible: boolean }>;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -96,6 +110,13 @@ function createSession(): GameSession {
     monsterStorage: [],
     monsterRegistry: createMonsterRegistry(),
     battleOutcomes: new Map(),
+    bills: {},
+    environment: "grass",
+    inside: false,
+    locationType: "",
+    mapKey: "",
+    timeStage: "day",
+    kennels: { Kennel: { monsters: [], visible: true } },
   };
 }
 

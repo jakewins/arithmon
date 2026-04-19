@@ -57,6 +57,56 @@ import "./conditions/checkCharParameter";
 import "./conditions/battleOutcome";
 import "./conditions/charDefeated";
 import "./conditions/currentState";
+import "./actions/copyVariable";
+import "./actions/variableMath";
+import "./actions/loadYaml";
+import "./actions/modifyMoney";
+import "./actions/setEconomy";
+import "./actions/setBill";
+import "./actions/modifyBill";
+import "./conditions/moneyIs";
+import "./conditions/billExists";
+import "./conditions/billIs";
+import "./actions/setLayer";
+import "./actions/cameraPosition";
+import "./actions/setBubble";
+import "./conditions/checkWorld";
+// Todo 04: environment and location
+import "./actions/setEnvironment";
+import "./conditions/environmentIs";
+import "./conditions/locationInside";
+import "./conditions/locationType";
+// Todo 05: monster query and evolution
+import "./actions/evolution";
+import "./actions/getPlayerMonster";
+import "./actions/getPartyMonster";
+import "./actions/info";
+import "./actions/modifyMonsterBond";
+import "./conditions/checkEvolution";
+import "./conditions/checkPartyParameter";
+// Todo 06: kennel and storage
+import "./actions/createKennel";
+import "./actions/setKennelVisible";
+import "./conditions/hasKennel";
+import "./conditions/kennel";
+// Todo 07: NPC speech and encounters
+import "./actions/charTalk";
+import "./actions/randomEncounter";
+import "./conditions/charIn";
+import "./conditions/charSprite";
+// Todo 08: day/night cycle
+import "./actions/updateTime";
+import "./conditions/timeIs";
+// Todo 09: remaining actions and conditions
+import "./actions/teleportFaint";
+import "./actions/removeTech";
+import "./actions/setPartyStatus";
+import "./actions/updateTileProperties";
+import "./actions/stubs";
+import "./conditions/hasTuxepedia";
+import "./conditions/checkMaxTech";
+import "./conditions/tilePropertyUpdated";
+import "./conditions/stepTracker";
 
 export class EventEngine {
   private events: EventDef[];
@@ -67,6 +117,15 @@ export class EventEngine {
 
   constructor(events: EventDef[]) {
     this.events = events;
+  }
+
+  /** Merge additional events (e.g. from load_yaml) into the engine, assigning new IDs. */
+  mergeEvents(newEvents: EventDef[]): void {
+    let maxId = this.events.reduce((max, e) => Math.max(max, e.id), 0);
+    for (const ev of newEvents) {
+      ev.id = ++maxId;
+      this.events.push(ev);
+    }
   }
 
   /** Returns true if any running event has a blocking action (e.g. dialog). */

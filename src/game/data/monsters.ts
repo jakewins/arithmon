@@ -10,6 +10,7 @@ export interface MonsterDef {
   baseXpYield: number;
   catchRate: number;
   moveset: { slug: string; learnedAt: number }[];
+  evolutions?: { species: string; level: number }[];
 }
 
 export const MONSTERS: Record<string, MonsterDef> = {

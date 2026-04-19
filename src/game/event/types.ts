@@ -44,6 +44,8 @@ export interface EventContext {
   walkGrid?: PF.Grid;
   /** Debug override: when set, the choice action selects this index and confirms. */
   debugChoiceOverride?: number;
+  /** Merge additional events into the running engine (used by load_yaml). */
+  addEvents?: (events: EventDef[]) => void;
 }
 
 export interface PendingTeleport {

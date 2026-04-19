@@ -1708,3 +1708,339 @@ describe("dialog pagination (multi-page)", () => {
     expect(engine.blocking).toBe(false);
   });
 });
+
+describe("variable_math action", () => {
+  beforeEach(() => {
+    gameVariables.remove("score");
+    gameVariables.remove("gold");
+  });
+
+  it("adds to an existing variable", () => {
+    gameVariables.set("score", "5");
+    const events = loadEventsFromYaml(`
+events:
+  Add:
+    conditions:
+      - is char_at player
+    actions:
+      - variable_math player,score,+,3
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("score")).toBe("8");
+  });
+
+  it("treats missing variable as 0", () => {
+    const events = loadEventsFromYaml(`
+events:
+  Init:
+    conditions:
+      - is char_at player
+    actions:
+      - variable_math player,gold,+,10
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("gold")).toBe("10");
+  });
+
+  it("supports multiply and subtract", () => {
+    gameVariables.set("score", "6");
+    const events = loadEventsFromYaml(`
+events:
+  Multiply:
+    conditions:
+      - is char_at player
+    actions:
+      - variable_math player,score,*,3
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("score")).toBe("18");
+  });
+});
+
+describe("copy_variable action", () => {
+  beforeEach(() => {
+    gameVariables.remove("src_var");
+    gameVariables.remove("dest_var");
+  });
+
+  it("copies one variable to another", () => {
+    gameVariables.set("src_var", "hello");
+    const events = loadEventsFromYaml(`
+events:
+  Copy:
+    conditions:
+      - is char_at player
+    actions:
+      - copy_variable player,src_var,dest_var
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("dest_var")).toBe("hello");
+    expect(gameVariables.get("src_var")).toBe("hello");
+  });
+
+  it("does nothing if source variable does not exist", () => {
+    const events = loadEventsFromYaml(`
+events:
+  Copy:
+    conditions:
+      - is char_at player
+    actions:
+      - copy_variable player,missing,dest_var
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.has("dest_var")).toBe(false);
+  });
+});
+
+describe("modify_money action", () => {
+  it("adds money to player", () => {
+    session.player.money = 500;
+    const events = loadEventsFromYaml(`
+events:
+  Earn:
+    conditions:
+      - is char_at player
+    actions:
+      - modify_money player,100
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(session.player.money).toBe(600);
+  });
+
+  it("subtracts money and clamps to 0", () => {
+    session.player.money = 30;
+    const events = loadEventsFromYaml(`
+events:
+  Spend:
+    conditions:
+      - is char_at player
+    actions:
+      - modify_money player,-50
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(session.player.money).toBe(0);
+  });
+});
+
+describe("money_is condition", () => {
+  it("passes when player has enough money", () => {
+    session.player.money = 100;
+    const events = loadEventsFromYaml(`
+events:
+  Check:
+    conditions:
+      - is char_at player
+      - is money_is player,greater_or_equal,50
+    actions:
+      - set_variable money_check:pass
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    gameVariables.remove("money_check");
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("money_check")).toBe("pass");
+  });
+
+  it("fails when player does not have enough money", () => {
+    session.player.money = 30;
+    const events = loadEventsFromYaml(`
+events:
+  Check:
+    conditions:
+      - is char_at player
+      - is money_is player,greater_or_equal,50
+    actions:
+      - set_variable money_check:pass
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    gameVariables.remove("money_check");
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.has("money_check")).toBe(false);
+  });
+});
+
+describe("bill actions and conditions", () => {
+  beforeEach(() => {
+    session.bills = {};
+  });
+
+  it("set_bill initializes a bill", () => {
+    const events = loadEventsFromYaml(`
+events:
+  Init:
+    conditions:
+      - is char_at player
+    actions:
+      - set_bill player,bill_cathedral,0
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(session.bills.bill_cathedral).toBe(0);
+  });
+
+  it("modify_bill adds to existing bill", () => {
+    session.bills.bill_cathedral = 10;
+    const events = loadEventsFromYaml(`
+events:
+  Charge:
+    conditions:
+      - is char_at player
+    actions:
+      - modify_bill player,bill_cathedral,50
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(session.bills.bill_cathedral).toBe(60);
+  });
+
+  it("bill_exists detects existing bill", () => {
+    session.bills.bill_cathedral = 0;
+    const events = loadEventsFromYaml(`
+events:
+  Check:
+    conditions:
+      - is char_at player
+      - is bill_exists player,bill_cathedral
+    actions:
+      - set_variable bill_found:yes
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    gameVariables.remove("bill_found");
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("bill_found")).toBe("yes");
+  });
+
+  it("bill_is compares bill amount", () => {
+    session.bills.bill_cathedral = 50;
+    const events = loadEventsFromYaml(`
+events:
+  Check:
+    conditions:
+      - is char_at player
+      - is bill_is player,bill_cathedral,greater_than,0
+    actions:
+      - set_variable has_debt:yes
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    gameVariables.remove("has_debt");
+    const engine = new EventEngine(events);
+    engine.update(makeCtx(), 0.016);
+    expect(gameVariables.get("has_debt")).toBe("yes");
+  });
+});
+
+describe("load_yaml action", () => {
+  it("merges events from a cached YAML file into the engine", () => {
+    const scene = stubSceneWithUI();
+    // Simulate a cached YAML file
+    (scene as unknown as Record<string, unknown>).cache = {
+      text: {
+        get: (key: string) => {
+          if (key === "events-shared_test") {
+            return `
+events:
+  SharedEvent:
+    conditions:
+      - is char_at player
+    actions:
+      - set_variable loaded_from_yaml:yes
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`;
+          }
+          return undefined;
+        },
+      },
+    };
+
+    // Create engine with a load_yaml action
+    const events = loadEventsFromYaml(`
+events:
+  Loader:
+    conditions:
+      - is char_at player
+    actions:
+      - load_yaml shared_test
+    x: 20
+    y: 19
+    width: 1
+    height: 1
+`);
+    const engine = new EventEngine(events);
+
+    gameVariables.remove("loaded_from_yaml");
+
+    // First update: triggers Loader which calls load_yaml
+    const ctx = makeCtx({
+      scene,
+      addEvents: (evts) => engine.mergeEvents(evts),
+    });
+    engine.update(ctx, 0.016);
+
+    // Loader ran (load_yaml merged SharedEvent into engine).
+    // SharedEvent should trigger on next update since conditions match.
+    engine.update(ctx, 0.016);
+    // One more frame to get past cooldown
+    engine.update(ctx, 0.016);
+    expect(gameVariables.get("loaded_from_yaml")).toBe("yes");
+  });
+});

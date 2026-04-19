@@ -26,6 +26,7 @@ export class Monster {
   totalXp: number;
   currentHp: number;
   status: string[] = [];
+  bond = 0;
 
   private constructor(
     slug: string,

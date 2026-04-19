@@ -86,6 +86,7 @@ export class CutsceneScene extends Scene implements DebugStateProvider, DebugCom
       npcs: new Map<string, NpcState>(),
       controls: this.controlsState,
       debugChoiceOverride: this.pendingChoiceOverride,
+      addEvents: (events) => this.eventEngine.mergeEvents(events),
     };
 
     this.eventEngine.update(ctx, delta / 1000);

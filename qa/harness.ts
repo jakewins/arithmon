@@ -20,6 +20,9 @@ interface DebugBridgeAPI {
   startCombat(): Promise<void>;
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;
+  teleport(mapKey: string, tileX: number, tileY: number): Promise<void>;
+  setVariable(key: string, value: string): void;
+  setLayer(rgba?: string): void;
 }
 
 declare global {
@@ -115,6 +118,28 @@ export async function waitForEvent(
 /** Get all events from the rolling buffer. */
 export async function getEvents(page: Page): Promise<DebugEvent[]> {
   return page.evaluate(() => [...window.A!.events]) as Promise<DebugEvent[]>;
+}
+
+/** Teleport the player to a specific map and tile. Skips cutscenes/menus. */
+export async function teleport(
+  page: Page,
+  mapKey: string,
+  tileX: number,
+  tileY: number,
+): Promise<void> {
+  await page.evaluate(
+    ({ mapKey, tileX, tileY }) => window.A!.teleport(mapKey, tileX, tileY),
+    { mapKey, tileX, tileY },
+  );
+}
+
+/** Set a game variable via the debug bridge. */
+export async function setVariable(
+  page: Page,
+  key: string,
+  value: string,
+): Promise<void> {
+  await page.evaluate(({ key, value }) => window.A!.setVariable(key, value), { key, value });
 }
 
 /** Take a screenshot, saved to qa/screenshots/<name>.png. Returns the file path. */
