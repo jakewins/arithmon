@@ -188,6 +188,43 @@ events:
     - transition_teleport player,spyder_route1.tmx,27,1,0.3
     - char_face player,down
 
+  # --- NPC spawns ---
+
+  Create Greeter:
+    conditions:
+    - not char_exists greeter
+    actions:
+    - create_npc greeter,17,18
+
+  Create Monk:
+    conditions:
+    - not char_exists cotton_town_monk
+    actions:
+    - create_npc cotton_town_monk,5,18
+    - char_face cotton_town_monk,right
+
+  Create Florist:
+    conditions:
+    - not char_exists cotton_town_florist
+    actions:
+    - create_npc cotton_town_florist,30,15
+    - char_face cotton_town_florist,down
+
+  # --- NPC dialogs ---
+
+  Talk Monk:
+    behav: talk cotton_town_monk
+    actions:
+    - dialog The monsters here respond to mathematics. Solve their puzzles to gain Dark Power.
+    - dialog Use that power wisely in battle.
+
+  Talk Florist:
+    behav: talk cotton_town_florist
+    actions:
+    - dialog I used to grow flowers here, but the wild monsters trampled my garden!
+
+  # --- Signs ---
+
   Town Sign:
     conditions:
       - is char_facing_tile
@@ -198,3 +235,59 @@ events:
     y: 16
     width: 1
     height: 1
+
+  Healing Center Sign:
+    x: 24
+    y: 27
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Healing Center - Rest your monsters here.
+
+  Cotton Scoop Sign:
+    x: 7
+    y: 27
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Cotton Scoop - Supplies & More
+
+  Route 1 Sign:
+    x: 10
+    y: 38
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route 1 — Paper Town
+
+  Route 2 Sign:
+    x: 37
+    y: 17
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Route 2 — Flower City (Road closed)
+
+  # --- Locked doors ---
+
+  Locked Door West:
+    x: 5
+    y: 22
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - dialog The door is locked.
+
+  Locked Door Mid:
+    x: 13
+    y: 22
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - dialog This building isn't open yet.
