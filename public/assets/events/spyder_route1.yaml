@@ -110,9 +110,26 @@ events:
 
   # --- NPC dialogs ---
 
-  Talk Bjorn:
-    behav: talk spyder_route1_bjorn
+  Talk Bjorn Pre Battle:
+    conditions:
+    - is char_facing_char player,spyder_route1_bjorn
+    - is button_pressed INTERACT
+    - not battle_outcome player,spyder_route1_bjorn,won
     actions:
+    - char_face spyder_route1_bjorn,player
+    - lock_controls
+    - dialog Hey there! The name's Bjorn. I've been training out here.
+    - dialog Let me show you what I've learned!
+    - start_battle spyder_route1_bjorn
+    - unlock_controls
+
+  Talk Bjorn Post Win:
+    conditions:
+    - is char_facing_char player,spyder_route1_bjorn
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_route1_bjorn,won
+    actions:
+    - char_face spyder_route1_bjorn,player
     - dialog Watch out for wild monsters in the tall grass!
     - dialog I heard there are some tough ones further north.
 

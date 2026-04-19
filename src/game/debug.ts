@@ -4,6 +4,7 @@ import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
 import { getInventoryItems } from "./item/inventory";
 import { markSeen, markCaught } from "./model/monsterRegistry";
+import { setEncounterRate } from "./encounterConfig";
 
 /**
  * Scenes implement this to contribute their state to `A.getState()`.
@@ -308,6 +309,11 @@ export class DebugBridge {
       };
       nextFrame(check);
     });
+  }
+
+  /** Override the wild encounter probability (0 = disabled, 1 = every step). */
+  setEncounterRate(rate: number): void {
+    setEncounterRate(rate);
   }
 
   /** Set a game variable. */

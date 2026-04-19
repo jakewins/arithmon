@@ -17,7 +17,7 @@ const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
 /** Tall-grass tile IDs across different tilesets that trigger encounters. */
 const GRASS_TILE_IDS = new Set([1552, 2797]);
-const ENCOUNTER_RATE = 0.5;
+import { getEncounterRate } from "../encounterConfig";
 
 const DEFAULT_MAP = "starter";
 const DEFAULT_SPAWN = { tileX: 10, tileY: 7, facing: "down" as Direction };
@@ -612,7 +612,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     });
     if (!onGrass) return;
 
-    if (Math.random() >= ENCOUNTER_RATE) return;
+    if (Math.random() >= getEncounterRate()) return;
 
     this.startCombat();
   }

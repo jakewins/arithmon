@@ -24,6 +24,11 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 200,
   },
+  spyder_route1_bjorn: {
+    name: "Bjorn",
+    monsters: [{ slug: "aardorn", level: 3 }],
+    goldReward: 100,
+  },
 };
 
 export function getNpcParty(npcSlug: string): NpcPartyDef | undefined {
