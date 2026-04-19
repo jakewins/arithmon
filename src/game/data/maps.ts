@@ -123,6 +123,11 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonPath: "assets/maps/spyder_healing_center.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
   },
+  spyder_cotton_scoop: {
+    jsonKey: "map-spyder_cotton_scoop",
+    jsonPath: "assets/maps/spyder_cotton_scoop.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+  },
   spyder_route1: {
     jsonKey: "map-spyder_route1",
     jsonPath: "assets/maps/spyder_route1.json",

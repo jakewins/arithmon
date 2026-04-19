@@ -83,6 +83,18 @@ events:
     - transition_teleport player,spyder_healing_center.tmx,6,9,0.3
     - char_face player,up
 
+  # --- Map connections: Cotton Scoop ---
+
+  Enter Cotton Scoop:
+    x: 9
+    y: 27
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_cotton_scoop.tmx,6,9,0.3
+    - char_face player,up
+
   # --- Map connections: south to Route 1 ---
   # Cotton town south (x=10-18) maps to Route 1 north (x=21-27+)
 
