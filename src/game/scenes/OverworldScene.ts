@@ -139,7 +139,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     // Monster battle sprites (64×44 frames)
     this.load.spritesheet("rockitten-battle", "assets/sprites/rockitten-sheet.png", {
       frameWidth: 64,
-      frameHeight: 44,
+      frameHeight: 64,
     });
     for (const slug of [
       "dollfin",
@@ -155,7 +155,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
-        frameHeight: 44,
+        frameHeight: 64,
       });
     }
 
@@ -656,6 +656,34 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.startCombat();
   }
 
+  debugSpawnBattle(
+    playerSlug: string,
+    enemySlug: string,
+    playerLevel = 5,
+    enemyLevel = 5,
+    environment?: string,
+  ): void {
+    const playerMonster = Monster.spawn(playerSlug, playerLevel);
+    const enemyMonster = Monster.spawn(enemySlug, enemyLevel);
+
+    this.inCombat = true;
+    this.player.setVelocity(0);
+    this.player.anims.stop();
+
+    this.scene.pause();
+    this.scene.launch("CombatScene", {
+      playerMonster,
+      enemyMonster,
+      party: [playerMonster],
+      inventory: session.player.inventory,
+      environment,
+    });
+
+    this.scene.get("CombatScene").events.once("shutdown", () => {
+      this.inCombat = false;
+    });
+  }
+
   private startCombat() {
     const lead = getLeadMonster(session.player.monsters);
     if (!lead) return; // no usable monsters
@@ -670,11 +698,13 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 
     this.scene.pause();
+    const mapDef = getMapDef(this.mapKey);
     this.scene.launch("CombatScene", {
       playerMonster: lead,
       enemyMonster,
       party: session.player.monsters,
       inventory: session.player.inventory,
+      environment: mapDef.environment,
     });
 
     // Listen for combat scene to stop, then handle post-combat

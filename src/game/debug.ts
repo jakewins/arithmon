@@ -27,6 +27,13 @@ export interface DebugCommandHandler {
   debugWalkTo?(tileX: number, tileY: number, facing?: Direction): Promise<void>;
   debugStartCombat?(): void;
   debugSetEnemyHp?(hp: number): void;
+  debugSpawnBattle?(
+    playerSlug: string,
+    enemySlug: string,
+    playerLevel?: number,
+    enemyLevel?: number,
+    environment?: string,
+  ): void;
 }
 
 export interface DebugEvent {
@@ -203,6 +210,20 @@ export class DebugBridge {
     const handler = this.getCommandHandler();
     if (handler?.debugStartCombat) {
       handler.debugStartCombat();
+    }
+  }
+
+  /** Spawn a battle with specific monsters for testing. */
+  async spawnBattle(
+    playerSlug: string,
+    enemySlug: string,
+    playerLevel = 5,
+    enemyLevel = 5,
+    environment?: string,
+  ): Promise<void> {
+    const handler = this.getCommandHandler();
+    if (handler?.debugSpawnBattle) {
+      handler.debugSpawnBattle(playerSlug, enemySlug, playerLevel, enemyLevel, environment);
     }
   }
 

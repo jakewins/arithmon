@@ -19,6 +19,8 @@ export interface MapDef {
   /** Path passed to `this.load.tilemapTiledJSON`. */
   jsonPath: string;
   tilesets: TilesetAsset[];
+  /** Battle environment for this map (determines background + islands). */
+  environment?: string;
 }
 
 /** Tilesets used by cotton_town + the indoor set needed by player_house_bedroom. */
@@ -80,31 +82,37 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonKey: "map-starter",
     jsonPath: "assets/maps/starter.json",
     tilesets: [CORE_OUTDOOR],
+    environment: "grass",
   },
   cotton_town: {
     jsonKey: "map-cotton_town",
     jsonPath: "assets/maps/cotton_town.json",
     tilesets: [CORE_CITY_AND_COUNTRY, CORE_OUTDOOR, CORE_BUILDINGS, CORE_SET_PIECES],
+    environment: "grass",
   },
   player_house_bedroom: {
     jsonKey: "map-player_house_bedroom",
     jsonPath: "assets/maps/player_house_bedroom.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
   },
   spyder_bedroom: {
     jsonKey: "map-spyder_bedroom",
     jsonPath: "assets/maps/spyder_bedroom.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
   },
   spyder_downstairs: {
     jsonKey: "map-spyder_downstairs",
     jsonPath: "assets/maps/spyder_downstairs.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_STAIRS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
   },
   spyder_paper_scoop: {
     jsonKey: "map-spyder_paper_scoop",
     jsonPath: "assets/maps/spyder_paper_scoop.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
   },
   spyder_paper_town: {
     jsonKey: "map-spyder_paper_town",
@@ -117,26 +125,31 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
       CORE_OUTDOOR_WATER,
       CORE_OUTDOOR_NATURE,
     ],
+    environment: "plain",
   },
   spyder_healing_center: {
     jsonKey: "map-spyder_healing_center",
     jsonPath: "assets/maps/spyder_healing_center.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
   },
   spyder_cotton_scoop: {
     jsonKey: "map-spyder_cotton_scoop",
     jsonPath: "assets/maps/spyder_cotton_scoop.json",
     tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
   },
   spyder_route1: {
     jsonKey: "map-spyder_route1",
     jsonPath: "assets/maps/spyder_route1.json",
     tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
+    environment: "forest",
   },
   water_end_of_desert: {
     jsonKey: "map-water_end_of_desert",
     jsonPath: "assets/maps/water_end_of_desert.json",
     tilesets: [CORE_OUTDOOR, OCEANSET_OUTSIDE],
+    environment: "ocean",
   },
 };
 

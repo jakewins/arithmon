@@ -5,6 +5,7 @@ import { Monster } from "../../model/Monster";
 import { session } from "../../session";
 import { getLeadMonster } from "../../model/Monster";
 import { debugBridge } from "../../debug";
+import { getMapDef } from "../../data/maps";
 
 /**
  * Tuxemon syntax:
@@ -50,6 +51,9 @@ class StartBattleAction implements EventAction {
 
     ctx.controls.locked = true;
     ctx.scene.scene.pause();
+    // Get environment from the current map for battle background
+    const mapKey = (ctx.scene as { mapKey?: string }).mapKey;
+    const environment = mapKey ? getMapDef(mapKey).environment : undefined;
     ctx.scene.scene.launch("CombatScene", {
       playerMonster: lead,
       enemyMonster: enemyLead,
@@ -59,6 +63,7 @@ class StartBattleAction implements EventAction {
       enemyParty,
       trainerName: partyDef.name,
       goldReward: partyDef.goldReward,
+      environment,
     });
 
     ctx.scene.scene.get("CombatScene").events.once("shutdown", () => {

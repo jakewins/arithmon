@@ -13,16 +13,38 @@ const WIDTH = 320;
 const HEIGHT = 240;
 const BOX_H = 64;
 const BOX_Y = HEIGHT - BOX_H;
-const HP_BAR_W = 80;
-const HP_BAR_H = 6;
-const DP_PIP_SIZE = 8;
-const DP_PIP_GAP = 3;
+const HP_BAR_W = 60;
+const HP_BAR_H = 4;
+const DP_PIP_SIZE = 6;
+const DP_PIP_GAP = 2;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
 // Layout: left panel ~60%, right panel ~40%
 const LEFT_W = 192;
 const RIGHT_W = WIDTH - LEFT_W;
+
+// --- Battle layout (derived from upstream Tuxemon combat_layouts.yaml) ---
+const SPRITE_SCALE = 1.5;
+const PLAYER_ISLAND_SCALE = 1.5;
+const ENEMY_ISLAND_SCALE = 1.1; // smaller for perspective (back island)
+
+// Enemy (upper-right, maps to RIGHT_COMBAT in upstream)
+const ENEMY_ISLAND_X = 244;
+const ENEMY_ISLAND_BOTTOM = 110;
+const ENEMY_SPRITE_X = 244;
+// feet on island surface (~45% up from island bottom)
+const ENEMY_SPRITE_Y = ENEMY_ISLAND_BOTTOM - Math.round(57 * ENEMY_ISLAND_SCALE * 0.45);
+const ENEMY_HUD_X = 5;
+const ENEMY_HUD_Y = 5;
+
+// Player (lower-left, maps to LEFT_COMBAT in upstream)
+const PLAYER_ISLAND_X = 68;
+const PLAYER_ISLAND_BOTTOM = BOX_Y;
+const PLAYER_SPRITE_X = 68;
+const PLAYER_SPRITE_Y = PLAYER_ISLAND_BOTTOM - Math.round(57 * PLAYER_ISLAND_SCALE * 0.45);
+const PLAYER_HUD_X = 196;
+const PLAYER_HUD_Y = 82;
 const PAD_X = 8;
 const PAD_Y = 6;
 const OPTION_H = 14;
@@ -42,6 +64,66 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
+// Available battle backgrounds
+const BATTLE_ENVIRONMENTS = [
+  "grass",
+  "forest",
+  "cave",
+  "sand",
+  "snow",
+  "ocean",
+  "desert",
+  "beach",
+  "bridge",
+  "canyon",
+  "cavern",
+  "cliff",
+  "clouds",
+  "plain",
+  "sea",
+  "snowplain",
+  "stadium",
+  "sunset",
+  "underwater",
+  "valley",
+  "arid",
+] as const;
+
+// Island sheets available
+const ISLAND_SHEETS = ["grass", "cave", "sand", "snow", "cobble", "water", "woodland"] as const;
+
+// Map environment to island sheet
+const ENV_TO_ISLAND: Record<string, string> = {
+  grass: "grass",
+  forest: "woodland",
+  cave: "cave",
+  cavern: "cave",
+  sand: "sand",
+  beach: "sand",
+  desert: "sand",
+  snow: "snow",
+  snowplain: "snow",
+  ocean: "water",
+  sea: "water",
+  underwater: "water",
+  stadium: "cobble",
+  plain: "grass",
+  valley: "grass",
+  sunset: "grass",
+  clouds: "grass",
+  cliff: "cobble",
+  canyon: "cobble",
+  bridge: "cobble",
+  arid: "sand",
+};
+
+// Party icon assets
+const PARTY_ICON_ASSETS: Record<string, string> = {
+  "party-alive": "assets/ui/icons/party/party_icon01.png",
+  "party-faint": "assets/ui/icons/party/party_icon03.png",
+  "party-empty": "assets/ui/icons/party/party_empty.png",
+};
+
 type MenuMode = "hidden" | "main" | "techniques" | "party" | "items" | "item_target";
 
 // 2x2 main menu layout
@@ -54,15 +136,25 @@ const MAIN_COLS = MAIN_MENU_ITEMS[0].length;
 
 export class CombatScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   private machine!: CombatMachine;
+  private background!: Phaser.GameObjects.Image;
+  private playerIsland!: Phaser.GameObjects.Image;
+  private enemyIsland!: Phaser.GameObjects.Image;
   private enemySprite!: Phaser.GameObjects.Image;
   private playerSprite!: Phaser.GameObjects.Image;
+  private enemyHudPanel!: Phaser.GameObjects.Image;
+  private playerHudPanel!: Phaser.GameObjects.Image;
   private enemyHpBar!: Phaser.GameObjects.Rectangle;
   private playerHpBar!: Phaser.GameObjects.Rectangle;
+  private enemyHpBg!: Phaser.GameObjects.Rectangle;
+  private playerHpBg!: Phaser.GameObjects.Rectangle;
   private enemyNameText!: Phaser.GameObjects.Text;
   private playerNameText!: Phaser.GameObjects.Text;
   private messageText!: Phaser.GameObjects.Text;
   private dpPips: Phaser.GameObjects.Rectangle[] = [];
   private xpBar!: Phaser.GameObjects.Rectangle;
+  private enemyPartyIcons: Phaser.GameObjects.Image[] = [];
+  private playerPartyIcons: Phaser.GameObjects.Image[] = [];
+  private environment = "grass";
   private eventQueue: CombatEvent[] = [];
   private processing = false;
 
@@ -117,7 +209,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     if (!this.textures.exists("rockitten-battle")) {
       this.load.spritesheet("rockitten-battle", "assets/sprites/rockitten-sheet.png", {
         frameWidth: 64,
-        frameHeight: 44,
+        frameHeight: 64,
       });
     }
     for (const slug of [
@@ -135,12 +227,46 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       if (!this.textures.exists(`${slug}-battle`)) {
         this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
           frameWidth: 64,
-          frameHeight: 44,
+          frameHeight: 64,
         });
       }
     }
     if (!this.textures.exists(BORDER_TEXTURE)) {
       this.load.image(BORDER_TEXTURE, "assets/ui/dialog-border.png");
+    }
+
+    // Battle backgrounds
+    for (const env of BATTLE_ENVIRONMENTS) {
+      const key = `bg-${env}`;
+      if (!this.textures.exists(key)) {
+        this.load.image(key, `assets/ui/combat/${env}_background.png`);
+      }
+    }
+
+    // Island platform sheets (96x57 per frame, 2 frames)
+    for (const island of ISLAND_SHEETS) {
+      const key = `island-${island}`;
+      if (!this.textures.exists(key)) {
+        this.load.spritesheet(key, `assets/ui/combat/${island}_island_sheet.png`, {
+          frameWidth: 96,
+          frameHeight: 57,
+        });
+      }
+    }
+
+    // HUD panels
+    if (!this.textures.exists("hud-opponent")) {
+      this.load.image("hud-opponent", "assets/ui/combat/hp_opponent_nohp.png");
+    }
+    if (!this.textures.exists("hud-player")) {
+      this.load.image("hud-player", "assets/ui/combat/hp_player_nohp.png");
+    }
+
+    // Party tray icons
+    for (const [key, path] of Object.entries(PARTY_ICON_ASSETS)) {
+      if (!this.textures.exists(key)) {
+        this.load.image(key, path);
+      }
     }
   }
 
@@ -153,7 +279,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     enemyParty?: Monster[];
     trainerName?: string;
     goldReward?: number;
+    environment?: string;
   }) {
+    this.environment = data.environment ?? "grass";
     this.goldReward = data.goldReward ?? 0;
     this.inventory = data.inventory ?? new Map();
     this.machine = new CombatMachine(
@@ -192,81 +320,131 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   }
 
   create() {
-    this.cameras.main.setBackgroundColor("#2a4a3a");
+    this.cameras.main.setBackgroundColor("#1a1a2e");
 
+    // --- Battle background ---
+    const bgKey = this.textures.exists(`bg-${this.environment}`)
+      ? `bg-${this.environment}`
+      : "bg-grass";
+    this.background = this.add.image(WIDTH / 2, BOX_Y / 2, bgKey);
+    this.background.setDisplaySize(WIDTH, BOX_Y);
+    this.background.setDepth(0);
+
+    // --- Island platforms ---
+    const islandType = ENV_TO_ISLAND[this.environment] ?? "grass";
+    const islandKey = `island-${islandType}`;
+
+    // Enemy island (back island = frame 1) — upper right, smaller for perspective
+    this.enemyIsland = this.add.image(ENEMY_ISLAND_X, ENEMY_ISLAND_BOTTOM, islandKey, 1);
+    this.enemyIsland.setOrigin(0.5, 1.0);
+    this.enemyIsland.setScale(ENEMY_ISLAND_SCALE);
+    this.enemyIsland.setDepth(1);
+
+    // Player island (front island = frame 0) — lower left, larger (foreground)
+    this.playerIsland = this.add.image(PLAYER_ISLAND_X, PLAYER_ISLAND_BOTTOM, islandKey, 0);
+    this.playerIsland.setOrigin(0.5, 1.0);
+    this.playerIsland.setScale(PLAYER_ISLAND_SCALE);
+    this.playerIsland.setDepth(1);
+
+    // --- Monster sprites ---
     const enemyTexture = `${this.machine.enemy.slug}-battle`;
     const playerTexture = `${this.machine.player.slug}-battle`;
 
-    // Enemy sprite (front) — upper right
-    this.enemySprite = this.add.image(WIDTH - 72, 48, enemyTexture, 1);
-    this.enemySprite.setScale(2);
+    // Enemy sprite (front view = frame 0) — on enemy island, slightly smaller for perspective
+    this.enemySprite = this.add.image(ENEMY_SPRITE_X, ENEMY_SPRITE_Y, enemyTexture, 0);
+    this.enemySprite.setOrigin(0.5, 1.0);
+    this.enemySprite.setScale(SPRITE_SCALE * 0.85);
+    this.enemySprite.setDepth(2);
 
-    // Player sprite (back) — lower left
-    this.playerSprite = this.add.image(72, BOX_Y - 48, playerTexture, 0);
-    this.playerSprite.setScale(2);
+    // Player sprite (back view = frame 1) — on player island
+    this.playerSprite = this.add.image(PLAYER_SPRITE_X, PLAYER_SPRITE_Y, playerTexture, 1);
+    this.playerSprite.setOrigin(0.5, 1.0);
+    this.playerSprite.setScale(SPRITE_SCALE);
+    this.playerSprite.setDepth(2);
 
-    // Enemy HP bar + name
-    const enemyHpX = WIDTH - 72 - HP_BAR_W / 2;
-    const enemyHpY = 88;
-    this.enemyNameText = this.add.text(enemyHpX, enemyHpY - 12, "", {
-      fontSize: "10px",
-      color: "#ffffff",
+    // --- HUD panels ---
+    // Enemy HUD (upper left)
+    this.enemyHudPanel = this.add.image(ENEMY_HUD_X, ENEMY_HUD_Y, "hud-opponent");
+    this.enemyHudPanel.setOrigin(0, 0);
+    this.enemyHudPanel.setDepth(3);
+
+    // Player HUD (right side)
+    this.playerHudPanel = this.add.image(PLAYER_HUD_X, PLAYER_HUD_Y, "hud-player");
+    this.playerHudPanel.setOrigin(0, 0);
+    this.playerHudPanel.setDepth(3);
+
+    // --- Name labels on HUD panels ---
+    // Enemy name: fits inside opponent panel (100x29), offset from top-left
+    this.enemyNameText = this.add.text(ENEMY_HUD_X + 6, ENEMY_HUD_Y + 4, "", {
+      fontSize: "8px",
+      color: "#1a1a1a",
+      fontFamily: "monospace",
     });
-    this.add.rectangle(enemyHpX + HP_BAR_W / 2, enemyHpY + 2, HP_BAR_W, HP_BAR_H, 0x333333);
-    this.enemyHpBar = this.add.rectangle(
-      enemyHpX + HP_BAR_W / 2,
-      enemyHpY + 2,
-      HP_BAR_W,
-      HP_BAR_H,
-      0x44cc44,
-    );
+    this.enemyNameText.setDepth(4);
 
-    // Player HP bar + name
-    const playerHpX = 72 - HP_BAR_W / 2;
-    const playerHpY = BOX_Y - 88;
-    this.playerNameText = this.add.text(playerHpX, playerHpY - 12, "", {
-      fontSize: "10px",
-      color: "#ffffff",
+    // Player name: fits inside player panel (104x37), offset from top-left
+    this.playerNameText = this.add.text(PLAYER_HUD_X + 6, PLAYER_HUD_Y + 4, "", {
+      fontSize: "8px",
+      color: "#1a1a1a",
+      fontFamily: "monospace",
     });
-    this.add.rectangle(playerHpX + HP_BAR_W / 2, playerHpY + 2, HP_BAR_W, HP_BAR_H, 0x333333);
-    this.playerHpBar = this.add.rectangle(
-      playerHpX + HP_BAR_W / 2,
-      playerHpY + 2,
-      HP_BAR_W,
-      HP_BAR_H,
-      0x44cc44,
-    );
+    this.playerNameText.setDepth(4);
 
-    // Dark Power pips — below player HP bar
-    const dpStartX = 72 - HP_BAR_W / 2;
-    const dpY = BOX_Y - 72;
-    this.add.text(dpStartX, dpY - 10, "DP", { fontSize: "8px", color: "#bb66ff" });
+    // --- HP bars on HUD panels ---
+    // Enemy HP bar: inside opponent panel, below name text
+    const enemyHpX = ENEMY_HUD_X + 6;
+    const enemyHpY = ENEMY_HUD_Y + 16;
+    this.enemyHpBg = this.add.rectangle(enemyHpX, enemyHpY, HP_BAR_W, HP_BAR_H, 0x555555);
+    this.enemyHpBg.setOrigin(0, 0);
+    this.enemyHpBg.setDepth(4);
+    this.enemyHpBar = this.add.rectangle(enemyHpX, enemyHpY, HP_BAR_W, HP_BAR_H, 0x44cc44);
+    this.enemyHpBar.setOrigin(0, 0);
+    this.enemyHpBar.setDepth(4);
+
+    // Player HP bar: inside player panel, after built-in "HP" label
+    const playerHpX = PLAYER_HUD_X + 18;
+    const playerHpY = PLAYER_HUD_Y + 23;
+    this.playerHpBg = this.add.rectangle(playerHpX, playerHpY, HP_BAR_W, HP_BAR_H, 0x555555);
+    this.playerHpBg.setOrigin(0, 0);
+    this.playerHpBg.setDepth(4);
+    this.playerHpBar = this.add.rectangle(playerHpX, playerHpY, HP_BAR_W, HP_BAR_H, 0x44cc44);
+    this.playerHpBar.setOrigin(0, 0);
+    this.playerHpBar.setDepth(4);
+
+    // --- XP bar — below player HUD panel ---
+    const xpBarX = PLAYER_HUD_X + 6;
+    const xpBarY = PLAYER_HUD_Y + 38;
+    const XP_BAR_H = 3;
+    const XP_BAR_W = 90;
+    this.add.text(xpBarX - 1, xpBarY - 1, "XP", { fontSize: "6px", color: "#4488ff" }).setDepth(4);
+    const xpBg = this.add.rectangle(xpBarX + 12, xpBarY, XP_BAR_W, XP_BAR_H, 0x222244);
+    xpBg.setOrigin(0, 0);
+    xpBg.setDepth(4);
+    this.xpBar = this.add.rectangle(xpBarX + 12, xpBarY, XP_BAR_W, XP_BAR_H, 0x4488ff);
+    this.xpBar.setOrigin(0, 0);
+    this.xpBar.setDepth(4);
+
+    // --- Dark Power pips — below XP bar ---
+    const dpStartX = PLAYER_HUD_X + 6;
+    const dpY = PLAYER_HUD_Y + 46;
+    this.add.text(dpStartX - 1, dpY - 1, "DP", { fontSize: "6px", color: "#bb66ff" }).setDepth(4);
     this.dpPips = [];
     for (let i = 0; i < MAX_DARK_POWER; i++) {
       const pip = this.add
         .rectangle(
-          dpStartX + i * (DP_PIP_SIZE + DP_PIP_GAP) + DP_PIP_SIZE / 2 + 16,
-          dpY - 5,
+          dpStartX + i * (DP_PIP_SIZE + DP_PIP_GAP) + DP_PIP_SIZE / 2 + 12,
+          dpY + 3,
           DP_PIP_SIZE,
           DP_PIP_SIZE,
           0xbb66ff,
         )
-        .setStrokeStyle(1, 0x8833cc);
+        .setStrokeStyle(1, 0x8833cc)
+        .setDepth(4);
       this.dpPips.push(pip);
     }
 
-    // XP bar — below DP pips, player only
-    const xpBarY = dpY + 8;
-    const XP_BAR_H = 4;
-    this.add.text(dpStartX, xpBarY - 2, "XP", { fontSize: "8px", color: "#4488ff" });
-    this.add.rectangle(dpStartX + HP_BAR_W / 2 + 16, xpBarY + 1, HP_BAR_W - 16, XP_BAR_H, 0x222244);
-    this.xpBar = this.add.rectangle(
-      dpStartX + HP_BAR_W / 2 + 16,
-      xpBarY + 1,
-      HP_BAR_W - 16,
-      XP_BAR_H,
-      0x4488ff,
-    );
+    // --- Party tray icons ---
+    this.buildPartyTray();
 
     // --- Two-panel bottom bar ---
     // Left panel: prompt/message area
@@ -1027,14 +1205,84 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
   }
 
+  private buildPartyTray() {
+    // Clean up existing icons
+    for (const icon of this.enemyPartyIcons) icon.destroy();
+    for (const icon of this.playerPartyIcons) icon.destroy();
+    this.enemyPartyIcons = [];
+    this.playerPartyIcons = [];
+
+    const ICON_SIZE = 7;
+    const ICON_GAP = 2;
+    const MAX_PARTY = 6;
+
+    // Enemy party tray — below enemy HUD
+    const enemyTrayX = ENEMY_HUD_X + 5;
+    const enemyTrayY = ENEMY_HUD_Y + 32;
+    const enemyParty = this.machine.enemyParty;
+    for (let i = 0; i < MAX_PARTY; i++) {
+      let iconKey: string;
+      if (i < enemyParty.length) {
+        iconKey = enemyParty[i].fainted ? "party-faint" : "party-alive";
+      } else {
+        iconKey = "party-empty";
+      }
+      const icon = this.add.image(enemyTrayX + i * (ICON_SIZE + ICON_GAP), enemyTrayY, iconKey);
+      icon.setOrigin(0, 0);
+      icon.setDepth(4);
+      this.enemyPartyIcons.push(icon);
+    }
+
+    // Player party tray — below DP pips
+    const playerTrayX = PLAYER_HUD_X + 6;
+    const playerTrayY = PLAYER_HUD_Y + 56;
+    const playerParty = this.machine.party;
+    for (let i = 0; i < MAX_PARTY; i++) {
+      let iconKey: string;
+      if (i < playerParty.length) {
+        iconKey = playerParty[i].fainted ? "party-faint" : "party-alive";
+      } else {
+        iconKey = "party-empty";
+      }
+      const icon = this.add.image(playerTrayX + i * (ICON_SIZE + ICON_GAP), playerTrayY, iconKey);
+      icon.setOrigin(0, 0);
+      icon.setDepth(4);
+      this.playerPartyIcons.push(icon);
+    }
+  }
+
+  private updatePartyTray() {
+    const MAX_PARTY = 6;
+    const playerParty = this.machine.party;
+    for (let i = 0; i < MAX_PARTY; i++) {
+      const icon = this.playerPartyIcons[i];
+      if (!icon) continue;
+      if (i < playerParty.length) {
+        icon.setTexture(playerParty[i].fainted ? "party-faint" : "party-alive");
+      } else {
+        icon.setTexture("party-empty");
+      }
+    }
+    const enemyParty = this.machine.enemyParty;
+    for (let i = 0; i < MAX_PARTY; i++) {
+      const icon = this.enemyPartyIcons[i];
+      if (!icon) continue;
+      if (i < enemyParty.length) {
+        icon.setTexture(enemyParty[i].fainted ? "party-faint" : "party-alive");
+      } else {
+        icon.setTexture("party-empty");
+      }
+    }
+  }
+
   private updatePlayerSprite() {
     const texture = `${this.machine.player.slug}-battle`;
-    this.playerSprite.setTexture(texture, 0);
+    this.playerSprite.setTexture(texture, 1); // back view = frame 1
   }
 
   private updateEnemySprite() {
     const texture = `${this.machine.enemy.slug}-battle`;
-    this.enemySprite.setTexture(texture, 1);
+    this.enemySprite.setTexture(texture, 0); // front view = frame 0
   }
 
   // --- Recharge ---
@@ -1107,6 +1355,11 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // Update name label when leveling up (shows new level)
     if (event.type === "level_up") {
       this.updateNameLabels();
+    }
+
+    // Update party tray on faint events
+    if (event.type === "faint" || event.type === "swap_in") {
+      this.updatePartyTray();
     }
 
     this.time.delayedCall(1000, () => this.processNextEvent());
