@@ -350,10 +350,10 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     title.setOrigin(0.5, 0);
     this.detailContainer.add(title);
 
-    // Sprite (front-facing, frame 1)
+    // Sprite (front-facing, frame 0)
     const texture = `${entry.slug}-battle`;
     if (this.textures.exists(texture)) {
-      this.detailSprite = this.add.image(WIDTH / 2, 65, texture, 1);
+      this.detailSprite = this.add.image(WIDTH / 2, 65, texture, 0);
       this.detailSprite.setScale(2);
       this.detailContainer.add(this.detailSprite);
 

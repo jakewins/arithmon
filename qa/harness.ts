@@ -23,6 +23,7 @@ interface DebugBridgeAPI {
   teleport(mapKey: string, tileX: number, tileY: number): Promise<void>;
   setVariable(key: string, value: string): void;
   setLayer(rgba?: string): void;
+  openJournal(): void;
 }
 
 declare global {

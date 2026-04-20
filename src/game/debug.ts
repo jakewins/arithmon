@@ -310,6 +310,13 @@ export class DebugBridge {
     markCaught(session.monsterRegistry, slug);
   }
 
+  /** Open the journal scene directly. */
+  openJournal(): void {
+    if (!this.activeScene) throw new Error("No active scene");
+    const scene = this.activeScene.scene;
+    scene.launch("JournalScene");
+  }
+
   /** Teleport the player to a map at the given tile. Restarts OverworldScene. */
   async teleport(mapKey: string, tileX: number, tileY: number): Promise<void> {
     if (!this.activeScene) throw new Error("No active scene");

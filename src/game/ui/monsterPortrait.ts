@@ -11,7 +11,7 @@ export interface PortraitObjects {
 
 /**
  * Create a large monster portrait with a gentle bob animation.
- * Uses the battle sprite (frame 1 = front facing).
+ * Uses the battle sprite (frame 0 = front facing).
  */
 export function createMonsterPortrait(
   scene: Scene,
@@ -24,7 +24,7 @@ export function createMonsterPortrait(
   container.setDepth(depth);
 
   const texture = `${monster.slug}-battle`;
-  const sprite = scene.add.image(0, 0, texture, 1);
+  const sprite = scene.add.image(0, 0, texture, 0);
   sprite.setScale(2);
   container.add(sprite);
 
