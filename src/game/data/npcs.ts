@@ -9,6 +9,7 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_dante: { spritesheet: "shopassistant" },
   spyder_papermart_miles: { spritesheet: "tennisplayer_green" },
   spyder_papermart_shirley: { spritesheet: "picnicker" },
+  spyder_route1_bjorn: { spritesheet: "beachcomber" },
   spyder_route2_roddick: { spritesheet: "tennisplayer_fiery" },
   spyder_papermart_harith: { spritesheet: "beachcomber" },
   spyder_billie: { spritesheet: "fashionista" },
