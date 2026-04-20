@@ -15,6 +15,7 @@ const BOX_H = 64;
 const BOX_Y = HEIGHT - BOX_H;
 const HP_BAR_W = 60;
 const HP_BAR_H = 4;
+const PLAYER_HP_BAR_W = 74;
 const DP_PIP_SIZE = 6;
 const DP_PIP_GAP = 2;
 const BORDER_TEXTURE = "dialog-border";
@@ -43,7 +44,7 @@ const PLAYER_ISLAND_X = 68;
 const PLAYER_ISLAND_BOTTOM = BOX_Y;
 const PLAYER_SPRITE_X = 68;
 const PLAYER_SPRITE_Y = PLAYER_ISLAND_BOTTOM - Math.round(57 * PLAYER_ISLAND_SCALE * 0.45);
-const PLAYER_HUD_X = 196;
+const PLAYER_HUD_X = 210;
 const PLAYER_HUD_Y = 82;
 const PAD_X = 8;
 const PAD_Y = 6;
@@ -383,7 +384,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.enemyNameText.setDepth(4);
 
     // Player name: fits inside player panel (104x37), offset from top-left
-    this.playerNameText = this.add.text(PLAYER_HUD_X + 6, PLAYER_HUD_Y + 4, "", {
+    // Panel has an angled left edge, so text needs extra inset at the top
+    this.playerNameText = this.add.text(PLAYER_HUD_X + 12, PLAYER_HUD_Y + 5, "", {
       fontSize: "8px",
       color: "#1a1a1a",
       fontFamily: "monospace",
@@ -402,21 +404,27 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.enemyHpBar.setDepth(4);
 
     // Player HP bar: inside player panel, after built-in "HP" label
-    const playerHpX = PLAYER_HUD_X + 18;
-    const playerHpY = PLAYER_HUD_Y + 23;
-    this.playerHpBg = this.add.rectangle(playerHpX, playerHpY, HP_BAR_W, HP_BAR_H, 0x555555);
+    const playerHpX = PLAYER_HUD_X + 20;
+    const playerHpY = PLAYER_HUD_Y + 22;
+    this.playerHpBg = this.add.rectangle(playerHpX, playerHpY, PLAYER_HP_BAR_W, HP_BAR_H, 0x555555);
     this.playerHpBg.setOrigin(0, 0);
     this.playerHpBg.setDepth(4);
-    this.playerHpBar = this.add.rectangle(playerHpX, playerHpY, HP_BAR_W, HP_BAR_H, 0x44cc44);
+    this.playerHpBar = this.add.rectangle(
+      playerHpX,
+      playerHpY,
+      PLAYER_HP_BAR_W,
+      HP_BAR_H,
+      0x44cc44,
+    );
     this.playerHpBar.setOrigin(0, 0);
     this.playerHpBar.setDepth(4);
 
     // --- XP bar — below player HUD panel ---
-    const xpBarX = PLAYER_HUD_X + 6;
-    const xpBarY = PLAYER_HUD_Y + 38;
+    const xpBarX = PLAYER_HUD_X + 8;
+    const xpBarY = PLAYER_HUD_Y + 39;
     const XP_BAR_H = 3;
-    const XP_BAR_W = 90;
-    this.add.text(xpBarX - 1, xpBarY - 1, "XP", { fontSize: "6px", color: "#4488ff" }).setDepth(4);
+    const XP_BAR_W = PLAYER_HP_BAR_W;
+    this.add.text(xpBarX, xpBarY - 1, "XP", { fontSize: "6px", color: "#4488ff" }).setDepth(4);
     const xpBg = this.add.rectangle(xpBarX + 12, xpBarY, XP_BAR_W, XP_BAR_H, 0x222244);
     xpBg.setOrigin(0, 0);
     xpBg.setDepth(4);
@@ -425,9 +433,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.xpBar.setDepth(4);
 
     // --- Dark Power pips — below XP bar ---
-    const dpStartX = PLAYER_HUD_X + 6;
-    const dpY = PLAYER_HUD_Y + 46;
-    this.add.text(dpStartX - 1, dpY - 1, "DP", { fontSize: "6px", color: "#bb66ff" }).setDepth(4);
+    const dpStartX = PLAYER_HUD_X + 8;
+    const dpY = PLAYER_HUD_Y + 47;
+    this.add.text(dpStartX, dpY - 1, "DP", { fontSize: "6px", color: "#bb66ff" }).setDepth(4);
     this.dpPips = [];
     for (let i = 0; i < MAX_DARK_POWER; i++) {
       const pip = this.add
@@ -1234,8 +1242,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
 
     // Player party tray — below DP pips
-    const playerTrayX = PLAYER_HUD_X + 6;
-    const playerTrayY = PLAYER_HUD_Y + 56;
+    const playerTrayX = PLAYER_HUD_X + 8;
+    const playerTrayY = PLAYER_HUD_Y + 55;
     const playerParty = this.machine.party;
     for (let i = 0; i < MAX_PARTY; i++) {
       let iconKey: string;
