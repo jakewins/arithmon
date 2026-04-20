@@ -45,7 +45,7 @@ const PLAYER_ISLAND_BOTTOM = BOX_Y;
 const PLAYER_SPRITE_X = 68;
 const PLAYER_SPRITE_Y = PLAYER_ISLAND_BOTTOM - Math.round(57 * PLAYER_ISLAND_SCALE * 0.45);
 const PLAYER_HUD_X = 210;
-const PLAYER_HUD_Y = 82;
+const PLAYER_HUD_Y = 117;
 const PAD_X = 8;
 const PAD_Y = 6;
 const OPTION_H = 14;
@@ -152,7 +152,6 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private playerNameText!: Phaser.GameObjects.Text;
   private messageText!: Phaser.GameObjects.Text;
   private dpPips: Phaser.GameObjects.Rectangle[] = [];
-  private xpBar!: Phaser.GameObjects.Rectangle;
   private enemyPartyIcons: Phaser.GameObjects.Image[] = [];
   private playerPartyIcons: Phaser.GameObjects.Image[] = [];
   private environment = "grass";
@@ -385,7 +384,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
     // Player name: fits inside player panel (104x37), offset from top-left
     // Panel has an angled left edge, so text needs extra inset at the top
-    this.playerNameText = this.add.text(PLAYER_HUD_X + 12, PLAYER_HUD_Y + 5, "", {
+    this.playerNameText = this.add.text(PLAYER_HUD_X + 12, PLAYER_HUD_Y + 9, "", {
       fontSize: "8px",
       color: "#1a1a1a",
       fontFamily: "monospace",
@@ -404,7 +403,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.enemyHpBar.setDepth(4);
 
     // Player HP bar: inside player panel, after built-in "HP" label
-    const playerHpX = PLAYER_HUD_X + 20;
+    const playerHpX = PLAYER_HUD_X + 16;
     const playerHpY = PLAYER_HUD_Y + 22;
     this.playerHpBg = this.add.rectangle(playerHpX, playerHpY, PLAYER_HP_BAR_W, HP_BAR_H, 0x555555);
     this.playerHpBg.setOrigin(0, 0);
@@ -419,22 +418,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.playerHpBar.setOrigin(0, 0);
     this.playerHpBar.setDepth(4);
 
-    // --- XP bar — below player HUD panel ---
-    const xpBarX = PLAYER_HUD_X + 8;
-    const xpBarY = PLAYER_HUD_Y + 39;
-    const XP_BAR_H = 3;
-    const XP_BAR_W = PLAYER_HP_BAR_W;
-    this.add.text(xpBarX, xpBarY - 1, "XP", { fontSize: "6px", color: "#4488ff" }).setDepth(4);
-    const xpBg = this.add.rectangle(xpBarX + 12, xpBarY, XP_BAR_W, XP_BAR_H, 0x222244);
-    xpBg.setOrigin(0, 0);
-    xpBg.setDepth(4);
-    this.xpBar = this.add.rectangle(xpBarX + 12, xpBarY, XP_BAR_W, XP_BAR_H, 0x4488ff);
-    this.xpBar.setOrigin(0, 0);
-    this.xpBar.setDepth(4);
-
-    // --- Dark Power pips — below XP bar ---
+    // --- Dark Power pips — below player HUD panel ---
     const dpStartX = PLAYER_HUD_X + 8;
-    const dpY = PLAYER_HUD_Y + 47;
+    const dpY = PLAYER_HUD_Y + 39;
     this.add.text(dpStartX, dpY - 1, "DP", { fontSize: "6px", color: "#bb66ff" }).setDepth(4);
     this.dpPips = [];
     for (let i = 0; i < MAX_DARK_POWER; i++) {
@@ -567,7 +553,6 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.setMenuMode("hidden");
     this.updateHpBars();
     this.updateDpPips();
-    this.updateXpBar();
     this.updateNameLabels();
 
     // Start combat
@@ -1198,11 +1183,6 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     return 0xcc4444;
   }
 
-  private updateXpBar() {
-    const progress = this.machine.player.xpProgress;
-    this.xpBar.setScale(Math.max(0.01, progress), 1);
-  }
-
   private updateDpPips() {
     for (let i = 0; i < this.dpPips.length; i++) {
       if (i < this.machine.darkPower) {
@@ -1243,7 +1223,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
     // Player party tray — below DP pips
     const playerTrayX = PLAYER_HUD_X + 8;
-    const playerTrayY = PLAYER_HUD_Y + 55;
+    const playerTrayY = PLAYER_HUD_Y + 47;
     const playerParty = this.machine.party;
     for (let i = 0; i < MAX_PARTY; i++) {
       let iconKey: string;
@@ -1351,7 +1331,6 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.messageText.setText(event.message);
     this.updateHpBars();
     this.updateDpPips();
-    this.updateXpBar();
 
     // Update sprite and name when a new monster is swapped in
     if (event.type === "swap_in") {
