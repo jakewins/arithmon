@@ -14,7 +14,7 @@ import type PF from "pathfinding";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { updateSaveLocation, saveGame } from "../save";
 import { consumeSavedLocation } from "../save";
-import blockedTileSets from "../data/blockedTiles";
+import blockedTileSets, { directionalTileSets, type AllowedDirs } from "../data/blockedTiles";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -52,6 +52,8 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   private teleporting = false;
   private walkGrid?: PF.Grid;
   private pendingChoiceOverride?: number;
+  /** Per-tile directional restrictions keyed by "x,y" → AllowedDirs. */
+  private directionalGrid = new Map<string, AllowedDirs>();
 
   // walkTo state
   private walkToWaypoints: [number, number][] = [];
@@ -383,6 +385,55 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       }
     }
 
+    // Build per-tile directional restriction lookup and mark them blocked for
+    // A* (which doesn't support directional edges).
+    // Map each tileset's directional local IDs to GIDs, then scan layers.
+    const dirGidMap = new Map<number, AllowedDirs>();
+    for (const ts of mapDef.tilesets) {
+      const dirLocal = directionalTileSets.get(ts.name);
+      if (!dirLocal) continue;
+      const phaserTs = map.tilesets.find((t) => t.name === ts.name);
+      if (!phaserTs) continue;
+      const firstgid = phaserTs.firstgid;
+      for (const [localId, dirs] of dirLocal) {
+        dirGidMap.set(firstgid + localId, dirs);
+      }
+    }
+    this.directionalGrid = new Map<string, AllowedDirs>();
+    if (dirGidMap.size > 0) {
+      for (const layer of this.tileLayers) {
+        for (let ty = 0; ty < map.height; ty++) {
+          for (let tx = 0; tx < map.width; tx++) {
+            const tile = layer.getTileAt(tx, ty);
+            if (tile && dirGidMap.has(tile.index)) {
+              const key = `${tx},${ty}`;
+              const existing = this.directionalGrid.get(key);
+              const incoming = dirGidMap.get(tile.index)!;
+              if (existing) {
+                // Merge: use the most restrictive (intersection of allowed dirs)
+                const mergedEnter =
+                  existing.enter_from && incoming.enter_from
+                    ? existing.enter_from.filter((d) => incoming.enter_from!.includes(d))
+                    : (existing.enter_from ?? incoming.enter_from);
+                const mergedExit =
+                  existing.exit_from && incoming.exit_from
+                    ? existing.exit_from.filter((d) => incoming.exit_from!.includes(d))
+                    : (existing.exit_from ?? incoming.exit_from);
+                this.directionalGrid.set(key, {
+                  ...(mergedEnter ? { enter_from: mergedEnter } : {}),
+                  ...(mergedExit ? { exit_from: mergedExit } : {}),
+                });
+              } else {
+                this.directionalGrid.set(key, incoming);
+              }
+              // Mark directionally-restricted tiles as unwalkable for A*
+              this.walkGrid.setWalkableAt(tx, ty, false);
+            }
+          }
+        }
+      }
+    }
+
     // Camera
     const cam = this.cameras.main;
     if (map.widthInPixels >= cam.width && map.heightInPixels >= cam.height) {
@@ -652,23 +703,28 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       } else {
         this.player.setVelocity(0);
 
-        if (this.cursors.left.isDown) {
+        if (this.cursors.left.isDown && !this.isDirectionBlocked("left")) {
           this.player.setVelocityX(-PLAYER_SPEED);
           this.player.anims.play("walk-left", true);
           this.playerFacing = "left";
-        } else if (this.cursors.right.isDown) {
+        } else if (this.cursors.right.isDown && !this.isDirectionBlocked("right")) {
           this.player.setVelocityX(PLAYER_SPEED);
           this.player.anims.play("walk-right", true);
           this.playerFacing = "right";
-        } else if (this.cursors.up.isDown) {
+        } else if (this.cursors.up.isDown && !this.isDirectionBlocked("up")) {
           this.player.setVelocityY(-PLAYER_SPEED);
           this.player.anims.play("walk-up", true);
           this.playerFacing = "up";
-        } else if (this.cursors.down.isDown) {
+        } else if (this.cursors.down.isDown && !this.isDirectionBlocked("down")) {
           this.player.setVelocityY(PLAYER_SPEED);
           this.player.anims.play("walk-down", true);
           this.playerFacing = "down";
         } else {
+          // Still update facing even when directionally blocked
+          if (this.cursors.left.isDown) this.playerFacing = "left";
+          else if (this.cursors.right.isDown) this.playerFacing = "right";
+          else if (this.cursors.up.isDown) this.playerFacing = "up";
+          else if (this.cursors.down.isDown) this.playerFacing = "down";
           this.player.anims.stop();
         }
       }
@@ -736,6 +792,38 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
         spawnTileY: teleport.tileY,
       } satisfies OverworldInitData);
     });
+  }
+
+  /**
+   * Check whether the player can move in the given direction based on
+   * directional enter_from / exit_from restrictions on tiles.
+   *
+   * Moving "right" means the player enters the target tile from "left",
+   * and exits the current tile toward "right".
+   */
+  private isDirectionBlocked(dir: Direction): boolean {
+    const { tileX, tileY } = this.playerTile();
+    // The direction the target tile is "entered from" is the opposite of movement.
+    const enterDir: Direction =
+      dir === "left" ? "right" : dir === "right" ? "left" : dir === "up" ? "down" : "up";
+    const dx = dir === "left" ? -1 : dir === "right" ? 1 : 0;
+    const dy = dir === "up" ? -1 : dir === "down" ? 1 : 0;
+    const targetX = tileX + dx;
+    const targetY = tileY + dy;
+
+    // Check: can we EXIT the current tile in this direction?
+    const currentDirs = this.directionalGrid.get(`${tileX},${tileY}`);
+    if (currentDirs?.exit_from && !currentDirs.exit_from.includes(dir)) {
+      return true; // exit not allowed in this direction
+    }
+
+    // Check: can we ENTER the target tile from our direction?
+    const targetDirs = this.directionalGrid.get(`${targetX},${targetY}`);
+    if (targetDirs?.enter_from && !targetDirs.enter_from.includes(enterDir)) {
+      return true; // entry not allowed from this direction
+    }
+
+    return false;
   }
 
   /** Player tile based on physics body center (at feet, not sprite center). */
