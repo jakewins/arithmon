@@ -5,6 +5,19 @@ events:
     actions:
     - play_music music_the_wild_places
 
+  # --- Encounter zones ---
+
+  Encounters:
+    x: 1
+    y: 1
+    width: 13
+    height: 13
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_dryads_grove,8
+
   Go Cotton Tunnel:
     x: 7
     y: 2

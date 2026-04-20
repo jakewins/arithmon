@@ -15,6 +15,19 @@ events:
     actions:
     - create_npc spyder_route2_roddick,15,9
 
+  # --- Encounter zones ---
+
+  Encounters:
+    x: 2
+    y: 2
+    width: 26
+    height: 16
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route2,11
+
   # --- Trainer battle ---
 
   Talk Roddick Pre Battle:

@@ -17,9 +17,6 @@ import { consumeSavedLocation } from "../save";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
-/** Tall-grass tile IDs across different tilesets that trigger encounters. */
-const GRASS_TILE_IDS = new Set([1552, 2797]);
-import { getEncounterRate } from "../encounterConfig";
 
 const DEFAULT_MAP = "starter";
 const DEFAULT_SPAWN = { tileX: 10, tileY: 7, facing: "down" as Direction };
@@ -644,12 +641,24 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
 
     // Build event context — use body center for tile coords (body is at feet)
     const { tileX, tileY } = this.playerTile();
+    const moved = tileX !== this.lastTileX || tileY !== this.lastTileY;
+    if (moved) {
+      debugBridge.emit("player_moved", {
+        fromX: this.lastTileX,
+        fromY: this.lastTileY,
+        toX: tileX,
+        toY: tileY,
+      });
+      this.lastTileX = tileX;
+      this.lastTileY = tileY;
+    }
     const ctx: EventContext = {
       scene: this,
       session,
       player: { tileX, tileY, facing: this.playerFacing },
       variables: session.player.gameVariables,
       interactPressed: this.interactPressed,
+      playerMoved: moved,
       npcs: this.npcs,
       controls: this.controlsState,
       collisionBodies: this.collisionBodies,
@@ -671,10 +680,6 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     if (this.controlsState.pendingTeleport && !this.teleporting) {
       this.beginTeleport(this.controlsState.pendingTeleport);
       this.controlsState.pendingTeleport = undefined;
-    }
-
-    if (!blocked && !this.teleporting) {
-      this.checkEncounter();
     }
   }
 
@@ -703,31 +708,6 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       tileX: Math.floor(this.player.x / TILE_SIZE),
       tileY: Math.floor(bodyCenterY / TILE_SIZE),
     };
-  }
-
-  private checkEncounter() {
-    const { tileX, tileY } = this.playerTile();
-
-    // Only check on tile transitions
-    if (tileX === this.lastTileX && tileY === this.lastTileY) return;
-    debugBridge.emit("player_moved", {
-      fromX: this.lastTileX,
-      fromY: this.lastTileY,
-      toX: tileX,
-      toY: tileY,
-    });
-    this.lastTileX = tileX;
-    this.lastTileY = tileY;
-
-    const onGrass = this.tileLayers.some((layer) => {
-      const tile = layer.getTileAt(tileX, tileY);
-      return tile && GRASS_TILE_IDS.has(tile.index);
-    });
-    if (!onGrass) return;
-
-    if (Math.random() >= getEncounterRate()) return;
-
-    this.startCombat();
   }
 
   private startMathProblem() {
@@ -795,11 +775,13 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     const lead = getLeadMonster(session.player.monsters);
     if (!lead) return; // no usable monsters
 
+    const table = getEncounterTable(this.mapKey);
+    if (!table) return; // no encounters on this map
+
     this.inCombat = true;
     this.player.setVelocity(0);
     this.player.anims.stop();
 
-    const table = getEncounterTable(this.mapKey);
     const { slug: enemySlug, level: enemyLevel } = rollEncounter(table);
     const enemyMonster = Monster.spawn(enemySlug, enemyLevel);
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
@@ -826,7 +808,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     });
   }
 
-  private triggerWhiteout() {
+  triggerWhiteout() {
     // Heal all party monsters to full
     for (const m of session.player.monsters) {
       m.currentHp = m.maxHp;

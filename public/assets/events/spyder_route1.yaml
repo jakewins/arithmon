@@ -108,6 +108,74 @@ events:
     - transition_teleport player,cotton_town.tmx,16,38,0.3
     - char_face player,up
 
+  # --- Encounter zones (from upstream Tuxemon) ---
+
+  Encounters 1:
+    x: 20
+    y: 11
+    width: 8
+    height: 4
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route1,11
+
+  Encounters 2:
+    x: 10
+    y: 11
+    width: 6
+    height: 4
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route1,11
+
+  Encounters 3:
+    x: 13
+    y: 7
+    width: 7
+    height: 3
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route1,11
+
+  Encounters 4:
+    x: 10
+    y: 3
+    width: 9
+    height: 3
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route1,11
+
+  Encounters West:
+    x: 4
+    y: 13
+    width: 4
+    height: 3
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route1,11
+
+  Encounters East:
+    x: 32
+    y: 14
+    width: 6
+    height: 4
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route1,11
+
   # --- NPC dialogs ---
 
   Talk Bjorn Pre Battle:

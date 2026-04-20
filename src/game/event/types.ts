@@ -32,6 +32,8 @@ export interface EventContext {
   /** Shortcut for session.player.gameVariables — avoids churn on existing actions. */
   variables: GameVariables;
   interactPressed: boolean;
+  /** True on the frame the player transitions to a new tile. */
+  playerMoved: boolean;
   npcs: Map<string, NpcState>;
   controls: {
     locked: boolean;

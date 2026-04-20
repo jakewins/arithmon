@@ -11,6 +11,19 @@ events:
     actions:
     - create_npc spyder_route4_hiker,15,9
 
+  # --- Encounter zones ---
+
+  Encounters:
+    x: 2
+    y: 2
+    width: 26
+    height: 16
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route4,11
+
   Talk Hiker Pre Battle:
     conditions:
     - is char_facing_char player,spyder_route4_hiker

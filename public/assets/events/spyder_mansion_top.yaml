@@ -1,4 +1,17 @@
 events:
+  # --- Encounter zones ---
+
+  Encounters:
+    x: 1
+    y: 1
+    width: 10
+    height: 8
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_mansion_top,8
+
   # --- Map connections ---
 
   Go Downstairs:

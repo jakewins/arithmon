@@ -5,6 +5,19 @@ events:
     actions:
     - play_music music_the_wild_places
 
+  # --- Encounter zones ---
+
+  Encounters:
+    x: 2
+    y: 2
+    width: 26
+    height: 16
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_route6,11
+
   Go Route 5 10:
     x: 2
     y: 10

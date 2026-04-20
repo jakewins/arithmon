@@ -107,12 +107,17 @@ import "./conditions/hasTuxepedia";
 import "./conditions/checkMaxTech";
 import "./conditions/tilePropertyUpdated";
 import "./conditions/stepTracker";
+import "./conditions/charMoved";
 
 export class EventEngine {
   private events: EventDef[];
   private running: RunningEvent[] = [];
   private runningIds = new Set<number>();
-  /** Events that just completed get a one-frame cooldown before re-evaluation. */
+  /**
+   * Events on cooldown stay suppressed until their conditions become false.
+   * This makes spatial triggers edge-triggered: they fire when the player
+   * enters the zone, but not again until the player leaves and re-enters.
+   */
   private cooldownIds = new Set<number>();
 
   constructor(events: EventDef[]) {
@@ -142,8 +147,16 @@ export class EventEngine {
     if (!anyBlocking) {
       for (const def of this.events) {
         if (this.runningIds.has(def.id)) continue;
-        if (this.cooldownIds.has(def.id)) continue;
-        if (this.checkConditions(ctx, def)) {
+        const conditionsMet = this.checkConditions(ctx, def);
+        if (this.cooldownIds.has(def.id)) {
+          // Clear cooldown only once conditions become false (e.g. player
+          // leaves the trigger zone), so the event can fire again on re-entry.
+          if (!conditionsMet) {
+            this.cooldownIds.delete(def.id);
+          }
+          continue;
+        }
+        if (conditionsMet) {
           if (def.conditions.some((c) => c.type === "button_pressed")) {
             debugBridge.emit("npc_interact", { npc: def.name });
           }
@@ -153,9 +166,6 @@ export class EventEngine {
         }
       }
     }
-
-    // Clear cooldowns — they only block for one frame.
-    this.cooldownIds.clear();
 
     // Step running events
     for (const running of this.running) {

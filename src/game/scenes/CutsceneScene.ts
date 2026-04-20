@@ -83,6 +83,7 @@ export class CutsceneScene extends Scene implements DebugStateProvider, DebugCom
       player: { tileX: 0, tileY: 0, facing: "down" },
       variables: session.player.gameVariables,
       interactPressed: this.interactPressed,
+      playerMoved: false,
       npcs: new Map<string, NpcState>(),
       controls: this.controlsState,
       debugChoiceOverride: this.pendingChoiceOverride,

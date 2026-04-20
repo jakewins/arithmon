@@ -16,6 +16,19 @@ events:
     - create_npc spyder_citypark_ranger,17,8
     - char_face spyder_citypark_ranger,down
 
+  # --- Encounter zones ---
+
+  Encounters:
+    x: 2
+    y: 2
+    width: 31
+    height: 21
+    conditions:
+    - is char_moved player
+    - is char_at player
+    actions:
+    - random_encounter spyder_citypark,11
+
   # --- Trainer battle ---
 
   Talk Ranger Pre Battle:

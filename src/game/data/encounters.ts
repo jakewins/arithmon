@@ -111,18 +111,9 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
   ],
 };
 
-/** Default encounter pool used when no map-specific table exists. */
-const DEFAULT_POOL: EncounterEntry[] = [
-  { slug: "rockitten", minLevel: 4, maxLevel: 6, weight: 1 },
-  { slug: "budaye", minLevel: 4, maxLevel: 6, weight: 1 },
-  { slug: "ignibus", minLevel: 4, maxLevel: 6, weight: 1 },
-  { slug: "grintot", minLevel: 4, maxLevel: 6, weight: 1 },
-  { slug: "dollfin", minLevel: 4, maxLevel: 6, weight: 1 },
-];
-
-/** Get the encounter table for a map, or the default pool. */
-export function getEncounterTable(mapKey: string): EncounterEntry[] {
-  return ENCOUNTER_TABLES[mapKey] ?? DEFAULT_POOL;
+/** Get the encounter table for a map, or undefined if none exists. */
+export function getEncounterTable(mapKey: string): EncounterEntry[] | undefined {
+  return ENCOUNTER_TABLES[mapKey];
 }
 
 /** Pick a random encounter from a table using weighted selection. */

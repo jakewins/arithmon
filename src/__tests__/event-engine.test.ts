@@ -62,6 +62,7 @@ function makeCtx(overrides: Partial<EventContext> = {}): EventContext {
     player: { tileX: 20, tileY: 19, facing: "up" as Direction },
     variables: gameVariables,
     interactPressed: false,
+    playerMoved: false,
     npcs: new Map<string, NpcState>(),
     controls: { locked: false },
     ...overrides,
