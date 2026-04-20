@@ -2,7 +2,7 @@ import type { Direction } from "./event/types";
 import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
-import { getInventoryItems } from "./item/inventory";
+import { getInventoryItems, addItem } from "./item/inventory";
 import { markSeen, markCaught } from "./model/monsterRegistry";
 
 /**
@@ -264,6 +264,11 @@ export class DebugBridge {
         }
       });
     });
+  }
+
+  /** Add an item to the player's inventory. */
+  addItem(slug: string, count = 1): void {
+    addItem(session.player.inventory, slug, count);
   }
 
   /** Add a monster to the player's party. Returns false if party is full. */

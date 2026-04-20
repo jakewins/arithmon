@@ -196,6 +196,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private goldReward = 0;
   private menuMode: MenuMode = "hidden";
 
+  // Capture animation state
+  private captureBall: Phaser.GameObjects.Image | null = null;
+  private captureShakeIndex = 0;
+
   // Key state for edge detection
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private prevKeys: Record<string, boolean> = {};
@@ -317,6 +321,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.pendingItem = null;
     this.combatItems = [];
     this.prevKeys = {};
+    this.captureBall = null;
+    this.captureShakeIndex = 0;
   }
 
   create() {
@@ -549,6 +555,31 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       backX: this.input.keyboard!.addKey(KEY_X),
       backspace: this.input.keyboard!.addKey(KEY_BACKSPACE),
     };
+
+    // Generate tuxeball texture (8x8 red/white ball)
+    if (!this.textures.exists("tuxeball")) {
+      const gfx = this.add.graphics();
+      // White bottom half
+      gfx.fillStyle(0xffffff);
+      gfx.fillCircle(4, 4, 4);
+      // Red top half
+      gfx.fillStyle(0xcc3333);
+      gfx.fillRect(0, 0, 8, 4);
+      gfx.fillCircle(4, 4, 4);
+      // Cut bottom half back to white
+      gfx.fillStyle(0xffffff);
+      gfx.fillRect(0, 4, 8, 4);
+      // Black divider line
+      gfx.fillStyle(0x222222);
+      gfx.fillRect(0, 3, 8, 1);
+      // Center button
+      gfx.fillStyle(0xffffff);
+      gfx.fillCircle(4, 4, 1);
+      gfx.fillStyle(0x222222);
+      gfx.strokeCircle(4, 4, 1);
+      gfx.generateTexture("tuxeball", 8, 8);
+      gfx.destroy();
+    }
 
     this.setMenuMode("hidden");
     this.updateHpBars();
@@ -1349,7 +1380,179 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.updatePartyTray();
     }
 
+    // --- Capture animations ---
+    if (event.type === "item_used" && this.eventQueue[0]?.type === "capture_shake") {
+      this.playCaptureThrowAnimation(() => this.processNextEvent());
+      return;
+    }
+    if (event.type === "capture_shake") {
+      this.playCaptureShakeAnimation(() => this.processNextEvent());
+      return;
+    }
+    if (event.type === "capture_success") {
+      this.playCaptureSuccessAnimation(() => this.processNextEvent());
+      return;
+    }
+    if (event.type === "capture_fail") {
+      this.playCaptureFailAnimation(() => this.processNextEvent());
+      return;
+    }
+
     this.time.delayedCall(1000, () => this.processNextEvent());
+  }
+
+  // --- Capture animation methods ---
+
+  private playCaptureThrowAnimation(onComplete: () => void) {
+    this.captureShakeIndex = 0;
+
+    // Create ball at player position
+    const ball = this.add.image(PLAYER_SPRITE_X, PLAYER_SPRITE_Y - 20, "tuxeball");
+    ball.setScale(1.5);
+    ball.setDepth(10);
+    this.captureBall = ball;
+
+    // Arc throw from player to enemy
+    const targetX = ENEMY_SPRITE_X;
+    const targetY = ENEMY_SPRITE_Y - 10;
+    const midY = Math.min(ball.y, targetY) - 50; // arc peak
+
+    this.tweens.add({
+      targets: ball,
+      x: targetX,
+      y: targetY,
+      duration: 600,
+      ease: "Sine.easeIn",
+      onUpdate: (_tween, _target, _key, _value, progress: number) => {
+        // Parabolic arc: offset Y upward at midpoint
+        const arcOffset = -Math.sin(progress * Math.PI) * (ball.y - midY);
+        ball.y += arcOffset * 0.15;
+        ball.angle = progress * 360; // spin the ball
+      },
+      onComplete: () => {
+        ball.angle = 0;
+        // Flash the enemy sprite, then shrink it into the ball
+        this.tweens.add({
+          targets: this.enemySprite,
+          alpha: 0,
+          scaleX: 0,
+          scaleY: 0,
+          duration: 400,
+          ease: "Power2",
+          onComplete: () => {
+            // Ball drops to ground (island surface)
+            this.tweens.add({
+              targets: ball,
+              y: ENEMY_ISLAND_BOTTOM - 6,
+              duration: 300,
+              ease: "Bounce.easeOut",
+              onComplete: () => {
+                onComplete();
+              },
+            });
+          },
+        });
+      },
+    });
+  }
+
+  private playCaptureShakeAnimation(onComplete: () => void) {
+    this.captureShakeIndex++;
+    if (!this.captureBall) {
+      onComplete();
+      return;
+    }
+
+    const ball = this.captureBall;
+    // Wobble left-right
+    this.tweens.add({
+      targets: ball,
+      angle: -20,
+      duration: 100,
+      yoyo: true,
+      repeat: 1,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.tweens.add({
+          targets: ball,
+          angle: 20,
+          duration: 100,
+          yoyo: true,
+          repeat: 1,
+          ease: "Sine.easeInOut",
+          onComplete: () => {
+            ball.angle = 0;
+            this.time.delayedCall(300, onComplete);
+          },
+        });
+      },
+    });
+  }
+
+  private playCaptureSuccessAnimation(onComplete: () => void) {
+    if (!this.captureBall) {
+      onComplete();
+      return;
+    }
+
+    const ball = this.captureBall;
+    // Small "click" — scale down briefly then back, with a star flash
+    this.tweens.add({
+      targets: ball,
+      scaleX: 1.0,
+      scaleY: 1.0,
+      duration: 150,
+      yoyo: true,
+      ease: "Power2",
+      onComplete: () => {
+        // Flash particles around the ball
+        const flash = this.add.circle(ball.x, ball.y, 12, 0xffff88, 0.8);
+        flash.setDepth(9);
+        this.tweens.add({
+          targets: flash,
+          alpha: 0,
+          scaleX: 2,
+          scaleY: 2,
+          duration: 400,
+          onComplete: () => {
+            flash.destroy();
+            this.time.delayedCall(500, onComplete);
+          },
+        });
+      },
+    });
+  }
+
+  private playCaptureFailAnimation(onComplete: () => void) {
+    if (this.captureBall) {
+      // Ball breaks open — flash and disappear
+      this.tweens.add({
+        targets: this.captureBall,
+        alpha: 0,
+        scaleX: 3,
+        scaleY: 3,
+        duration: 300,
+        onComplete: () => {
+          this.captureBall?.destroy();
+          this.captureBall = null;
+        },
+      });
+    }
+
+    // Monster reappears
+    const origScale = SPRITE_SCALE * 0.85;
+    this.enemySprite.setScale(0);
+    this.enemySprite.setAlpha(1);
+    this.tweens.add({
+      targets: this.enemySprite,
+      scaleX: origScale,
+      scaleY: origScale,
+      duration: 400,
+      ease: "Back.easeOut",
+      onComplete: () => {
+        this.time.delayedCall(500, onComplete);
+      },
+    });
   }
 
   private showEndMessage() {
