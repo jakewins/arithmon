@@ -14,6 +14,7 @@ import type PF from "pathfinding";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { updateSaveLocation, saveGame } from "../save";
 import { consumeSavedLocation } from "../save";
+import blockedTileSets from "../data/blockedTiles";
 
 const PLAYER_SPEED = 80;
 const TILE_SIZE = 16;
@@ -281,6 +282,21 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
 
     const tilesets = mapDef.tilesets.map((t) => map.addTilesetImage(t.name, t.imageKey)!);
 
+    // Compute the set of global tile IDs (GIDs) that are impassable, by
+    // combining each tileset's firstgid with the per-tileset blocked-tile
+    // lookup extracted from the original Tuxemon .tsx files.
+    const blockedGids: number[] = [];
+    for (const ts of mapDef.tilesets) {
+      const localIds = blockedTileSets.get(ts.name);
+      if (!localIds) continue;
+      const phaserTs = map.tilesets.find((t) => t.name === ts.name);
+      if (!phaserTs) continue;
+      const firstgid = phaserTs.firstgid;
+      for (const id of localIds) {
+        blockedGids.push(firstgid + id);
+      }
+    }
+
     // Create tile layers — pass all tilesets so any layer can use any tile.
     // A layer named "Above Player" (any case) draws above the player; a
     // layer named "Ground" is remembered for grass-encounter tile lookups.
@@ -288,6 +304,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       const layer = map.createLayer(layerData.name, tilesets)!;
       if (layerData.name.toLowerCase() === "above player") {
         layer.setDepth(10);
+      }
+      // Mark blocked tiles as collidable so Phaser physics stops the player.
+      if (blockedGids.length > 0) {
+        layer.setCollision(blockedGids);
       }
       this.tileLayers.push(layer);
     }
@@ -342,8 +362,26 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     }
     this.physics.add.collider(this.player, this.collisionBodies);
 
-    // Build walkability grid for A* pathfinding
+    // Add physics collider between player and each tile layer so that tiles
+    // marked with setCollision() above actually stop the player.
+    for (const layer of this.tileLayers) {
+      this.physics.add.collider(this.player, layer);
+    }
+
+    // Build walkability grid for A* pathfinding.
+    // Also mark tile-based blocked tiles so A* pathfinding respects them.
     this.walkGrid = buildGrid(collisionRects, map.width, map.height, TILE_SIZE);
+    const blockedGidSet = new Set(blockedGids);
+    for (const layer of this.tileLayers) {
+      for (let ty = 0; ty < map.height; ty++) {
+        for (let tx = 0; tx < map.width; tx++) {
+          const tile = layer.getTileAt(tx, ty);
+          if (tile && blockedGidSet.has(tile.index)) {
+            this.walkGrid.setWalkableAt(tx, ty, false);
+          }
+        }
+      }
+    }
 
     // Camera
     const cam = this.cameras.main;
