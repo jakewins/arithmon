@@ -4,7 +4,7 @@ import { EventEngine } from "../event/engine";
 import { session } from "../session";
 import { loadEventsFromYaml } from "../event/loader";
 import type { Direction, EventContext, NpcState, PendingTeleport } from "../event/types";
-import { getNpcSprite, allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
+import { allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { getEncounterTable, rollEncounter } from "../data/encounters";
 import { FACING_FRAMES } from "../event/actions/charFace";
@@ -342,11 +342,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.createWalkAnimation("walk-right", 2, playerTexture);
     this.createWalkAnimation("walk-up", 3, playerTexture);
 
-    // Per-map NPCs: only cotton_town has the greeter for now.
     this.collisionBodies = this.physics.add.staticGroup();
-    if (this.mapKey === "cotton_town") {
-      this.spawnGreeter();
-    }
 
     // Build per-tile directional restriction lookup first — tiles with
     // directional properties are managed by the directional system and should
@@ -762,28 +758,6 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       this.walkStepResolve = undefined;
       resolve?.(this.playerTile());
     }
-  }
-
-  private spawnGreeter() {
-    const greeterTileX = 17;
-    const greeterTileY = 18;
-    const greeterX = greeterTileX * TILE_SIZE + TILE_SIZE / 2;
-    const greeterY = greeterTileY * TILE_SIZE;
-    const { spritesheet: greeterSheet } = getNpcSprite("greeter");
-    const greeterSprite = this.add.sprite(greeterX, greeterY, greeterSheet, 1);
-    greeterSprite.setDepth(5);
-    this.npcs.set("greeter", {
-      slug: "greeter",
-      tileX: greeterTileX,
-      tileY: greeterTileY,
-      facing: "left",
-      sprite: greeterSprite,
-    });
-
-    const npcBodyY = greeterTileY * TILE_SIZE + TILE_SIZE / 2;
-    const npcCollision = this.add.rectangle(greeterX, npcBodyY, TILE_SIZE, TILE_SIZE);
-    npcCollision.setVisible(false);
-    this.collisionBodies.add(npcCollision);
   }
 
   private createWalkAnimation(key: string, row: number, textureKey: string) {

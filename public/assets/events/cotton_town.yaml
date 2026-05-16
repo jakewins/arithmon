@@ -19,58 +19,6 @@ events:
     width: 4
     height: 3
 
-  Greeter Ask:
-    conditions:
-      - is char_facing_char player,greeter
-      - is button_pressed INTERACT
-      - not variable_set greeter_mood
-    actions:
-      - char_face greeter,player
-      - dialog Welcome to Cotton Town! The monsters here are restless...
-      - dialog How are you feeling about all this?
-      - translated_dialog_choice good:bad,greeter_mood
-    x: 17
-    y: 18
-    width: 1
-    height: 1
-
-  Greeter Reply Good:
-    conditions:
-      - is variable_set greeter_mood:good
-      - not variable_set greeter_replied:yes
-    actions:
-      - dialog That's the spirit! You'll do great out there. Good luck!
-      - set_variable greeter_replied:yes
-    x: 17
-    y: 18
-    width: 1
-    height: 1
-
-  Greeter Reply Bad:
-    conditions:
-      - is variable_set greeter_mood:bad
-      - not variable_set greeter_replied:yes
-    actions:
-      - dialog I understand... it can be scary. But you're braver than you think. Hang in there!
-      - set_variable greeter_replied:yes
-    x: 17
-    y: 18
-    width: 1
-    height: 1
-
-  Greeter Talk Again:
-    conditions:
-      - is char_facing_char player,greeter
-      - is button_pressed INTERACT
-      - is variable_set greeter_replied:yes
-    actions:
-      - char_face greeter,player
-      - dialog Good to see you again! Stay safe out there.
-    x: 17
-    y: 18
-    width: 1
-    height: 1
-
   # --- Map connections: healing center ---
 
   Enter Healing Center:
@@ -190,19 +138,6 @@ events:
 
   # --- NPC spawns ---
 
-  Create Greeter:
-    conditions:
-    - not char_exists greeter
-    actions:
-    - create_npc greeter,17,18
-
-  Create Monk:
-    conditions:
-    - not char_exists cotton_town_monk
-    actions:
-    - create_npc cotton_town_monk,5,18
-    - char_face cotton_town_monk,right
-
   Create Florist:
     conditions:
     - not char_exists cotton_town_florist
@@ -211,12 +146,6 @@ events:
     - char_face cotton_town_florist,down
 
   # --- NPC dialogs ---
-
-  Talk Monk:
-    behav: talk cotton_town_monk
-    actions:
-    - dialog The monsters here respond to mathematics. Solve their puzzles to gain Dark Power.
-    - dialog Use that power wisely in battle.
 
   Talk Florist:
     behav: talk cotton_town_florist

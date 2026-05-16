@@ -37,11 +37,12 @@ class CreateNpcAction implements EventAction {
     sprite.setDepth(5);
 
     // Add a collision body so the player can't walk through the NPC
+    let collisionBody: Phaser.GameObjects.Rectangle | undefined;
     if (ctx.collisionBodies) {
       const bodyY = this.tileY * TILE_SIZE + TILE_SIZE / 2;
-      const rect = ctx.scene.add.rectangle(pixelX, bodyY, TILE_SIZE, TILE_SIZE);
-      rect.setVisible(false);
-      ctx.collisionBodies.add(rect);
+      collisionBody = ctx.scene.add.rectangle(pixelX, bodyY, TILE_SIZE, TILE_SIZE);
+      collisionBody.setVisible(false);
+      ctx.collisionBodies.add(collisionBody);
     }
 
     ctx.npcs.set(this.slug, {
@@ -50,6 +51,7 @@ class CreateNpcAction implements EventAction {
       tileY: this.tileY,
       facing: this.facing,
       sprite,
+      collisionBody,
     });
 
     this.done = true;

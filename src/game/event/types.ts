@@ -63,6 +63,7 @@ export interface NpcState {
   tileY: number;
   facing: Direction;
   sprite: Phaser.GameObjects.Sprite;
+  collisionBody?: Phaser.GameObjects.Rectangle;
 }
 
 export interface GameVariables {

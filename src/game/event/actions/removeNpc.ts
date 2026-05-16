@@ -15,6 +15,9 @@ class RemoveNpcAction implements EventAction {
     const npc = ctx.npcs.get(this.slug);
     if (npc) {
       npc.sprite.destroy();
+      if (npc.collisionBody) {
+        npc.collisionBody.destroy();
+      }
       ctx.npcs.delete(this.slug);
     }
     this.done = true;
