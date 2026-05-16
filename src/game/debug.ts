@@ -24,6 +24,7 @@ export interface DebugCommandHandler {
   debugSubmitAnswer?(): void;
   debugIsBlocking?(): boolean;
   debugWalkTo?(tileX: number, tileY: number, facing?: Direction): Promise<void>;
+  debugWalkStep?(dir: Direction): Promise<{ tileX: number; tileY: number }>;
   debugStartCombat?(): void;
   debugSetEnemyHp?(hp: number): void;
   debugSpawnBattle?(
@@ -203,6 +204,20 @@ export class DebugBridge {
     if (handler?.debugWalkTo) {
       return handler.debugWalkTo(tileX, tileY, facing);
     }
+  }
+
+  /**
+   * Walk the player exactly one tile in the given direction, using the
+   * normal keyboard-input code path (respects directional restrictions and
+   * physics collisions).  Resolves with the player's tile after the step.
+   * If the direction is blocked the player stays put.
+   */
+  async walkStep(dir: Direction): Promise<{ tileX: number; tileY: number }> {
+    const handler = this.getCommandHandler();
+    if (handler?.debugWalkStep) {
+      return handler.debugWalkStep(dir);
+    }
+    throw new Error("walkStep not supported by current scene");
   }
 
   /** Trigger a wild combat encounter immediately. */

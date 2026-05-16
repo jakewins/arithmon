@@ -16,6 +16,7 @@ interface DebugBridgeAPI {
   getState(): Record<string, unknown>;
   interact(): Promise<void>;
   walkTo(x: number, y: number, facing?: string): Promise<void>;
+  walkStep(dir: "up" | "down" | "left" | "right"): Promise<{ tileX: number; tileY: number }>;
   selectChoice(index: number): Promise<void>;
   startCombat(): Promise<void>;
   waitForIdle(): Promise<void>;
@@ -93,6 +94,21 @@ export async function selectChoice(
   index: number,
 ): Promise<void> {
   await page.evaluate((i) => window.A!.selectChoice(i), index);
+}
+
+/**
+ * Walk the player one tile in the given direction using the normal input
+ * code path (respects directional restrictions and physics).
+ * Returns the player's tile position after the step.
+ */
+export async function walkStep(
+  page: Page,
+  dir: "up" | "down" | "left" | "right",
+): Promise<{ tileX: number; tileY: number }> {
+  return page.evaluate(
+    (d) => window.A!.walkStep(d as "up" | "down" | "left" | "right"),
+    dir,
+  ) as Promise<{ tileX: number; tileY: number }>;
 }
 
 /** Trigger a wild combat encounter immediately. */

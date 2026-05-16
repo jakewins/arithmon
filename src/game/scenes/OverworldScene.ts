@@ -63,6 +63,11 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   private walkToFacing?: Direction;
   private walkToResolve?: () => void;
 
+  // walkStep state (single-tile keyboard-style movement for debug/tests)
+  private walkStepDir?: Direction;
+  private walkStepStartTile?: { tileX: number; tileY: number };
+  private walkStepResolve?: (result: { tileX: number; tileY: number }) => void;
+
   constructor() {
     super("OverworldScene");
   }
@@ -86,6 +91,8 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.tileLayers = [];
     this.walkToWaypoints = [];
     this.walkToResolve = undefined;
+    this.walkStepDir = undefined;
+    this.walkStepResolve = undefined;
   }
 
   preload() {
@@ -341,25 +348,116 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       this.spawnGreeter();
     }
 
-    // Collision from object layer rectangles
+    // Build per-tile directional restriction lookup first — tiles with
+    // directional properties are managed by the directional system and should
+    // NOT be covered by collision-rect physics bodies (matching Tuxemon
+    // behaviour where directional tile rules override collision zones).
+    const dirGidMap = new Map<number, AllowedDirs>();
+    for (const ts of mapDef.tilesets) {
+      const dirLocal = directionalTileSets.get(ts.name);
+      if (!dirLocal) continue;
+      const phaserTs = map.tilesets.find((t) => t.name === ts.name);
+      if (!phaserTs) continue;
+      const firstgid = phaserTs.firstgid;
+      for (const [localId, dirs] of dirLocal) {
+        dirGidMap.set(firstgid + localId, dirs);
+      }
+    }
+    this.directionalGrid = new Map<string, AllowedDirs>();
+    const directionalTileCoords = new Set<string>();
+    if (dirGidMap.size > 0) {
+      for (const layer of this.tileLayers) {
+        for (let ty = 0; ty < map.height; ty++) {
+          for (let tx = 0; tx < map.width; tx++) {
+            const tile = layer.getTileAt(tx, ty);
+            if (tile && dirGidMap.has(tile.index)) {
+              const key = `${tx},${ty}`;
+              directionalTileCoords.add(key);
+              const existing = this.directionalGrid.get(key);
+              const incoming = dirGidMap.get(tile.index)!;
+              if (existing) {
+                // Merge: use the most restrictive (intersection of allowed dirs)
+                const mergedEnter =
+                  existing.enter_from && incoming.enter_from
+                    ? existing.enter_from.filter((d) => incoming.enter_from!.includes(d))
+                    : (existing.enter_from ?? incoming.enter_from);
+                const mergedExit =
+                  existing.exit_from && incoming.exit_from
+                    ? existing.exit_from.filter((d) => incoming.exit_from!.includes(d))
+                    : (existing.exit_from ?? incoming.exit_from);
+                this.directionalGrid.set(key, {
+                  ...(mergedEnter ? { enter_from: mergedEnter } : {}),
+                  ...(mergedExit ? { exit_from: mergedExit } : {}),
+                });
+              } else {
+                this.directionalGrid.set(key, incoming);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Compute "approach tiles" — non-directional tiles adjacent to
+    // directional tiles from which entry is allowed.  These must remain
+    // walkable so the player can stand right next to fences / ledges,
+    // matching Tuxemon's tile-based collision where directional rules
+    // override collision zones.  We only mark non-directional tiles as
+    // approach tiles so that directional tiles don't remove each other's
+    // collision bodies.
+    const approachTileCoords = new Set<string>();
+    for (const [key] of this.directionalGrid) {
+      const [tx, ty] = key.split(",").map(Number);
+      // Mark all four neighbours as approach tiles so the player can
+      // walk right up to the fence/ledge from any side.  The
+      // directional enter_from / exit_from checks will still prevent
+      // crossing onto the tile from a disallowed direction.
+      for (const [dx, dy] of [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+      ]) {
+        const akey = `${tx + dx},${ty + dy}`;
+        if (!directionalTileCoords.has(akey)) {
+          approachTileCoords.add(akey);
+        }
+      }
+    }
+
+    // Collision from object layer rectangles — exclude approach tiles so the
+    // player can walk right up to directional boundaries (fences / ledges).
     const collisionRects: CollisionRect[] = [];
     const collisionLayer = map.getObjectLayer("Collisions");
     if (collisionLayer) {
       for (const obj of collisionLayer.objects) {
-        const rect = this.add.rectangle(
-          obj.x! + obj.width! / 2,
-          obj.y! + obj.height! / 2,
-          obj.width,
-          obj.height,
-        );
-        rect.setVisible(false);
-        this.collisionBodies.add(rect);
         collisionRects.push({
           x: obj.x!,
           y: obj.y!,
           width: obj.width!,
           height: obj.height!,
         });
+        // Create per-tile collision bodies, skipping approach tiles and
+        // directional tiles.  Directional tiles (fences, ledges) are
+        // handled by the isDirectionBlocked() check, not physics bodies.
+        const startCol = Math.floor(obj.x! / TILE_SIZE);
+        const endCol = Math.ceil((obj.x! + obj.width!) / TILE_SIZE);
+        const startRow = Math.floor(obj.y! / TILE_SIZE);
+        const endRow = Math.ceil((obj.y! + obj.height!) / TILE_SIZE);
+        for (let ty = startRow; ty < endRow; ty++) {
+          for (let tx = startCol; tx < endCol; tx++) {
+            const key = `${tx},${ty}`;
+            if (approachTileCoords.has(key) || directionalTileCoords.has(key)) continue;
+            const rect = this.add.rectangle(
+              tx * TILE_SIZE + TILE_SIZE / 2,
+              ty * TILE_SIZE + TILE_SIZE / 2,
+              TILE_SIZE,
+              TILE_SIZE,
+            );
+            rect.setVisible(false);
+            this.collisionBodies.add(rect);
+          }
+        }
       }
     }
     this.physics.add.collider(this.player, this.collisionBodies);
@@ -384,53 +482,17 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
         }
       }
     }
-
-    // Build per-tile directional restriction lookup and mark them blocked for
-    // A* (which doesn't support directional edges).
-    // Map each tileset's directional local IDs to GIDs, then scan layers.
-    const dirGidMap = new Map<number, AllowedDirs>();
-    for (const ts of mapDef.tilesets) {
-      const dirLocal = directionalTileSets.get(ts.name);
-      if (!dirLocal) continue;
-      const phaserTs = map.tilesets.find((t) => t.name === ts.name);
-      if (!phaserTs) continue;
-      const firstgid = phaserTs.firstgid;
-      for (const [localId, dirs] of dirLocal) {
-        dirGidMap.set(firstgid + localId, dirs);
-      }
+    // Mark directionally-restricted tiles as unwalkable for A*
+    for (const key of directionalTileCoords) {
+      const [tx, ty] = key.split(",").map(Number);
+      this.walkGrid.setWalkableAt(tx, ty, false);
     }
-    this.directionalGrid = new Map<string, AllowedDirs>();
-    if (dirGidMap.size > 0) {
-      for (const layer of this.tileLayers) {
-        for (let ty = 0; ty < map.height; ty++) {
-          for (let tx = 0; tx < map.width; tx++) {
-            const tile = layer.getTileAt(tx, ty);
-            if (tile && dirGidMap.has(tile.index)) {
-              const key = `${tx},${ty}`;
-              const existing = this.directionalGrid.get(key);
-              const incoming = dirGidMap.get(tile.index)!;
-              if (existing) {
-                // Merge: use the most restrictive (intersection of allowed dirs)
-                const mergedEnter =
-                  existing.enter_from && incoming.enter_from
-                    ? existing.enter_from.filter((d) => incoming.enter_from!.includes(d))
-                    : (existing.enter_from ?? incoming.enter_from);
-                const mergedExit =
-                  existing.exit_from && incoming.exit_from
-                    ? existing.exit_from.filter((d) => incoming.exit_from!.includes(d))
-                    : (existing.exit_from ?? incoming.exit_from);
-                this.directionalGrid.set(key, {
-                  ...(mergedEnter ? { enter_from: mergedEnter } : {}),
-                  ...(mergedExit ? { exit_from: mergedExit } : {}),
-                });
-              } else {
-                this.directionalGrid.set(key, incoming);
-              }
-              // Mark directionally-restricted tiles as unwalkable for A*
-              this.walkGrid.setWalkableAt(tx, ty, false);
-            }
-          }
-        }
+    // Re-mark approach tiles as walkable (buildGrid may have blocked them
+    // because they fall inside a collision rect).
+    for (const key of approachTileCoords) {
+      const [tx, ty] = key.split(",").map(Number);
+      if (tx >= 0 && ty >= 0 && tx < map.width && ty < map.height) {
+        this.walkGrid.setWalkableAt(tx, ty, true);
       }
     }
 
@@ -655,6 +717,53 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     }
   }
 
+  // --- walkStep: move exactly 1 tile via the normal input code path ---
+
+  debugWalkStep(dir: Direction): Promise<{ tileX: number; tileY: number }> {
+    if (this.walkStepResolve) {
+      return Promise.reject(new Error("walkStep already in progress"));
+    }
+    this.walkStepDir = dir;
+    this.walkStepStartTile = this.playerTile();
+    this.playerFacing = dir;
+    return new Promise((resolve) => {
+      this.walkStepResolve = resolve;
+    });
+  }
+
+  private updateWalkStep(): void {
+    const dir = this.walkStepDir!;
+    this.player.setVelocity(0);
+
+    // Use the same directional check as keyboard input
+    if (!this.isDirectionBlocked(dir)) {
+      if (dir === "left") this.player.setVelocityX(-PLAYER_SPEED);
+      else if (dir === "right") this.player.setVelocityX(PLAYER_SPEED);
+      else if (dir === "up") this.player.setVelocityY(-PLAYER_SPEED);
+      else if (dir === "down") this.player.setVelocityY(PLAYER_SPEED);
+      this.player.anims.play(`walk-${dir}`, true);
+    }
+
+    const cur = this.playerTile();
+    const moved =
+      cur.tileX !== this.walkStepStartTile!.tileX || cur.tileY !== this.walkStepStartTile!.tileY;
+    const stuck = this.isDirectionBlocked(dir);
+
+    if (moved || stuck) {
+      // Snap to the nearest tile center to avoid sub-pixel drift.
+      if (moved) {
+        this.player.setPosition(cur.tileX * TILE_SIZE + TILE_SIZE / 2, cur.tileY * TILE_SIZE);
+      }
+      this.player.setVelocity(0);
+      this.player.anims.stop();
+      const resolve = this.walkStepResolve;
+      this.walkStepDir = undefined;
+      this.walkStepStartTile = undefined;
+      this.walkStepResolve = undefined;
+      resolve?.(this.playerTile());
+    }
+  }
+
   private spawnGreeter() {
     const greeterTileX = 17;
     const greeterTileY = 18;
@@ -697,7 +806,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     const blocked = this.eventEngine.blocking || this.controlsState.locked;
 
     if (!blocked && !this.teleporting) {
-      if (this.walkToActive) {
+      if (this.walkStepDir) {
+        // walkStep: single-tile keyboard-style movement for debug/tests.
+        this.updateWalkStep();
+      } else if (this.walkToActive) {
         // walkTo drives movement — suppress keyboard input
         this.updateWalkTo(delta / 1000);
       } else {
@@ -726,6 +838,9 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
           else if (this.cursors.up.isDown) this.playerFacing = "up";
           else if (this.cursors.down.isDown) this.playerFacing = "down";
           this.player.anims.stop();
+          // Snap to nearest tile center so a 1–2 px physics overshoot
+          // doesn't put the direction check on the wrong tile next frame.
+          this.snapToTileCenter();
         }
       }
     } else {
@@ -802,7 +917,22 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
    * and exits the current tile toward "right".
    */
   private isDirectionBlocked(dir: Direction): boolean {
-    const { tileX, tileY } = this.playerTile();
+    // Compute the "settled" tile: the tile whose center the player's body
+    // has passed in the movement direction.  floor() transitions at tile
+    // boundaries (the top/left edge) while the player "arrives" at a tile
+    // when reaching its center.  Use floor for increasing-coordinate
+    // movement and ceil for decreasing so the transition fires at the
+    // center in both cases.
+    //
+    // Coordinate conventions:
+    //   player.x = tileX * TILE_SIZE + TILE_SIZE/2  (tile center)
+    //   player.y = tileY * TILE_SIZE                 (tile top)
+    const tileX =
+      dir === "left"
+        ? Math.ceil((this.player.x - TILE_SIZE / 2) / TILE_SIZE)
+        : Math.floor((this.player.x - TILE_SIZE / 2) / TILE_SIZE);
+    const tileY =
+      dir === "up" ? Math.ceil(this.player.y / TILE_SIZE) : Math.floor(this.player.y / TILE_SIZE);
     // The direction the target tile is "entered from" is the opposite of movement.
     const enterDir: Direction =
       dir === "left" ? "right" : dir === "right" ? "left" : dir === "up" ? "down" : "up";
@@ -824,6 +954,16 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     }
 
     return false;
+  }
+
+  /** Snap position to the nearest tile center if within a few pixels. */
+  private snapToTileCenter() {
+    const nearX = Math.round((this.player.x - TILE_SIZE / 2) / TILE_SIZE);
+    const nearY = Math.round(this.player.y / TILE_SIZE);
+    const cx = nearX * TILE_SIZE + TILE_SIZE / 2;
+    const cy = nearY * TILE_SIZE;
+    if (Math.abs(this.player.x - cx) < 3) this.player.x = cx;
+    if (Math.abs(this.player.y - cy) < 3) this.player.y = cy;
   }
 
   /** Player tile based on physics body center (at feet, not sprite center). */

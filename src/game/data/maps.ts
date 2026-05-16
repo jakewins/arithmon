@@ -82,6 +82,12 @@ const OCEANSET_OUTSIDE: TilesetAsset = {
 };
 
 export const MAP_REGISTRY: Record<string, MapDef> = {
+  test_collision: {
+    jsonKey: "map-test_collision",
+    jsonPath: "assets/maps/test_collision.json",
+    tilesets: [CORE_OUTDOOR],
+    environment: "grass",
+  },
   starter: {
     jsonKey: "map-starter",
     jsonPath: "assets/maps/starter.json",
