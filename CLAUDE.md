@@ -10,6 +10,19 @@ Stories live as directories under `board/{backlog,next,doing,done}/`. Create new
 
 We use `devenv.nix` for stuff we need in the broader environment, like tiled, nodejs etc.
 
+## QA / Browser Testing
+
+The game has a debug bridge at `window.A` (see `src/game/debug.ts`). QA scripts live in `qa/` and use `qa/harness.ts`.
+
+**Always call `setupGame()` right after `launchGame()`** to skip the character-creation intro sequence. Do NOT manually click through the intro menus or set variables by hand — `setupGame` handles all of it:
+
+```ts
+import { launchGame, setupGame, walkTo, screenshot } from "./harness";
+const { page, close } = await launchGame();
+await setupGame(page, { map: "spyder_paper_town", tileX: 10, tileY: 12 });
+// Game is now ready — player has a starter monster, is on the target map.
+```
+
 ## Before Committing
 
 Run `npm run format:check && npm run lint && npx tsc --noEmit && npm test` and fix any issues before committing.

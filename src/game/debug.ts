@@ -66,6 +66,40 @@ function isDebugCommandHandler(scene: unknown): scene is DebugCommandHandler {
   return typeof scene === "object" && scene !== null;
 }
 
+/**
+ * Options for `setupGame()` — skips the intro sequence and puts the game in a
+ * ready-to-play state. Future agents: feel free to add generally useful setup
+ * fields here (e.g. money, variables, skillStates) as needs arise.
+ */
+export interface SetupGameOptions {
+  /** Map to teleport to (default: "cotton_town"). */
+  map?: string;
+  /** Spawn tile X (default: 20). */
+  tileX?: number;
+  /** Spawn tile Y (default: 19). */
+  tileY?: number;
+  /** Campaign choice (default: "spyder_campaign"). */
+  scenario?: string;
+  /** Gender choice (default: "gender_male"). */
+  gender?: string;
+  /** Race/appearance choice (default: "white_male"). */
+  race?: string;
+  /** Monsters to add to party (default: [{ slug: "budaye", level: 5 }]). */
+  monsters?: { slug: string; level: number }[];
+  /** Items to add to inventory (e.g. [{ slug: "potion", count: 5 }]). */
+  items?: { slug: string; count: number }[];
+}
+
+/** Race → { template, gender } mapping matching start_tuxemon.yaml */
+const RACE_DEFAULTS: Record<string, { template: string; gender: string }> = {
+  black_female: { template: "brownheroine_brown", gender: "female" },
+  white_female: { template: "heroine", gender: "female" },
+  black_male: { template: "adventurerblack", gender: "male" },
+  white_male: { template: "adventurer", gender: "male" },
+  gender_enby: { template: "enbyasian", gender: "nonbinary" },
+  gender_whatever: { template: "penguin", gender: "nonbinary" },
+};
+
 export class DebugBridge {
   private activeScene: Phaser.Scene | null = null;
   private eventBuffer: DebugEvent[] = [];
@@ -387,6 +421,54 @@ export class DebugBridge {
         .setScrollFactor(0);
       (scene as unknown as Record<string, unknown>)[OVERLAY_KEY] = overlay;
     }
+  }
+
+  /**
+   * Skip the intro sequence and put the game in a ready-to-play state.
+   * Sets all character-creation variables, configures the player session,
+   * adds starter monsters, and teleports to the target map.
+   */
+  async setupGame(opts: SetupGameOptions = {}): Promise<void> {
+    const scenario = opts.scenario ?? "spyder_campaign";
+    const gender = opts.gender ?? "gender_male";
+    const race = opts.race ?? "white_male";
+    const map = opts.map ?? "cotton_town";
+    const tileX = opts.tileX ?? 20;
+    const tileY = opts.tileY ?? 19;
+    const monsters = opts.monsters ?? [{ slug: "budaye", level: 5 }];
+
+    // 1. Set intro-skip variables (character creation + campaign intro)
+    const vars = session.player.gameVariables;
+    vars.set("scenario_choice", scenario);
+    vars.set("gender_choice", gender);
+    vars.set("race_choice", race);
+    vars.set("question_intro", "yes");
+    vars.set("spyder_intro", "yes");
+    vars.set("intro_scoop", "done");
+    vars.set("got_starter", "yes");
+    vars.set("firstfightdue", "no");
+
+    // 2. Set player appearance from race choice
+    const raceInfo = RACE_DEFAULTS[race];
+    if (raceInfo) {
+      session.player.template = raceInfo.template;
+      session.player.gender = raceInfo.gender;
+    }
+
+    // 3. Add starter monsters
+    for (const m of monsters) {
+      this.addMonster(m.slug, m.level);
+    }
+
+    // 4. Add any requested items
+    if (opts.items) {
+      for (const item of opts.items) {
+        this.addItem(item.slug, item.count);
+      }
+    }
+
+    // 5. Teleport to target map
+    await this.teleport(map, tileX, tileY);
   }
 
   private getCommandHandler(): DebugCommandHandler | null {

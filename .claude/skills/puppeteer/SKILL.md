@@ -15,10 +15,14 @@ Run the game in a headed Chromium browser and interact via the debug API (`windo
 2. Write a script in `qa/`, run it with `npx tsx qa/your-script.ts`
 
 ```ts
-import { launchGame, walkTo, interact, waitForEvent, getState, screenshot } from "./harness";
+import { launchGame, setupGame, walkTo, interact, waitForEvent, getState, screenshot } from "./harness";
 
 async function main() {
   const { page, close } = await launchGame();
+
+  // IMPORTANT: Always call setupGame() right after launchGame() to skip the
+  // character creation intro and teleport to a playable state.
+  await setupGame(page, { map: "cotton_town", tileX: 20, tileY: 19 });
 
   await walkTo(page, 8, 12);
   await interact(page);
@@ -39,11 +43,7 @@ Scripts are throwaway — write, run, read output, delete.
 
 ## Environment
 
-On NixOS, the harness needs `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` set (automatic in `devenv`). Outside devenv, run with:
-
-```sh
-PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(which chromium) npx tsx qa/your-script.ts
-```
+The harness auto-detects the system chromium (via `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` env var or `which chromium`), so it works both inside and outside devenv on NixOS.
 
 ## Available Functions
 
@@ -52,6 +52,7 @@ All imported from `./harness`:
 | Function | Signature | Description |
 |----------|-----------|-------------|
 | `launchGame` | `() => { page, close }` | Launch headed Chromium, navigate to game, wait for ready |
+| `setupGame` | `(page, opts?) => void` | **Skip intro, add monsters, teleport to map** (call right after launchGame) |
 | `getState` | `(page) => Record<string, unknown>` | Snapshot of game state (scene, session, player, npcs, etc.) |
 | `walkTo` | `(page, x, y, facing?) => void` | A* pathfind player to tile coordinate |
 | `interact` | `(page) => void` | Press the interact button (spacebar/Z) |
@@ -60,6 +61,20 @@ All imported from `./harness`:
 | `waitForEvent` | `(page, type) => DebugEvent` | Block until an event of that type fires |
 | `getEvents` | `(page) => DebugEvent[]` | Read the rolling event buffer |
 | `screenshot` | `(page, name) => string` | Save PNG to `qa/screenshots/<name>.png`, returns path |
+
+### `setupGame` options
+
+```ts
+await setupGame(page, {
+  map: "cotton_town",         // default: "cotton_town"
+  tileX: 20, tileY: 19,      // default: (20, 19)
+  scenario: "spyder_campaign", // default
+  gender: "gender_male",       // default
+  race: "white_male",          // default (sets player sprite template)
+  monsters: [{ slug: "budaye", level: 5 }],  // default
+  items: [{ slug: "potion", count: 10 }],    // optional
+});
+```
 
 ## Finding Tile Coordinates
 

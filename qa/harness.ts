@@ -1,12 +1,24 @@
 import { chromium, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 export interface DebugEvent {
   type: string;
   time: number;
   data: Record<string, unknown>;
+}
+
+export interface SetupGameOptions {
+  map?: string;
+  tileX?: number;
+  tileY?: number;
+  scenario?: string;
+  gender?: string;
+  race?: string;
+  monsters?: { slug: string; level: number }[];
+  items?: { slug: string; count: number }[];
 }
 
 /** Minimal typing for the debug bridge exposed as window.A in the game. */
@@ -25,6 +37,7 @@ interface DebugBridgeAPI {
   setVariable(key: string, value: string): void;
   setLayer(rgba?: string): void;
   openJournal(): void;
+  setupGame(opts?: SetupGameOptions): Promise<void>;
 }
 
 declare global {
@@ -40,6 +53,18 @@ const SCREENSHOT_DIR = path.join(__dirname, "screenshots");
 // Game renders at 320x240 with 3x zoom = 960x720
 const VIEWPORT = { width: 960, height: 720 };
 
+/** Resolve the chromium executable: env var > `which chromium` > Playwright default. */
+function findChromium(): string | undefined {
+  if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
+    return process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+  }
+  try {
+    return execSync("which chromium", { encoding: "utf-8" }).trim();
+  } catch {
+    return undefined; // fall through to Playwright bundled
+  }
+}
+
 /** Launch the game in a headed browser, wait for it to be ready. */
 export async function launchGame(): Promise<{
   page: Page;
@@ -47,7 +72,7 @@ export async function launchGame(): Promise<{
 }> {
   const browser = await chromium.launch({
     headless: false,
-    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+    executablePath: findChromium(),
   });
   const page = await browser.newPage({ viewport: VIEWPORT });
   await page.goto(GAME_URL);
@@ -168,4 +193,19 @@ export async function screenshot(
   const filePath = path.join(SCREENSHOT_DIR, `${name}.png`);
   await page.screenshot({ path: filePath });
   return filePath;
+}
+
+/**
+ * Skip the intro sequence and teleport to a ready-to-play state.
+ * Sets character creation variables, adds starter monster(s), and teleports.
+ *
+ * Usage:
+ *   const { page, close } = await launchGame();
+ *   await setupGame(page, { map: "cotton_town", tileX: 20, tileY: 19 });
+ */
+export async function setupGame(
+  page: Page,
+  opts: SetupGameOptions = {},
+): Promise<void> {
+  await page.evaluate((o) => window.A!.setupGame(o), opts);
 }
