@@ -168,3 +168,60 @@ events:
     - is button_pressed INTERACT
     actions:
     - dialog Welcome to Paper Town!
+
+  Home Sign:
+    x: 12
+    y: 6
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Home sweet home!
+
+  Under Repairs Sign:
+    x: 4
+    y: 15
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    - not variable_set captainreturns:yes
+    actions:
+    - dialog The sign reads, 'Under repairs'
+
+  Daycare Sign Before:
+    x: 16
+    y: 4
+    conditions:
+    - not variable_set seentimber:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Daycare Centre - Under construction.
+
+  Daycare Sign After:
+    x: 16
+    y: 4
+    conditions:
+    - is variable_set seentimber:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Daycare Centre - Open now!
+
+  Sunnyside Manor Sign:
+    x: 12
+    y: 12
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Sunnyside Manor - If we are not home leave a message with our housekeeper.
+
+  Rival House Sign:
+    x: 28
+    y: 5
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Billie's House

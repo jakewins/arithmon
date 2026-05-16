@@ -232,13 +232,13 @@ events:
     actions:
       - dialog Cotton Town - A peaceful village surrounded by wild monsters.
     x: 15
-    y: 16
+    y: 37
     width: 1
     height: 1
 
   Healing Center Sign:
-    x: 24
-    y: 27
+    x: 22
+    y: 26
     conditions:
     - is char_facing_tile player
     - is button_pressed INTERACT
@@ -246,8 +246,8 @@ events:
     - dialog Healing Center - Rest your monsters here.
 
   Cotton Scoop Sign:
-    x: 7
-    y: 27
+    x: 12
+    y: 35
     conditions:
     - is char_facing_tile player
     - is button_pressed INTERACT
@@ -271,6 +271,15 @@ events:
     - is button_pressed INTERACT
     actions:
     - dialog Route 2 — City Park
+
+  Omnichannel HQ Sign:
+    x: 17
+    y: 9
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    actions:
+    - dialog Omnichannel HQ - We are Safety, We are Order, We are Omnichannel
 
   # --- Map connections: east to Route 2 ---
 
