@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Monster } from "../game/model/Monster";
 import { xpForLevel, calculateXpReward } from "../game/combat/formula";
 import { CombatMachine } from "../game/combat/machine";
+import { createInventory, addItem } from "../game/item/inventory";
 
 describe("xpForLevel", () => {
   it("returns 0 for level 0", () => {
@@ -157,6 +158,47 @@ describe("CombatMachine XP award", () => {
     const startXp = player.totalXp;
     machine.submitAction({ type: "run" });
     expect(machine.outcome).toBe("fled");
+    expect(player.totalXp).toBe(startXp);
+  });
+});
+
+describe("XP awarded on capture", () => {
+  let player: Monster;
+  let enemy: Monster;
+  let machine: CombatMachine;
+
+  beforeEach(() => {
+    player = Monster.spawn("rockitten", 5);
+    enemy = Monster.spawn("pairagrin", 3);
+    const inventory = createInventory();
+    addItem(inventory, "tuxeball", 5);
+    machine = new CombatMachine(player, enemy, [player], inventory);
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    machine.intro();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("awards XP when a wild monster is captured", () => {
+    const startXp = player.totalXp;
+    enemy.currentHp = 1;
+
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+
+    expect(machine.outcome).toBe("win");
+    expect(player.totalXp).toBeGreaterThan(startXp);
+    expect(events.some((e) => e.type === "xp_gain")).toBe(true);
+  });
+
+  it("does not award XP when capture fails", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.99);
+    const startXp = player.totalXp;
+
+    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+
+    expect(machine.state).toBe("DECISION");
     expect(player.totalXp).toBe(startXp);
   });
 });

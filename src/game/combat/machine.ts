@@ -351,6 +351,7 @@ export class CombatMachine {
         type: "capture_success",
         message: `Gotcha! ${this.enemy.name} was caught!`,
       });
+      events.push(...this.awardXp());
       if (this.onCapture) {
         this.onCapture(this.enemy);
       }
