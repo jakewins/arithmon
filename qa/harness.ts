@@ -22,6 +22,17 @@ export interface SetupGameOptions {
   money?: number;
 }
 
+/** Problem data passed to showProblem. Matches PerseusProblem from src/game/data/problems.ts */
+export interface PerseusProblem {
+  id: string;
+  standard: string;
+  question: {
+    content: string;
+    widgets: Record<string, unknown>;
+  };
+  hints: { content: string }[];
+}
+
 /** Minimal typing for the debug bridge exposed as window.A in the game. */
 interface DebugBridgeAPI {
   ready: boolean;
@@ -31,6 +42,8 @@ interface DebugBridgeAPI {
   walkTo(x: number, y: number, facing?: string): Promise<void>;
   walkStep(dir: "up" | "down" | "left" | "right"): Promise<{ tileX: number; tileY: number }>;
   selectChoice(index: number): Promise<void>;
+  typeAnswer(text: string): Promise<void>;
+  submitAnswer(): Promise<void>;
   startCombat(): Promise<void>;
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;
@@ -39,6 +52,7 @@ interface DebugBridgeAPI {
   setLayer(rgba?: string): void;
   openJournal(): void;
   setupGame(opts?: SetupGameOptions): Promise<void>;
+  showProblem(problem: PerseusProblem): Promise<void>;
 }
 
 declare global {
@@ -111,19 +125,12 @@ export async function launchGame(): Promise<{
 }
 
 /** Get a snapshot of the current game state. */
-export async function getState(
-  page: Page,
-): Promise<Record<string, unknown>> {
+export async function getState(page: Page): Promise<Record<string, unknown>> {
   return page.evaluate(() => window.A!.getState());
 }
 
 /** Walk the player to a tile using A* pathfinding. */
-export async function walkTo(
-  page: Page,
-  x: number,
-  y: number,
-  facing?: string,
-): Promise<void> {
+export async function walkTo(page: Page, x: number, y: number, facing?: string): Promise<void> {
   await page.evaluate(
     ({ x, y, facing }) => window.A!.walkTo(x, y, facing as "up" | "down" | "left" | "right"),
     { x, y, facing },
@@ -136,10 +143,7 @@ export async function interact(page: Page): Promise<void> {
 }
 
 /** Select a dialog choice by 0-based index. */
-export async function selectChoice(
-  page: Page,
-  index: number,
-): Promise<void> {
+export async function selectChoice(page: Page, index: number): Promise<void> {
   await page.evaluate((i) => window.A!.selectChoice(i), index);
 }
 
@@ -169,14 +173,8 @@ export async function waitForIdle(page: Page): Promise<void> {
 }
 
 /** Wait for a specific event type. Returns the matching event. */
-export async function waitForEvent(
-  page: Page,
-  type: string,
-): Promise<DebugEvent> {
-  return page.evaluate(
-    (t) => window.A!.waitForEvent(t),
-    type,
-  ) as Promise<DebugEvent>;
+export async function waitForEvent(page: Page, type: string): Promise<DebugEvent> {
+  return page.evaluate((t) => window.A!.waitForEvent(t), type) as Promise<DebugEvent>;
 }
 
 /** Get all events from the rolling buffer. */
@@ -191,26 +189,20 @@ export async function teleport(
   tileX: number,
   tileY: number,
 ): Promise<void> {
-  await page.evaluate(
-    ({ mapKey, tileX, tileY }) => window.A!.teleport(mapKey, tileX, tileY),
-    { mapKey, tileX, tileY },
-  );
+  await page.evaluate(({ mapKey, tileX, tileY }) => window.A!.teleport(mapKey, tileX, tileY), {
+    mapKey,
+    tileX,
+    tileY,
+  });
 }
 
 /** Set a game variable via the debug bridge. */
-export async function setVariable(
-  page: Page,
-  key: string,
-  value: string,
-): Promise<void> {
+export async function setVariable(page: Page, key: string, value: string): Promise<void> {
   await page.evaluate(({ key, value }) => window.A!.setVariable(key, value), { key, value });
 }
 
 /** Take a screenshot, saved to qa/screenshots/<name>.png. Returns the file path. */
-export async function screenshot(
-  page: Page,
-  name: string,
-): Promise<string> {
+export async function screenshot(page: Page, name: string): Promise<string> {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
   const filePath = path.join(SCREENSHOT_DIR, `${name}.png`);
   await page.screenshot({ path: filePath });
@@ -225,9 +217,24 @@ export async function screenshot(
  *   const { page, close } = await launchGame();
  *   await setupGame(page, { map: "spyder_cotton_town", tileX: 20, tileY: 20 });
  */
-export async function setupGame(
-  page: Page,
-  opts: SetupGameOptions = {},
-): Promise<void> {
+export async function setupGame(page: Page, opts: SetupGameOptions = {}): Promise<void> {
   await page.evaluate((o) => window.A!.setupGame(o), opts);
+}
+
+/** Launch MathProblemScene with a specific problem, bypassing combat/encounter flow. */
+export async function showProblem(page: Page, problem: PerseusProblem): Promise<void> {
+  await page.evaluate(
+    (p) => window.A!.showProblem(p as unknown as Parameters<typeof window.A.showProblem>[0]),
+    problem,
+  );
+}
+
+/** Type an answer into the math problem scene via the debug bridge. */
+export async function typeAnswer(page: Page, text: string): Promise<void> {
+  await page.evaluate((t) => window.A!.typeAnswer(t), text);
+}
+
+/** Submit the current math problem answer via the debug bridge. */
+export async function submitAnswer(page: Page): Promise<void> {
+  await page.evaluate(() => window.A!.submitAnswer());
 }

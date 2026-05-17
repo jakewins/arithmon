@@ -24,7 +24,15 @@ export interface RadioWidget {
   };
 }
 
-export type ProblemWidget = NumericInputWidget | RadioWidget;
+export interface DualInputWidget {
+  type: "dual-input";
+  options: {
+    labels: [string, string];
+    answers: [{ value: number }, { value: number }];
+  };
+}
+
+export type ProblemWidget = NumericInputWidget | RadioWidget | DualInputWidget;
 
 export interface PerseusProblem {
   id: string;
@@ -39,5 +47,5 @@ export interface PerseusProblem {
 
 export interface GradeResult {
   correct: boolean;
-  expected: number | string;
+  expected: number | string | [number, number];
 }

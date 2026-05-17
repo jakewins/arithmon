@@ -95,7 +95,7 @@ export class SkillTree<Id extends string = SkillNodeId> {
     return this.activeProblem;
   }
 
-  gradeAnswer(problemId: string, answer: number | string): GradeResult {
+  gradeAnswer(problemId: string, answer: number | string | [number, number]): GradeResult {
     const problem = this.activeProblem?.id === problemId ? this.activeProblem : null;
     if (!problem) {
       return { correct: false, expected: 0 };
@@ -103,12 +103,16 @@ export class SkillTree<Id extends string = SkillNodeId> {
 
     const widget = Object.values(problem.question.widgets)[0];
     let correct: boolean;
-    let expected: number | string;
+    let expected: number | string | [number, number];
 
     if (widget.type === "radio") {
       const correctChoice = widget.options.choices.find((c) => c.correct);
       expected = correctChoice?.content ?? "";
       correct = answer === expected;
+    } else if (widget.type === "dual-input") {
+      const [exp0, exp1] = widget.options.answers;
+      expected = [exp0.value, exp1.value];
+      correct = Array.isArray(answer) && answer[0] === exp0.value && answer[1] === exp1.value;
     } else {
       const correctAnswer = widget.options.answers.find((a) => a.status === "correct");
       expected = correctAnswer?.value ?? 0;

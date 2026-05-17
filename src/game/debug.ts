@@ -1,4 +1,5 @@
 import type { Direction } from "./event/types";
+import type { PerseusProblem } from "./data/problems";
 import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
@@ -474,6 +475,27 @@ export class DebugBridge {
 
     // 6. Teleport to target map
     await this.teleport(map, tileX, tileY);
+  }
+
+  /**
+   * Launch MathProblemScene with a specific problem, bypassing the skill tree.
+   * Useful for QA testing specific widget types.
+   */
+  async showProblem(problem: PerseusProblem): Promise<void> {
+    if (!this.activeScene) throw new Error("No active scene");
+    const scene = this.activeScene.scene;
+    scene.launch("MathProblemScene", { problem, returnScene: scene.key });
+    scene.pause();
+    return new Promise((resolve) => {
+      const check = () => {
+        if (this.activeScene?.scene.key === "MathProblemScene") {
+          resolve();
+          return;
+        }
+        nextFrame(check);
+      };
+      nextFrame(check);
+    });
   }
 
   private getCommandHandler(): DebugCommandHandler | null {

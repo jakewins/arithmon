@@ -1,6 +1,6 @@
 import { Scene } from "phaser";
 import { skillTree } from "../skilltree";
-import type { PerseusProblem, ProblemWidget } from "../data/problems";
+import type { PerseusProblem, ProblemWidget, GradeResult } from "../data/problems";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 
 const WIDTH = 320;
@@ -16,13 +16,27 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   private resolved = false;
   private returnScene = "OverworldScene";
   private choiceButtons: Phaser.GameObjects.Text[] = [];
+  // Dual-input state
+  private dualAnswers: [string, string] = ["", ""];
+  private dualTexts: [Phaser.GameObjects.Text | null, Phaser.GameObjects.Text | null] = [
+    null,
+    null,
+  ];
+  private dualBoxes: [Phaser.GameObjects.Rectangle | null, Phaser.GameObjects.Rectangle | null] = [
+    null,
+    null,
+  ];
+  private activeField: 0 | 1 = 0;
+  private injectedProblem: PerseusProblem | null = null;
+  private isInjected = false;
 
   constructor() {
     super("MathProblemScene");
   }
 
-  init(data?: { returnScene?: string }) {
+  init(data?: { returnScene?: string; problem?: PerseusProblem }) {
     this.returnScene = data?.returnScene ?? "OverworldScene";
+    this.injectedProblem = data?.problem ?? null;
   }
 
   create() {
@@ -30,8 +44,14 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.hintIndex = 0;
     this.resolved = false;
     this.choiceButtons = [];
+    this.dualAnswers = ["", ""];
+    this.dualTexts = [null, null];
+    this.dualBoxes = [null, null];
+    this.activeField = 0;
 
-    this.problem = skillTree.getNextProblem();
+    this.isInjected = this.injectedProblem !== null;
+    this.problem = this.injectedProblem ?? skillTree.getNextProblem();
+    this.injectedProblem = null;
 
     const widget = Object.values(this.problem.question.widgets)[0];
 
@@ -77,6 +97,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     if (widget.type === "radio") {
       this.createRadioUI(widget, panelY, panelW);
+    } else if (widget.type === "dual-input") {
+      this.createDualInputUI(widget, panelY, panelW);
     } else {
       this.createNumericInputUI(panelY, panelW);
     }
@@ -118,8 +140,15 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
   debugTypeAnswer(text: string): void {
     if (this.resolved) return;
-    this.currentAnswer = text;
-    this.updateAnswerDisplay();
+    const widget = Object.values(this.problem.question.widgets)[0];
+    if (widget.type === "dual-input") {
+      const parts = text.split(",");
+      this.dualAnswers = [parts[0] ?? "", parts[1] ?? ""];
+      this.updateDualDisplay();
+    } else {
+      this.currentAnswer = text;
+      this.updateAnswerDisplay();
+    }
   }
 
   debugSubmitAnswer(): void {
@@ -131,6 +160,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       if (!isNaN(index)) {
         this.selectChoice(index);
       }
+    } else if (widget.type === "dual-input") {
+      this.submitDualAnswer();
     } else {
       this.submitNumericAnswer();
     }
@@ -201,6 +232,158 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     });
   }
 
+  private createDualInputUI(
+    widget: ProblemWidget & { type: "dual-input" },
+    panelY: number,
+    _panelW: number,
+  ) {
+    // Dummy answerText so updateAnswerDisplay() doesn't crash if called
+    this.answerText = this.add.text(0, 0, "").setVisible(false);
+
+    const inputY = panelY + 84;
+    const boxW = 56;
+    const gap = 24;
+    const leftX = WIDTH / 2 - gap - boxW / 2;
+    const rightX = WIDTH / 2 + gap + boxW / 2;
+
+    // Labels
+    const labels = widget.options.labels;
+    this.add
+      .text(leftX, inputY - 16, labels[0], { fontSize: "9px", color: "#88aacc" })
+      .setOrigin(0.5);
+    this.add
+      .text(rightX, inputY - 16, labels[1], { fontSize: "9px", color: "#88aacc" })
+      .setOrigin(0.5);
+
+    // Input boxes
+    this.dualBoxes[0] = this.add
+      .rectangle(leftX, inputY, boxW, 22, 0x222244)
+      .setStrokeStyle(2, 0xffcc00);
+    this.dualBoxes[1] = this.add
+      .rectangle(rightX, inputY, boxW, 22, 0x222244)
+      .setStrokeStyle(1, 0x6666aa);
+
+    // Answer texts
+    this.dualTexts[0] = this.add
+      .text(leftX, inputY, "_", { fontSize: "14px", color: "#ffcc00" })
+      .setOrigin(0.5);
+    this.dualTexts[1] = this.add
+      .text(rightX, inputY, "_", { fontSize: "14px", color: "#ffcc00" })
+      .setOrigin(0.5);
+
+    // Click to focus
+    this.dualBoxes[0].setInteractive({ useHandCursor: true }).on("pointerdown", () => {
+      this.activeField = 0;
+      this.updateDualFocus();
+    });
+    this.dualBoxes[1].setInteractive({ useHandCursor: true }).on("pointerdown", () => {
+      this.activeField = 1;
+      this.updateDualFocus();
+    });
+
+    // Submit button
+    const submitY = inputY + 30;
+    this.add
+      .text(WIDTH / 2, submitY, "▶ SUBMIT", {
+        fontSize: "11px",
+        color: "#ffcc00",
+        backgroundColor: "#333333",
+        padding: { x: 8, y: 4 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.submitDualAnswer());
+
+    // Hint button
+    this.add
+      .text(WIDTH / 2, submitY + 24, "? HINT", {
+        fontSize: "10px",
+        color: "#88aacc",
+        backgroundColor: "#222233",
+        padding: { x: 6, y: 3 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.showNextHint());
+
+    // Hint display
+    this.hintText = this.add
+      .text(WIDTH / 2, submitY + 52, "", {
+        fontSize: "9px",
+        color: "#88aacc",
+        wordWrap: { width: _panelW - 40 },
+        align: "center",
+      })
+      .setOrigin(0.5, 0);
+
+    // Keyboard input
+    this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (this.resolved) return;
+
+      if (event.key === "Tab") {
+        event.preventDefault();
+        this.activeField = this.activeField === 0 ? 1 : 0;
+        this.updateDualFocus();
+      } else if (event.key >= "0" && event.key <= "9") {
+        if (this.dualAnswers[this.activeField].length < 3) {
+          this.dualAnswers[this.activeField] += event.key;
+          this.updateDualDisplay();
+        }
+      } else if (event.key === "Backspace") {
+        this.dualAnswers[this.activeField] = this.dualAnswers[this.activeField].slice(0, -1);
+        this.updateDualDisplay();
+      } else if (event.key === "Enter") {
+        this.submitDualAnswer();
+      }
+    });
+  }
+
+  private updateDualFocus() {
+    this.dualBoxes[0]?.setStrokeStyle(
+      this.activeField === 0 ? 2 : 1,
+      this.activeField === 0 ? 0xffcc00 : 0x6666aa,
+    );
+    this.dualBoxes[1]?.setStrokeStyle(
+      this.activeField === 1 ? 2 : 1,
+      this.activeField === 1 ? 0xffcc00 : 0x6666aa,
+    );
+  }
+
+  private updateDualDisplay() {
+    this.dualTexts[0]?.setText(this.dualAnswers[0] || "_");
+    this.dualTexts[1]?.setText(this.dualAnswers[1] || "_");
+  }
+
+  private submitDualAnswer() {
+    if (this.resolved) return;
+    if (this.dualAnswers[0] === "" || this.dualAnswers[1] === "") return;
+    this.resolved = true;
+
+    const a0 = parseInt(this.dualAnswers[0], 10);
+    const a1 = parseInt(this.dualAnswers[1], 10);
+    const result = this.grade([a0, a1]);
+    debugBridge.emit("math_problem_answered", {
+      correct: result.correct,
+      answer: `${a0},${a1}`,
+    });
+
+    this.data.set("correct", result.correct);
+
+    if (result.correct) {
+      this.feedbackText.setText("CORRECT!");
+      this.feedbackText.setColor("#44cc44");
+    } else {
+      const exp = result.expected as [number, number];
+      this.feedbackText.setText(`INCORRECT — answer was ${exp[0]}, ${exp[1]}`);
+      this.feedbackText.setColor("#cc4444");
+    }
+
+    this.time.delayedCall(2000, () => {
+      this.scene.stop("MathProblemScene");
+      this.scene.resume(this.returnScene);
+    });
+  }
+
   private createRadioUI(widget: ProblemWidget & { type: "radio" }, panelY: number, panelW: number) {
     const choices = widget.options.choices;
     const startY = panelY + 78;
@@ -238,7 +421,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     const choices = widget.options.choices;
     const selected = choices[index];
-    const result = skillTree.gradeAnswer(this.problem.id, selected.content);
+    const result = this.grade(selected.content);
     debugBridge.emit("math_problem_answered", {
       correct: result.correct,
       answer: selected.content,
@@ -277,12 +460,33 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.answerText.setText(this.currentAnswer || "_");
   }
 
+  /** Grade an answer, routing to skill tree for normal problems or local grading for injected ones. */
+  private grade(answer: number | string | [number, number]): GradeResult {
+    if (!this.isInjected) {
+      return skillTree.gradeAnswer(this.problem.id, answer);
+    }
+    const widget = Object.values(this.problem.question.widgets)[0];
+    if (widget.type === "dual-input") {
+      const [exp0, exp1] = widget.options.answers;
+      const correct = Array.isArray(answer) && answer[0] === exp0.value && answer[1] === exp1.value;
+      return { correct, expected: [exp0.value, exp1.value] };
+    } else if (widget.type === "radio") {
+      const correctChoice = widget.options.choices.find((c) => c.correct);
+      const expected = correctChoice?.content ?? "";
+      return { correct: answer === expected, expected };
+    } else {
+      const correctAnswer = widget.options.answers.find((a) => a.status === "correct");
+      const expected = correctAnswer?.value ?? 0;
+      return { correct: answer === expected, expected };
+    }
+  }
+
   private submitNumericAnswer() {
     if (this.resolved || this.currentAnswer === "") return;
     this.resolved = true;
 
     const answer = parseInt(this.currentAnswer, 10);
-    const result = skillTree.gradeAnswer(this.problem.id, answer);
+    const result = this.grade(answer);
     debugBridge.emit("math_problem_answered", {
       correct: result.correct,
       answer: this.currentAnswer,
