@@ -10,7 +10,7 @@ const ALL_MAPS = [
   "spyder_paper_manor", "spyder_paper_daycare", "spyder_paper_rival_downstairs",
   "spyder_paper_rival_bedroom", "spyder_paper_rival_office",
   // Cotton Town region
-  "cotton_town", "spyder_healing_center", "spyder_cotton_scoop",
+  "spyder_cotton_town", "spyder_healing_center", "spyder_cotton_scoop",
   // Routes 1-3
   "spyder_route1", "spyder_route2", "spyder_citypark", "spyder_route3",
   // Mansion
@@ -86,7 +86,7 @@ async function main() {
   console.log("\n=== Key Transition Tests ===\n");
   const transitions = [
     { from: "spyder_paper_town", fx: 10, fy: 12, dir: "up" as const, desc: "Paper Town → Manor" },
-    { from: "cotton_town", fx: 38, fy: 17, dir: "right" as const, desc: "Cotton Town → Route 2" },
+    { from: "spyder_cotton_town", fx: 39, fy: 28, dir: "right" as const, desc: "Cotton Town → Route 2" },
     { from: "spyder_route4", fx: 27, fy: 10, dir: "right" as const, desc: "Route 4 → Timber Town" },
     { from: "spyder_nimrod_bottom", fx: 13, fy: 3, dir: "up" as const, desc: "Nimrod Bottom → Middle" },
   ];

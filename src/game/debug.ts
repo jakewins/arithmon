@@ -72,7 +72,7 @@ function isDebugCommandHandler(scene: unknown): scene is DebugCommandHandler {
  * fields here (e.g. money, variables, skillStates) as needs arise.
  */
 export interface SetupGameOptions {
-  /** Map to teleport to (default: "cotton_town"). */
+  /** Map to teleport to (default: "spyder_cotton_town"). */
   map?: string;
   /** Spawn tile X (default: 20). */
   tileX?: number;
@@ -434,7 +434,7 @@ export class DebugBridge {
     const scenario = opts.scenario ?? "spyder_campaign";
     const gender = opts.gender ?? "gender_male";
     const race = opts.race ?? "white_male";
-    const map = opts.map ?? "cotton_town";
+    const map = opts.map ?? "spyder_cotton_town";
     const tileX = opts.tileX ?? 20;
     const tileY = opts.tileY ?? 19;
     const monsters = opts.monsters ?? [{ slug: "budaye", level: 5 }];

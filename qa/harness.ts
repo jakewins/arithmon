@@ -202,7 +202,7 @@ export async function screenshot(
  *
  * Usage:
  *   const { page, close } = await launchGame();
- *   await setupGame(page, { map: "cotton_town", tileX: 20, tileY: 19 });
+ *   await setupGame(page, { map: "spyder_cotton_town", tileX: 20, tileY: 20 });
  */
 export async function setupGame(
   page: Page,
