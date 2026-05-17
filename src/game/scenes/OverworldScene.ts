@@ -265,6 +265,9 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "toufigel",
       "pipis",
       "strella",
+      "elowind",
+      "cardiwing",
+      "rabbitosaur",
     ]) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
