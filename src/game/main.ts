@@ -7,6 +7,7 @@ import { PauseMenuScene } from "./scenes/PauseMenuScene";
 import { PartyScreen } from "./scenes/PartyScreen";
 import { JournalScene } from "./scenes/JournalScene";
 import { ShopScene } from "./scenes/ShopScene";
+import { BagScene } from "./scenes/BagScene";
 import { debugBridge } from "./debug";
 import { loadGame } from "./save";
 
@@ -39,6 +40,7 @@ const config: Phaser.Types.Core.GameConfig = {
     PartyScreen,
     JournalScene,
     ShopScene,
+    BagScene,
   ],
 };
 
