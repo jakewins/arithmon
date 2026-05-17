@@ -27,7 +27,7 @@ export interface MapDef {
   locationType?: string;
 }
 
-/** Tilesets used by cotton_town + the indoor set needed by player_house_bedroom. */
+/** Shared tileset constants used by various maps. */
 const CORE_CITY_AND_COUNTRY: TilesetAsset = {
   name: "core_city_and_country",
   imageKey: "core_city_and_country",
@@ -92,12 +92,6 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonKey: "map-starter",
     jsonPath: "assets/maps/starter.json",
     tilesets: [CORE_OUTDOOR],
-    environment: "grass",
-  },
-  cotton_town: {
-    jsonKey: "map-cotton_town",
-    jsonPath: "assets/maps/cotton_town.json",
-    tilesets: [CORE_CITY_AND_COUNTRY, CORE_OUTDOOR, CORE_BUILDINGS, CORE_SET_PIECES],
     environment: "grass",
   },
   player_house_bedroom: {
