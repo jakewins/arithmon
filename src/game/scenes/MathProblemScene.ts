@@ -566,11 +566,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hit zone handles both click-to-place and drag
     const snapPointer = (px: number) => {
       if (this.resolved) return;
-      const clamped = Phaser.Math.Clamp(px, lineX, lineX + lineW);
+      const clamped = Math.min(Math.max(px, lineX), lineX + lineW);
       const frac = (clamped - lineX) / lineW;
       const rawVal = range[0] + frac * (range[1] - range[0]);
       const snapped = Math.round(rawVal / step) * step;
-      this.nlValue = Phaser.Math.Clamp(snapped, range[0], range[1]);
+      this.nlValue = Math.min(Math.max(snapped, range[0]), range[1]);
       this.updateNumberLineMarker();
     };
 
