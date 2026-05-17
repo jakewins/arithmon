@@ -73,6 +73,11 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_cottontown_monk: { spritesheet: "monk" },
   spyder_dragonscave_lazybrute: { spritesheet: "knight" },
   spyder_confusedperson: { spritesheet: "childactor_fiery" },
+  spyder_omnichannel_william: { spritesheet: "beachcomber" },
+  spyder_omnichannel_enforcer: { spritesheet: "knight" },
+  spyder_omnichannel_ethan: { spritesheet: "maniac" },
+  spyder_omnichannel_danita: { spritesheet: "shopassistant" },
+  spyder_omnichannel_talbot: { spritesheet: "maniac" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

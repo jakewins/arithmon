@@ -1,1 +1,70 @@
-events: {}
+events:
+  # --- Music & environment ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_cathedral_theme
+    actions:
+    - play_music music_cathedral_theme
+
+  Set Environment:
+    conditions:
+    - not variable_set omnichannel1_env:yes
+    actions:
+    - set_variable omnichannel1_env:yes
+
+  # --- NPC spawns ---
+
+  Create Ethan:
+    conditions:
+    - not char_exists spyder_omnichannel_ethan
+    actions:
+    - create_npc spyder_omnichannel_ethan,2,2
+
+  Create William:
+    conditions:
+    - not char_exists spyder_omnichannel_william
+    - not battle_outcome player,won,spyder_omnichannel_william
+    actions:
+    - create_npc spyder_omnichannel_william,9,4
+
+  Create Talbot:
+    conditions:
+    - not char_exists spyder_omnichannel_talbot
+    actions:
+    - create_npc spyder_omnichannel_talbot,12,11
+    - char_face spyder_omnichannel_talbot,left
+
+  Create Danita:
+    conditions:
+    - not char_exists spyder_omnichannel_danita
+    actions:
+    - create_npc spyder_omnichannel_danita,2,17
+
+  # --- NPC dialogue ---
+
+  Talk Ethan:
+    behav: talk spyder_omnichannel_ethan
+    actions:
+    - dialog This place gives me the creeps. Have you seen the things they keep in the basement?
+
+  Talk Talbot:
+    behav: talk spyder_omnichannel_talbot
+    actions:
+    - "dialog I-I just started here last week. They said the benefits were good, but nobody mentioned the monsters..."
+
+  Talk Danita Give Pass:
+    behav: talk spyder_omnichannel_danita
+    conditions:
+    - not variable_set nurse_spyder:yes
+    actions:
+    - "dialog You look like you could use some help getting around. Here, take this — it's a Spyder Pass. It'll get you through the restricted areas."
+    - add_item spyder_pass,1
+    - set_variable nurse_spyder:yes
+
+  Talk Danita After Pass:
+    behav: talk spyder_omnichannel_danita
+    conditions:
+    - is variable_set nurse_spyder:yes
+    actions:
+    - dialog Be careful up there. Not everyone in Omnichannel is as friendly as me.
