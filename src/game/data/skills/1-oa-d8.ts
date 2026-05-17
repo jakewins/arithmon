@@ -38,7 +38,7 @@ function generateEquation(): Equation {
     "sub-missing-diff",
   ]);
 
-  const blank = pick(["?", "\\_"]);
+  const blank = pick(["?", "_"]);
 
   switch (form) {
     case "add-missing-second": {
@@ -116,7 +116,7 @@ export function generate(): PerseusProblem {
     },
     hints: [
       {
-        content: `Cover the ${eq.display.includes("?") ? "?" : "\\_"} and think about what number makes both sides equal.`,
+        content: `Cover the ${eq.display.includes("?") ? "?" : "_"} and think about what number makes both sides equal.`,
       },
       { content: `The missing number is **${eq.answer}**.` },
     ],
