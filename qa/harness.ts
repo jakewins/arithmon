@@ -61,7 +61,7 @@ declare global {
   }
 }
 
-const GAME_URL = "http://localhost:8080";
+const GAME_URL = `http://localhost:${process.env.ARITHMON_PORT || "8080"}`;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCREENSHOT_DIR = path.join(__dirname, "screenshots");
 

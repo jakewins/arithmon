@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .devenv
+devenv.local.nix
 mods
 trees
 qa/screenshots

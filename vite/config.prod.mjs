@@ -39,7 +39,7 @@ export default defineConfig({
         }
     },
     server: {
-        port: 8080
+        port: parseInt(process.env.ARITHMON_PORT || '8080', 10)
     },
     plugins: [
         phasermsg()
