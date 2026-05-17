@@ -7,12 +7,23 @@
  * - "What is 10 more than 34?" → numeric-input (44)
  * - "What is 10 less than 56?" → numeric-input (46)
  * - Radio variant with nearby distractors (±1, ±10, ±11)
+ * - Number-line variant: "Start at 47. Find 10 more." → number-line widget
  */
 import type { PerseusProblem, ProblemWidget } from "../problems";
 import { makeRadioWidget } from "../radio-helpers";
 
 function randInt(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+const NL_PHRASINGS = [
+  (base: number, direction: string) => `**Start at $${base}$. Find $10$ ${direction}.**`,
+  (base: number, direction: string) =>
+    `**Show $10$ ${direction} than $${base}$ on the number line.**`,
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 let counter = 0;
@@ -25,26 +36,36 @@ export function generate(): PerseusProblem {
   const direction = isTenMore ? "more" : "less";
   const id = `1-nbt-c5-gen-${++counter}`;
 
-  const useRadio = Math.random() < 0.3;
+  const roll = Math.random();
   let widget: ProblemWidget;
   let widgetKey: string;
+  let phrasing: string;
 
-  if (useRadio) {
+  if (roll < 0.2) {
+    widget = {
+      type: "number-line",
+      options: { range: [0, 100], step: 10, labelStep: 10, answer },
+    };
+    widgetKey = "number-line 1";
+    phrasing = pick(NL_PHRASINGS)(base, direction);
+  } else if (roll < 0.45) {
     widget = makeRadioWidget(answer, 0, 99);
     widgetKey = "radio 1";
+    phrasing = `**What is $10$ ${direction} than $${base}$?**`;
   } else {
     widget = {
       type: "numeric-input",
       options: { answers: [{ value: answer, status: "correct" }] },
     };
     widgetKey = "numeric-input 1";
+    phrasing = `**What is $10$ ${direction} than $${base}$?**`;
   }
 
   return {
     id,
     standard: "1.NBT.C.5",
     question: {
-      content: `**What is $10$ ${direction} than $${base}$?**\n\n[[☃ ${widgetKey}]]`,
+      content: `${phrasing}\n\n[[☃ ${widgetKey}]]`,
       widgets: { [widgetKey]: widget },
     },
     hints: [

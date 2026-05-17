@@ -18,7 +18,8 @@ describe("1.NBT.C.5 problem generator", () => {
     for (let i = 0; i < 500; i++) {
       const problem = generate();
       const content = problem.question.content;
-      const base = parseInt(content.match(/than \$(\d+)\$/)![1], 10);
+      const baseMatch = content.match(/than \$(\d+)\$/) || content.match(/at \$(\d+)\$/);
+      const base = parseInt(baseMatch![1], 10);
       const isMore = content.includes("more");
       const expected = isMore ? base + 10 : base - 10;
 
@@ -29,6 +30,8 @@ describe("1.NBT.C.5 problem generator", () => {
         const correct = widget.options.choices.filter((c) => c.correct);
         expect(correct.length).toBe(1);
         expect(parseInt(correct[0].content, 10)).toBe(expected);
+      } else if (widget.type === "number-line") {
+        expect(widget.options.answer).toBe(expected);
       }
     }
   });
@@ -37,7 +40,8 @@ describe("1.NBT.C.5 problem generator", () => {
     for (let i = 0; i < 500; i++) {
       const problem = generate();
       const content = problem.question.content;
-      const base = parseInt(content.match(/than \$(\d+)\$/)![1], 10);
+      const baseMatch = content.match(/than \$(\d+)\$/) || content.match(/at \$(\d+)\$/);
+      const base = parseInt(baseMatch![1], 10);
       const isMore = content.includes("more");
       const answer = isMore ? base + 10 : base - 10;
 
@@ -63,13 +67,39 @@ describe("1.NBT.C.5 problem generator", () => {
     expect(variants.size).toBe(2);
   });
 
-  it("produces both radio and numeric-input widgets", () => {
+  it("produces radio, numeric-input, and number-line widgets", () => {
     const types = new Set<string>();
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
       const widget = Object.values(generate().question.widgets)[0];
       types.add(widget.type);
     }
     expect(types.has("radio")).toBe(true);
     expect(types.has("numeric-input")).toBe(true);
+    expect(types.has("number-line")).toBe(true);
+  });
+
+  it("number-line widgets have correct range and step", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(widget.options.range).toEqual([0, 100]);
+        expect(widget.options.step).toBe(10);
+        expect(widget.options.labelStep).toBe(10);
+        expect(widget.options.answer).toBeGreaterThanOrEqual(0);
+        expect(widget.options.answer).toBeLessThanOrEqual(99);
+      }
+    }
+  });
+
+  it("number-line problems mention number line or direction", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        const content = problem.question.content.toLowerCase();
+        expect(content.includes("number line") || content.includes("start at")).toBe(true);
+      }
+    }
   });
 });
