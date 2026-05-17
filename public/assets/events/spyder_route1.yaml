@@ -45,7 +45,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,10,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,21,39,0.3
     - char_face player,up
 
   Go Cotton Town 22:
@@ -55,7 +55,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,11,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,22,39,0.3
     - char_face player,up
 
   Go Cotton Town 23:
@@ -65,7 +65,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,12,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,23,39,0.3
     - char_face player,up
 
   Go Cotton Town 24:
@@ -75,7 +75,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,13,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,24,39,0.3
     - char_face player,up
 
   Go Cotton Town 25:
@@ -85,7 +85,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,14,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,25,39,0.3
     - char_face player,up
 
   Go Cotton Town 26:
@@ -95,7 +95,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,15,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,26,39,0.3
     - char_face player,up
 
   Go Cotton Town 27:
@@ -105,7 +105,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,16,38,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,27,39,0.3
     - char_face player,up
 
   # --- Encounter zones (from upstream Tuxemon) ---

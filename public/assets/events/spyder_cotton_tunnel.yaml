@@ -27,7 +27,7 @@ events:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,cotton_town.tmx,2,36,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,2,36,0.3
     - char_face player,up
 
   Go Dragons Cave:

@@ -41,5 +41,5 @@ events:
     - is char_at player
     - is char_facing player,down
     actions:
-    - transition_teleport player,cotton_town.tmx,22,28,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,20,27,0.3
     - char_face player,down
