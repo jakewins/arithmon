@@ -276,8 +276,8 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
   spyder_cotton_tunnel: {
     jsonKey: "map-spyder_cotton_tunnel",
     jsonPath: "assets/maps/spyder_cotton_tunnel.json",
-    tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
-    environment: "forest",
+    tilesets: [CORE_CITY_AND_COUNTRY, CORE_OUTDOOR],
+    environment: "cave",
   },
   spyder_dragons_cave: {
     jsonKey: "map-spyder_dragons_cave",

@@ -8,52 +8,55 @@ events:
   # --- Encounter zones ---
 
   Encounters:
-    x: 2
-    y: 2
-    width: 26
-    height: 16
+    x: 1
+    y: 3
+    width: 38
+    height: 17
     conditions:
     - is char_moved player
     - is char_at player
     actions:
     - random_encounter spyder_cotton_tunnel,8
 
-  Go Greenwash:
-    x: 2
-    y: 10
-    conditions:
-    - is char_at player
-    - is char_facing player,left
-    actions:
-    - transition_teleport player,spyder_greenwash.tmx,7,8,0.3
-    - char_face player,left
+  # --- Map connections ---
 
-  Go Dragons Cave:
-    x: 27
-    y: 5
+  Go Cotton Town:
+    x: 35
+    y: 3
     conditions:
     - is char_at player
     - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_dragons_cave.tmx,5,10,0.3
+    - transition_teleport player,cotton_town.tmx,2,36,0.3
     - char_face player,up
 
-  Go Dryads Grove:
-    x: 27
-    y: 15
+  Go Dragons Cave:
+    x: 3
+    y: 16
     conditions:
     - is char_at player
     - is char_facing player,down
+    - is variable_set dragonscavedrokoro:yes
     actions:
-    - transition_teleport player,spyder_dryads_grove.tmx,7,2,0.3
+    - transition_teleport player,spyder_dragons_cave.tmx,16,5,0.3
     - char_face player,down
 
-  Go Nimrod:
-    x: 27
-    y: 10
+  Reject Dragons Cave:
+    x: 3
+    y: 16
     conditions:
     - is char_at player
-    - is char_facing player,right
+    - is char_facing player,down
+    - not variable_set dragonscavedrokoro:yes
     actions:
-    - transition_teleport player,spyder_nimrod_bottom.tmx,7,11,0.3
-    - char_face player,right
+    - dialog The way ahead is blocked by rubble. It looks like it leads deeper underground...
+
+  Go Dryads Grove:
+    x: 31
+    y: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_dryads_grove.tmx,36,36,0.3
+    - char_face player,up
