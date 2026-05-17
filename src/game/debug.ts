@@ -88,6 +88,8 @@ export interface SetupGameOptions {
   monsters?: { slug: string; level: number }[];
   /** Items to add to inventory (e.g. [{ slug: "potion", count: 5 }]). */
   items?: { slug: string; count: number }[];
+  /** Starting gold (default: 500). */
+  money?: number;
 }
 
 /** Race → { template, gender } mapping matching start_tuxemon.yaml */
@@ -460,14 +462,17 @@ export class DebugBridge {
       this.addMonster(m.slug, m.level);
     }
 
-    // 4. Add any requested items
+    // 4. Set starting gold
+    session.player.money = opts.money ?? 500;
+
+    // 5. Add any requested items
     if (opts.items) {
       for (const item of opts.items) {
         this.addItem(item.slug, item.count);
       }
     }
 
-    // 5. Teleport to target map
+    // 6. Teleport to target map
     await this.teleport(map, tileX, tileY);
   }
 

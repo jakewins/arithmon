@@ -19,6 +19,7 @@ export interface SetupGameOptions {
   race?: string;
   monsters?: { slug: string; level: number }[];
   items?: { slug: string; count: number }[];
+  money?: number;
 }
 
 /** Minimal typing for the debug bridge exposed as window.A in the game. */

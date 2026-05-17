@@ -30,8 +30,8 @@ events:
 
   Create Shopkeeper:
     actions:
-    - create_npc spyder_shopkeeper,0,4
-    - char_face spyder_shopkeeper,up
+    - create_npc spyder_shopkeeper,7,4
+    - char_face spyder_shopkeeper,down
     conditions:
     - not char_exists spyder_shopkeeper
     - is variable_set intro_scoop:done
@@ -44,6 +44,14 @@ events:
     - not char_exists spyder_dante
     - is variable_set intro_scoop:done
     type: event
+
+  # --- Shop interaction ---
+
+  Talk Shopkeeper:
+    behav: talk spyder_shopkeeper
+    actions:
+    - dialog Welcome to Paper Scoop! What can I get you?
+    - open_shop spyder_paper_scoop
 
   # --- Music ---
 

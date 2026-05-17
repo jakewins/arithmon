@@ -12,6 +12,14 @@ const SHOP_REGISTRY: Record<string, ShopInventory> = {
     ],
     sellMultiplier: 0.5,
   },
+  spyder_paper_scoop: {
+    items: [
+      { slug: "potion", price: 20 },
+      { slug: "tuxeball", price: 50 },
+      { slug: "revive", price: 100 },
+    ],
+    sellMultiplier: 0.5,
+  },
 };
 
 export function getShop(slug: string): ShopInventory | undefined {
