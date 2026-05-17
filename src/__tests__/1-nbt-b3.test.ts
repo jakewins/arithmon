@@ -4,15 +4,16 @@ import { generate } from "../game/data/skills/1-nbt-b3";
 function getAnswer(problem: ReturnType<typeof generate>): string {
   const widget = Object.values(problem.question.widgets)[0];
   if (widget.type === "comparison") return widget.options.answer;
+  if (widget.type === "number-line") return String(widget.options.answer);
   throw new Error(`Unexpected widget type: ${widget.type}`);
 }
 
-function getNumbers(problem: ReturnType<typeof generate>): [number, number] {
+function getNumbers(problem: ReturnType<typeof generate>): [number, number] | null {
   const widget = Object.values(problem.question.widgets)[0];
   if (widget.type === "comparison") {
     return [parseInt(widget.options.left, 10), parseInt(widget.options.right, 10)];
   }
-  throw new Error(`Unexpected widget type: ${widget.type}`);
+  return null; // number-line variant doesn't have two numbers to compare
 }
 
 describe("1.NBT.B.3 problem generator", () => {
@@ -23,7 +24,7 @@ describe("1.NBT.B.3 problem generator", () => {
     expect(problem.hints.length).toBeGreaterThanOrEqual(1);
 
     const widget = Object.values(problem.question.widgets)[0];
-    expect(widget.type).toBe("comparison");
+    expect(["comparison", "number-line"]).toContain(widget.type);
   });
 
   it("produces unique ids across calls", () => {
@@ -31,11 +32,13 @@ describe("1.NBT.B.3 problem generator", () => {
     expect(ids.size).toBe(20);
   });
 
-  it("answer matches the actual numeric comparison", () => {
+  it("comparison answer matches the actual numeric comparison", () => {
     for (let i = 0; i < 200; i++) {
       const problem = generate();
+      const nums = getNumbers(problem);
+      if (!nums) continue; // skip number-line variants
       const answer = getAnswer(problem);
-      const [left, right] = getNumbers(problem);
+      const [left, right] = nums;
 
       if (left > right) expect(answer).toBe(">");
       else if (left < right) expect(answer).toBe("<");
@@ -43,9 +46,11 @@ describe("1.NBT.B.3 problem generator", () => {
     }
   });
 
-  it("both numbers are two-digit (10-99)", () => {
+  it("comparison numbers are two-digit (10-99)", () => {
     for (let i = 0; i < 200; i++) {
-      const [left, right] = getNumbers(generate());
+      const nums = getNumbers(generate());
+      if (!nums) continue;
+      const [left, right] = nums;
       expect(left).toBeGreaterThanOrEqual(10);
       expect(left).toBeLessThanOrEqual(99);
       expect(right).toBeGreaterThanOrEqual(10);
@@ -53,10 +58,12 @@ describe("1.NBT.B.3 problem generator", () => {
     }
   });
 
-  it("produces all three variant types", () => {
+  it("produces all three comparison variant types", () => {
     const variants = { tensDiffer: false, onesDiffer: false, equal: false };
     for (let i = 0; i < 300; i++) {
-      const [left, right] = getNumbers(generate());
+      const nums = getNumbers(generate());
+      if (!nums) continue;
+      const [left, right] = nums;
       const tensL = Math.floor(left / 10);
       const tensR = Math.floor(right / 10);
 
@@ -69,10 +76,47 @@ describe("1.NBT.B.3 problem generator", () => {
     expect(variants.equal).toBe(true);
   });
 
-  it("answer is always one of >, =, <", () => {
+  it("comparison answer is always one of >, =, <", () => {
     for (let i = 0; i < 100; i++) {
-      const answer = getAnswer(generate());
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type !== "comparison") continue;
+      const answer = getAnswer(problem);
       expect([">", "=", "<"]).toContain(answer);
+    }
+  });
+
+  it("produces both comparison and number-line widgets", () => {
+    const types = new Set<string>();
+    for (let i = 0; i < 200; i++) {
+      const widget = Object.values(generate().question.widgets)[0];
+      types.add(widget.type);
+    }
+    expect(types.has("comparison")).toBe(true);
+    expect(types.has("number-line")).toBe(true);
+  });
+
+  it("number-line widgets have correct range and step", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(widget.options.range).toEqual([0, 100]);
+        expect(widget.options.step).toBe(1);
+        expect(widget.options.labelStep).toBe(10);
+        expect(widget.options.answer).toBeGreaterThanOrEqual(10);
+        expect(widget.options.answer).toBeLessThanOrEqual(99);
+      }
+    }
+  });
+
+  it("number-line problems mention 'number line' in the question", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(problem.question.content.toLowerCase()).toContain("number line");
+      }
     }
   });
 });
