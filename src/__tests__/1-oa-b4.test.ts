@@ -8,6 +8,10 @@ function getAnswer(problem: ReturnType<typeof generate>): number {
     return parseInt(correct!.content, 10);
   }
   if (widget.type === "numeric-input") return widget.options.answers[0].value;
+  if (widget.type === "dropdown") {
+    const correct = widget.options.choices.find((c) => c.correct);
+    return parseInt(correct!.content, 10);
+  }
   throw new Error(`Unexpected widget type: ${widget.type}`);
 }
 
@@ -19,7 +23,7 @@ describe("1.OA.B.4 problem generator", () => {
     expect(problem.hints.length).toBeGreaterThanOrEqual(1);
 
     const widget = Object.values(problem.question.widgets)[0];
-    expect(["numeric-input", "radio"]).toContain(widget.type);
+    expect(["numeric-input", "radio", "dropdown"]).toContain(widget.type);
   });
 
   it("produces unique ids across calls", () => {
@@ -35,6 +39,7 @@ describe("1.OA.B.4 problem generator", () => {
 
       // Extract the two numbers from the problem content
       // Patterns: "$A - B = {?}$" or "added to $B$ makes $A$" or "$B + {?} = A$"
+      // Dropdown: "$A - B$ is the same as $B$ +"
       const subMatch = content.match(/\$(\d+)\s*-\s*(\d+)/);
       const addToMatch = content.match(/added to \$(\d+)\$ makes \$(\d+)\$/);
       const plusMatch = content.match(/\$(\d+)\s*\+\s*\{\?\}\s*=\s*(\d+)\$/);
@@ -79,20 +84,21 @@ describe("1.OA.B.4 problem generator", () => {
     }
   });
 
-  it("produces both numeric-input and radio widget types", () => {
+  it("produces numeric-input, radio, and dropdown widget types", () => {
     const types = new Set<string>();
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 300; i++) {
       const widget = Object.values(generate().question.widgets)[0];
       types.add(widget.type);
     }
     expect(types.has("numeric-input")).toBe(true);
     expect(types.has("radio")).toBe(true);
+    expect(types.has("dropdown")).toBe(true);
   });
 
-  it("radio widgets have exactly one correct choice", () => {
+  it("radio and dropdown widgets have exactly one correct choice", () => {
     for (let i = 0; i < 100; i++) {
       const widget = Object.values(generate().question.widgets)[0];
-      if (widget.type === "radio") {
+      if (widget.type === "radio" || widget.type === "dropdown") {
         const correctCount = widget.options.choices.filter((c) => c.correct).length;
         expect(correctCount).toBe(1);
       }
@@ -103,11 +109,31 @@ describe("1.OA.B.4 problem generator", () => {
     let seenAddendFraming = false;
     for (let i = 0; i < 100; i++) {
       const content = generate().question.content;
-      if (content.includes("+ {?} =") || content.includes("added to")) {
+      if (
+        content.includes("+ {?} =") ||
+        content.includes("added to") ||
+        content.includes("is the same as") ||
+        content.includes("equals")
+      ) {
         seenAddendFraming = true;
         break;
       }
     }
     expect(seenAddendFraming).toBe(true);
+  });
+
+  it("dropdown has 4 choices with distractors near the answer", () => {
+    for (let i = 0; i < 300; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type !== "dropdown") continue;
+      expect(widget.options.choices.length).toBe(4);
+      const correct = widget.options.choices.find((c) => c.correct)!;
+      const answer = parseInt(correct.content, 10);
+      for (const choice of widget.options.choices) {
+        const val = parseInt(choice.content, 10);
+        expect(Math.abs(val - answer)).toBeLessThanOrEqual(2);
+      }
+    }
   });
 });
