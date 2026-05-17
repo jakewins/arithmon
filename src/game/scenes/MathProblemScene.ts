@@ -152,7 +152,9 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.updateDualDisplay();
     } else {
       this.currentAnswer = text;
-      this.updateAnswerDisplay();
+      if (widget.type !== "radio" && widget.type !== "comparison") {
+        this.updateAnswerDisplay();
+      }
     }
   }
 
