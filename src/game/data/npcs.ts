@@ -53,6 +53,12 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_cottonhouse2_neva: { spritesheet: "picnicker" },
   spyder_cottonhouse2_sidney: { spritesheet: "catgirl" },
   spyder_cottonhouse2_davis: { spritesheet: "shopkeeper" },
+  spyder_cottontown_hacker: { spritesheet: "magician" },
+  spyder_cottontown_barmaid: { spritesheet: "barmaid" },
+  spyder_cottoncafe_lotus: { spritesheet: "granny" },
+  spyder_cottoncafe_cayden: { spritesheet: "goth" },
+  spyder_cottoncafe_wilford: { spritesheet: "shopassistant" },
+  spyder_cottoncafe_hillary: { spritesheet: "florist" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

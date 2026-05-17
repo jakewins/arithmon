@@ -166,6 +166,13 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     environment: "grass",
     inside: true,
   },
+  spyder_cotton_cafe: {
+    jsonKey: "map-spyder_cotton_cafe",
+    jsonPath: "assets/maps/spyder_cotton_cafe.json",
+    tilesets: [CORE_SET_PIECES, CORE_OUTDOOR, CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS],
+    environment: "grass",
+    inside: true,
+  },
   spyder_route1: {
     jsonKey: "map-spyder_route1",
     jsonPath: "assets/maps/spyder_route1.json",

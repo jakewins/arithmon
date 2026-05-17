@@ -125,7 +125,7 @@ spyder_cotton_house2: {
 
 **QA**: Use `/puppeteer` to teleport to `spyder_cotton_house2`. Screenshot to confirm interior renders. Test both exits — front door should land at (25,9) on cotton town, back door at (27,5). Interact with all 3 NPCs.
 
-### 4. Cotton Cafe — map and NPC spawns
+### 4. ~~Cotton Cafe — map and NPC spawns~~ DONE
 
 The cafe is the most complex interior (12x12, 7 NPCs, healing, trainer battle, first-visit cutscene). Split across multiple todos. This first one sets up the map, music, NPC spawns, and basic dialogue.
 

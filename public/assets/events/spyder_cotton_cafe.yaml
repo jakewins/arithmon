@@ -1,0 +1,104 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_cathedral_theme
+    actions:
+    - play_music music_cathedral_theme
+
+  # --- NPC spawns ---
+
+  Create Hacker:
+    conditions:
+    - not char_exists spyder_cottontown_hacker
+    actions:
+    - create_npc spyder_cottontown_hacker,10,4
+
+  Create Barmaid:
+    conditions:
+    - not char_exists spyder_cottontown_barmaid
+    actions:
+    - create_npc spyder_cottontown_barmaid,0,4
+
+  Create Lotus:
+    conditions:
+    - not char_exists spyder_cottoncafe_lotus
+    actions:
+    - create_npc spyder_cottoncafe_lotus,3,7
+    - char_face spyder_cottoncafe_lotus,right
+
+  Create Cayden:
+    conditions:
+    - not char_exists spyder_cottoncafe_cayden
+    actions:
+    - create_npc spyder_cottoncafe_cayden,2,6,wander
+
+  Create Wilford:
+    conditions:
+    - not char_exists spyder_cottoncafe_wilford
+    actions:
+    - create_npc spyder_cottoncafe_wilford,10,7
+
+  Create Hillary:
+    conditions:
+    - not char_exists spyder_cottoncafe_hillary
+    actions:
+    - create_npc spyder_cottoncafe_hillary,11,6
+    - char_face spyder_cottoncafe_hillary,left
+
+  Create Juliana:
+    conditions:
+    - not char_exists spyder_cottoncafe_juliana
+    actions:
+    - create_npc spyder_cottoncafe_juliana,8,9
+
+  # --- NPC interactions ---
+
+  Talk Hacker:
+    behav: talk spyder_cottontown_hacker
+    actions:
+    - dialog Ah, the Tuxepedia! Have you been cataloging your finds?
+
+  Talk Barmaid:
+    behav: talk spyder_cottontown_barmaid
+    actions:
+    - dialog Welcome back. Let me know if you need anything.
+
+  Talk Lotus:
+    behav: talk spyder_cottoncafe_lotus
+    actions:
+    - "dialog Hmm, I'm not sure I fancy this coffee."
+
+  Talk Cayden:
+    behav: talk spyder_cottoncafe_cayden
+    actions:
+    - dialog I like the vibe in here. Dark, moody, just how I like it.
+
+  Talk Wilford:
+    behav: talk spyder_cottoncafe_wilford
+    actions:
+    - dialog I come here every day. The atmosphere is just perfect for thinking.
+
+  Talk Hillary:
+    behav: talk spyder_cottoncafe_hillary
+    actions:
+    - dialog Did you know flowers can help tuxemon recover faster? It's true!
+
+  Talk Juliana:
+    behav: talk spyder_cottoncafe_juliana
+    actions:
+    - dialog This cafe has the best pastries in town.
+
+  # --- Map connections ---
+
+  Go Outside:
+    x: 7
+    y: 11
+    width: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_cotton_town.tmx,31,17,0.3
+    - char_face player,down
