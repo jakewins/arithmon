@@ -59,6 +59,10 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_cottoncafe_cayden: { spritesheet: "goth" },
   spyder_cottoncafe_wilford: { spritesheet: "shopassistant" },
   spyder_cottoncafe_hillary: { spritesheet: "florist" },
+  spyder_cottonartshop_luvinia: { spritesheet: "florist" },
+  spyder_cottonartshop_philis: { spritesheet: "granny" },
+  spyder_cottonartshop_phoenix: { spritesheet: "goth" },
+  spyder_cottonartshop_carter: { spritesheet: "shopkeeper" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

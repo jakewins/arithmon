@@ -29,6 +29,8 @@ export interface EventContext {
   scene: Phaser.Scene;
   session: GameSession;
   player: { tileX: number; tileY: number; facing: Direction };
+  /** The player's Phaser sprite — used by pathfind when slug is "player". */
+  playerSprite?: Phaser.GameObjects.Sprite;
   /** Shortcut for session.player.gameVariables — avoids churn on existing actions. */
   variables: GameVariables;
   interactPressed: boolean;

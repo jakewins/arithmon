@@ -1,0 +1,121 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_cathedral_theme
+    actions:
+    - play_music music_cathedral_theme
+
+  # --- NPC spawns ---
+
+  Create Barmaid:
+    conditions:
+    - not char_exists spyder_cottontown_barmaid
+    actions:
+    - create_npc spyder_cottontown_barmaid,10,5,wander
+
+  Create Luvinia:
+    conditions:
+    - not char_exists spyder_cottonartshop_luvinia
+    actions:
+    - create_npc spyder_cottonartshop_luvinia,1,6,wander
+
+  Create Philis:
+    conditions:
+    - not char_exists spyder_cottonartshop_philis
+    actions:
+    - create_npc spyder_cottonartshop_philis,15,8,wander
+
+  Create Phoenix:
+    conditions:
+    - not char_exists spyder_cottonartshop_phoenix
+    actions:
+    - create_npc spyder_cottonartshop_phoenix,17,8,wander
+
+  Create Carter:
+    conditions:
+    - not char_exists spyder_cottonartshop_carter
+    actions:
+    - create_npc spyder_cottonartshop_carter,4,9
+    - char_face spyder_cottonartshop_carter,left
+
+  # --- NPC interactions ---
+
+  Talk Barmaid:
+    behav: talk spyder_cottontown_barmaid
+    actions:
+    - "dialog Do you like my set? They capture my early days as a professional tuxemon trainer, before I retired on my winnings."
+
+  Talk Luvinia:
+    behav: talk spyder_cottonartshop_luvinia
+    actions:
+    - dialog What are we supposed to do?
+
+  Talk Philis:
+    behav: talk spyder_cottonartshop_philis
+    actions:
+    - "dialog I must be getting nostalgic. I almost said \"Back in my day, things were better!\""
+
+  Talk Phoenix:
+    behav: talk spyder_cottonartshop_phoenix
+    actions:
+    - "dialog I used to enjoy coming here every weekend to look at the paintings. Now all the best ones have been sold and the tickets are too expensive."
+
+  Talk Carter:
+    behav: talk spyder_cottonartshop_carter
+    actions:
+    - "dialog Welcome to the Cotton Town Art Gallery. Ah - I mean Art Shop! Ever since they cut our funding, we've had to sell the artworks instead of just displaying them."
+
+  # --- Entry fee gate ---
+
+  Pay Up:
+    x: 0
+    y: 9
+    width: 3
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    - not variable_set paygallery:yes
+    - not variable_set paygallery:no
+    actions:
+    - "dialog Entry is 50 gold. It goes toward the company's annual dividend."
+    - translated_dialog_choice yes:no,paygallery
+
+  Afford Pay:
+    conditions:
+    - is variable_set paygallery:yes
+    - is money_is player,greater_or_equal,50
+    actions:
+    - modify_money player,-50
+    - pathfind player,2,8
+    - set_variable paygallery:null
+
+  Cannot Afford:
+    conditions:
+    - is variable_set paygallery:yes
+    - not money_is player,greater_or_equal,50
+    actions:
+    - dialog You don't have enough gold.
+    - pathfind player,2,10
+    - set_variable paygallery:null
+
+  No Pay:
+    conditions:
+    - is variable_set paygallery:no
+    actions:
+    - pathfind player,2,10
+    - set_variable paygallery:null
+
+  # --- Map connections ---
+
+  Go Outside:
+    x: 1
+    y: 10
+    width: 2
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_cotton_town.tmx,16,17,0.3
+    - char_face player,down

@@ -184,6 +184,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.text("events-spyder_cotton_house1", "assets/events/spyder_cotton_house1.yaml");
     this.load.text("events-spyder_cotton_house2", "assets/events/spyder_cotton_house2.yaml");
     this.load.text("events-spyder_cotton_cafe", "assets/events/spyder_cotton_cafe.yaml");
+    this.load.text("events-spyder_cotton_artshop", "assets/events/spyder_cotton_artshop.yaml");
     this.load.text("events-spyder_cotton_tunnel", "assets/events/spyder_cotton_tunnel.yaml");
     this.load.text("events-spyder_dragons_cave", "assets/events/spyder_dragons_cave.yaml");
     this.load.text("events-spyder_dryads_grove", "assets/events/spyder_dryads_grove.yaml");
@@ -842,6 +843,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       scene: this,
       session,
       player: { tileX, tileY, facing: this.playerFacing },
+      playerSprite: this.player,
       variables: session.player.gameVariables,
       interactPressed: this.interactPressed,
       playerMoved: moved,

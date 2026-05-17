@@ -231,7 +231,7 @@ Implement a simplified version of the upstream "First Visit to Cotton Cafe" cuts
 
 **QA**: Use `/puppeteer` to teleport to the cafe WITHOUT `visitedcottoncafe:yes` set. Trigger the cutscene by talking to the hacker. Confirm the sequence plays out. Take a screenshot during the cutscene dialogue. Then confirm that subsequent visits show normal NPC dialogue (not the cutscene again).
 
-### 8. Cotton Art Shop — map, NPCs, exit, and entry fee
+### 8. ~~Cotton Art Shop — map, NPCs, exit, and entry fee~~ DONE
 
 The art shop (22x11) has an entry fee mechanic and art sales.
 
