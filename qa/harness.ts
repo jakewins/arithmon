@@ -76,14 +76,35 @@ export async function launchGame(): Promise<{
     executablePath: findChromium(),
   });
   const page = await browser.newPage({ viewport: VIEWPORT });
+
+  // Capture browser errors so QA scripts surface them automatically
+  const browserErrors: string[] = [];
+  page.on("pageerror", (err) => {
+    browserErrors.push(err.message);
+    console.error("[BROWSER ERROR]", err.message);
+  });
+
   await page.goto(GAME_URL);
 
   // Wait for the debug bridge to be ready
   await page.waitForFunction(() => window.A?.ready, null, { timeout: 30_000 });
 
+  // Fail fast if the game hit errors during startup
+  if (browserErrors.length > 0) {
+    await browser.close();
+    throw new Error(
+      `Game threw ${browserErrors.length} error(s) during startup:\n${browserErrors.join("\n")}`,
+    );
+  }
+
   return {
     page,
     close: async () => {
+      if (browserErrors.length > 0) {
+        console.error(
+          `\n[QA] ${browserErrors.length} browser error(s) during session:\n${browserErrors.join("\n")}`,
+        );
+      }
       await browser.close();
     },
   };

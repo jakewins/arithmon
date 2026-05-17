@@ -56,7 +56,7 @@ No code changes needed beyond copying the files — the sprite loader auto-disco
 
 **QA**: Use `/puppeteer` to confirm sprites load without errors (spawn an NPC using one of the new sheets in a test).
 
-### 2. Cotton House 1 — map, events, NPCs
+### 2. ~~Cotton House 1 — map, events, NPCs~~ DONE
 
 This is the simplest interior (10x8, 2 NPCs, 1 TV interaction).
 
