@@ -105,7 +105,10 @@ export class SkillTree<Id extends string = SkillNodeId> {
     let correct: boolean;
     let expected: number | string | [number, number];
 
-    if (widget.type === "radio") {
+    if (widget.type === "comparison") {
+      expected = widget.options.answer;
+      correct = answer === expected;
+    } else if (widget.type === "radio") {
       const correctChoice = widget.options.choices.find((c) => c.correct);
       expected = correctChoice?.content ?? "";
       correct = answer === expected;

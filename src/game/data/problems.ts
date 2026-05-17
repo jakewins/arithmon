@@ -32,7 +32,16 @@ export interface DualInputWidget {
   };
 }
 
-export type ProblemWidget = NumericInputWidget | RadioWidget | DualInputWidget;
+export interface ComparisonWidget {
+  type: "comparison";
+  options: {
+    left: string;
+    right: string;
+    answer: ">" | "=" | "<";
+  };
+}
+
+export type ProblemWidget = NumericInputWidget | RadioWidget | DualInputWidget | ComparisonWidget;
 
 export interface PerseusProblem {
   id: string;

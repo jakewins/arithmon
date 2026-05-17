@@ -16,6 +16,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   private resolved = false;
   private returnScene = "OverworldScene";
   private choiceButtons: Phaser.GameObjects.Text[] = [];
+  // Comparison state
+  private comparisonButtons: Phaser.GameObjects.Text[] = [];
   // Dual-input state
   private dualAnswers: [string, string] = ["", ""];
   private dualTexts: [Phaser.GameObjects.Text | null, Phaser.GameObjects.Text | null] = [
@@ -44,6 +46,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.hintIndex = 0;
     this.resolved = false;
     this.choiceButtons = [];
+    this.comparisonButtons = [];
     this.dualAnswers = ["", ""];
     this.dualTexts = [null, null];
     this.dualBoxes = [null, null];
@@ -99,6 +102,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.createRadioUI(widget, panelY, panelW);
     } else if (widget.type === "dual-input") {
       this.createDualInputUI(widget, panelY, panelW);
+    } else if (widget.type === "comparison") {
+      this.createComparisonUI(widget, panelY);
     } else {
       this.createNumericInputUI(panelY, panelW);
     }
@@ -159,6 +164,12 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const index = parseInt(this.currentAnswer, 10);
       if (!isNaN(index)) {
         this.selectChoice(index);
+      }
+    } else if (widget.type === "comparison") {
+      // For comparison, interpret currentAnswer as 0-based index (0=>, 1==, 2=<)
+      const index = parseInt(this.currentAnswer, 10);
+      if (!isNaN(index)) {
+        this.selectComparison(index);
       }
     } else if (widget.type === "dual-input") {
       this.submitDualAnswer();
@@ -412,6 +423,95 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.hintText = this.add.text(0, 0, "").setVisible(false);
   }
 
+  private createComparisonUI(widget: ProblemWidget & { type: "comparison" }, panelY: number) {
+    // Dummy elements so other methods don't crash
+    this.answerText = this.add.text(0, 0, "").setVisible(false);
+    this.hintText = this.add.text(0, 0, "").setVisible(false);
+
+    const rowY = panelY + 84;
+    const { left, right } = widget.options;
+
+    // Left value
+    this.add
+      .text(WIDTH / 2 - 80, rowY, left, {
+        fontSize: "18px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Right value
+    this.add
+      .text(WIDTH / 2 + 80, rowY, right, {
+        fontSize: "18px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Three comparison buttons in the middle
+    const symbols: Array<">" | "=" | "<"> = [">", "=", "<"];
+    const btnSpacing = 36;
+    const startX = WIDTH / 2 - btnSpacing;
+
+    for (let i = 0; i < symbols.length; i++) {
+      const x = startX + i * btnSpacing;
+      const btn = this.add
+        .text(x, rowY, symbols[i], {
+          fontSize: "16px",
+          color: "#ffffff",
+          backgroundColor: "#333355",
+          padding: { x: 8, y: 6 },
+          align: "center",
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", () => this.selectComparison(i));
+
+      this.comparisonButtons.push(btn);
+    }
+  }
+
+  private selectComparison(index: number) {
+    if (this.resolved) return;
+    this.resolved = true;
+
+    const symbols: Array<">" | "=" | "<"> = [">", "=", "<"];
+    const selected = symbols[index];
+    const result = this.grade(selected);
+    debugBridge.emit("math_problem_answered", {
+      correct: result.correct,
+      answer: selected,
+    });
+
+    this.data.set("correct", result.correct);
+
+    // Highlight buttons
+    for (let i = 0; i < this.comparisonButtons.length; i++) {
+      if (i === index) {
+        this.comparisonButtons[i].setBackgroundColor(result.correct ? "#225522" : "#552222");
+        this.comparisonButtons[i].setColor(result.correct ? "#44cc44" : "#cc4444");
+      }
+      if (!result.correct && symbols[i] === (result.expected as string)) {
+        this.comparisonButtons[i].setBackgroundColor("#225522");
+        this.comparisonButtons[i].setColor("#44cc44");
+      }
+    }
+
+    if (result.correct) {
+      this.feedbackText.setText("CORRECT!");
+      this.feedbackText.setColor("#44cc44");
+    } else {
+      this.feedbackText.setText(`INCORRECT — answer was ${result.expected}`);
+      this.feedbackText.setColor("#cc4444");
+    }
+
+    this.time.delayedCall(2000, () => {
+      this.scene.stop("MathProblemScene");
+      this.scene.resume(this.returnScene);
+    });
+  }
+
   private selectChoice(index: number) {
     if (this.resolved) return;
     this.resolved = true;
@@ -466,7 +566,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       return skillTree.gradeAnswer(this.problem.id, answer);
     }
     const widget = Object.values(this.problem.question.widgets)[0];
-    if (widget.type === "dual-input") {
+    if (widget.type === "comparison") {
+      const expected = widget.options.answer;
+      return { correct: answer === expected, expected };
+    } else if (widget.type === "dual-input") {
       const [exp0, exp1] = widget.options.answers;
       const correct = Array.isArray(answer) && answer[0] === exp0.value && answer[1] === exp1.value;
       return { correct, expected: [exp0.value, exp1.value] };

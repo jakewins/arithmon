@@ -7,7 +7,8 @@ function getAnswer(problem: ReturnType<typeof generate>): number {
     const correct = widget.options.choices.find((c) => c.correct);
     return parseInt(correct!.content, 10);
   }
-  return widget.options.answers[0].value;
+  if (widget.type === "numeric-input") return widget.options.answers[0].value;
+  throw new Error(`Unexpected widget type: ${widget.type}`);
 }
 
 describe("K.OA.A.5 problem generator", () => {
