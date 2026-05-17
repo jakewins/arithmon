@@ -548,12 +548,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       }
     }
 
-    // Draggable marker
+    // Marker (visual only — interaction is handled by the hit zone below)
     const markerX = lineX; // starts at range[0]
     this.nlMarker = this.add
       .rectangle(markerX, lineY - 1, 8, 14, 0xffcc00)
-      .setStrokeStyle(1, 0xffaa00)
-      .setInteractive({ useHandCursor: true, draggable: true });
+      .setStrokeStyle(1, 0xffaa00);
 
     // Value label above marker
     this.nlValueText = this.add
@@ -564,34 +563,31 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       })
       .setOrigin(0.5, 1);
 
-    // Drag handling
-    this.input.on(
-      "drag",
-      (_pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.GameObject, dragX: number) => {
-        if (obj !== this.nlMarker || this.resolved) return;
-        // Clamp and snap
-        const clamped = Phaser.Math.Clamp(dragX, lineX, lineX + lineW);
-        const frac = (clamped - lineX) / lineW;
-        const rawVal = range[0] + frac * (range[1] - range[0]);
-        const snapped = Math.round(rawVal / step) * step;
-        this.nlValue = Phaser.Math.Clamp(snapped, range[0], range[1]);
-        this.updateNumberLineMarker();
-      },
-    );
-
-    // Click-to-place on the line area
-    const hitZone = this.add
-      .rectangle(lineX + lineW / 2, lineY, lineW + 16, 30, 0x000000, 0)
-      .setInteractive({ useHandCursor: true });
-
-    hitZone.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+    // Hit zone handles both click-to-place and drag
+    const snapPointer = (px: number) => {
       if (this.resolved) return;
-      const clamped = Phaser.Math.Clamp(pointer.x, lineX, lineX + lineW);
+      const clamped = Phaser.Math.Clamp(px, lineX, lineX + lineW);
       const frac = (clamped - lineX) / lineW;
       const rawVal = range[0] + frac * (range[1] - range[0]);
       const snapped = Math.round(rawVal / step) * step;
       this.nlValue = Phaser.Math.Clamp(snapped, range[0], range[1]);
       this.updateNumberLineMarker();
+    };
+
+    let dragging = false;
+    const hitZone = this.add
+      .rectangle(lineX + lineW / 2, lineY, lineW + 16, 30, 0x000000, 0)
+      .setInteractive({ useHandCursor: true });
+
+    hitZone.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      dragging = true;
+      snapPointer(pointer.x);
+    });
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      if (dragging) snapPointer(pointer.x);
+    });
+    this.input.on("pointerup", () => {
+      dragging = false;
     });
 
     // Submit button
