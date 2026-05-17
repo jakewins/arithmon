@@ -213,7 +213,7 @@ spyder_cottoncafe_cayden: {
 
 **QA**: Use `/puppeteer` to teleport to the cafe. Talk to Cayden, accept the battle. Confirm combat starts with Capiti and Tweesher. Win the battle, talk to Cayden again, confirm post-win dialogue appears instead of battle offer. Screenshot each step.
 
-### 7. Cotton Cafe — first-visit cutscene (simplified)
+### 7. ~~Cotton Cafe — first-visit cutscene (simplified)~~ DONE
 
 Implement a simplified version of the upstream "First Visit to Cotton Cafe" cutscene (object #20 in TMX). The upstream version is a long sequence involving the Hacker introducing Tuxepedia. Simplify to:
 
