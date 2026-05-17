@@ -15,14 +15,20 @@ class CharFacingCharCondition implements EventCondition {
     if (!npc) return false;
 
     const { tileX, tileY, facing } = ctx.player;
-    let facingX = tileX;
-    let facingY = tileY;
-    if (facing === "up") facingY -= 1;
-    else if (facing === "down") facingY += 1;
-    else if (facing === "left") facingX -= 1;
-    else if (facing === "right") facingX += 1;
+    let dx = 0;
+    let dy = 0;
+    if (facing === "up") dy = -1;
+    else if (facing === "down") dy = 1;
+    else if (facing === "left") dx = -1;
+    else if (facing === "right") dx = 1;
 
-    return facingX === npc.tileX && facingY === npc.tileY;
+    // Check 1 and 2 tiles ahead so interactions work across counters
+    for (let dist = 1; dist <= 2; dist++) {
+      if (tileX + dx * dist === npc.tileX && tileY + dy * dist === npc.tileY) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
