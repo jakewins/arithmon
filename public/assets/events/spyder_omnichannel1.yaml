@@ -68,3 +68,35 @@ events:
     - is variable_set nurse_spyder:yes
     actions:
     - dialog Be careful up there. Not everyone in Omnichannel is as friendly as me.
+
+  # --- William trainer battle ---
+
+  Talk William Pre Battle:
+    behav: talk spyder_omnichannel_william
+    conditions:
+    - not battle_outcome player,spyder_omnichannel_william,won
+    actions:
+    - char_face spyder_omnichannel_william,player
+    - lock_controls
+    - dialog You think you can just waltz into Omnichannel? Let me show you how we deal with intruders!
+    - start_battle spyder_omnichannel_william
+
+  Talk William Post Battle:
+    behav: talk spyder_omnichannel_william
+    conditions:
+    - is battle_outcome player,spyder_omnichannel_william,won
+    actions:
+    - "dialog Hmph. You're stronger than you look. Fine, go ahead."
+
+  # --- Map connections ---
+
+  Go Outside:
+    x: 1
+    y: 13
+    width: 2
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_cotton_town.tmx,17,10,0.3
+    - char_face player,down

@@ -95,6 +95,14 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 400,
   },
+  spyder_omnichannel_william: {
+    name: "William",
+    monsters: [
+      { slug: "elowind", level: 36 },
+      { slug: "cardiwing", level: 36 },
+    ],
+    goldReward: 500,
+  },
 };
 
 export function getNpcParty(npcSlug: string): NpcPartyDef | undefined {
