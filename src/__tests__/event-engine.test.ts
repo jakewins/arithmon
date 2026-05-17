@@ -309,6 +309,7 @@ events:
       tileX: 0,
       tileY: 2,
       duration: 0.3,
+      facing: "down",
     });
   });
 });
@@ -685,6 +686,7 @@ events:
       tileX: 4,
       tileY: 5,
       duration: 0.3,
+      facing: "down",
     });
   });
 
@@ -825,6 +827,7 @@ events:
       tileX: 4,
       tileY: 4,
       duration: 0.3,
+      facing: "down",
     });
   });
 });
@@ -1091,6 +1094,7 @@ events:
       tileX: 4,
       tileY: 4,
       duration: 0.3,
+      facing: "down",
     });
   });
 
@@ -1116,6 +1120,7 @@ events:
       tileX: 4,
       tileY: 4,
       duration: 0.3,
+      facing: "down",
     });
   });
 
@@ -1139,6 +1144,7 @@ events:
       mapKey: "water_end_of_desert",
       tileX: 11,
       tileY: 32,
+      facing: "down",
       duration: 0.5,
     });
   });
@@ -1581,6 +1587,7 @@ events:
       tileX: 4,
       tileY: 8,
       duration: 0.3,
+      facing: "down",
     });
   });
 
@@ -1600,6 +1607,7 @@ events:
       tileX: 4,
       tileY: 8,
       duration: 0.3,
+      facing: "down",
     });
   });
 

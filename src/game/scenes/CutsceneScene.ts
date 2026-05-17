@@ -123,6 +123,7 @@ export class CutsceneScene extends Scene implements DebugStateProvider, DebugCom
         mapKey: teleport.mapKey,
         spawnTileX: teleport.tileX,
         spawnTileY: teleport.tileY,
+        spawnFacing: teleport.facing,
       } satisfies OverworldInitData);
     });
   }

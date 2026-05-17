@@ -884,6 +884,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
         mapKey: teleport.mapKey,
         spawnTileX: teleport.tileX,
         spawnTileY: teleport.tileY,
+        spawnFacing: teleport.facing,
       } satisfies OverworldInitData);
     });
   }

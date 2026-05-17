@@ -36,6 +36,7 @@ class TransitionTeleportAction implements EventAction {
       tileX: this.tileX,
       tileY: this.tileY,
       duration: this.duration,
+      facing: ctx.player.facing,
     };
     this.dispatched = true;
     debugBridge.emit("teleport", { map: this.mapKey, x: this.tileX, y: this.tileY });

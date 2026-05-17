@@ -57,6 +57,7 @@ export interface PendingTeleport {
   tileX: number;
   tileY: number;
   duration: number;
+  facing?: Direction;
 }
 
 export interface NpcState {
