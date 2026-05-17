@@ -13,7 +13,7 @@ events:
     conditions:
     - not char_exists spyder_cotton_scoop_keeper
     actions:
-    - create_npc spyder_cotton_scoop_keeper,2,4
+    - create_npc spyder_cotton_scoop_keeper,2,3
     - char_face spyder_cotton_scoop_keeper,down
 
   Create Assistant:
