@@ -55,8 +55,27 @@ events:
 
   # --- NPC interactions ---
 
+  First Visit Cutscene:
+    behav: talk spyder_cottontown_hacker
+    conditions:
+    - not variable_set visitedcottoncafe:yes
+    actions:
+    - lock_controls
+    - pathfind spyder_cottontown_hacker,6,5
+    - char_face spyder_cottontown_hacker,player
+    - dialog Good to see you. You're just in time.
+    - dialog Ahem.
+    - dialog I've been working on something called the Tuxepedia. It catalogs every tuxemon species we've discovered. Here — take a copy.
+    - add_item app_tuxepedia
+    - translated_dialog app_tuxepedia,,center,center,center
+    - set_variable visitedcottoncafe:yes
+    - pathfind spyder_cottontown_hacker,10,4
+    - unlock_controls
+
   Talk Hacker:
     behav: talk spyder_cottontown_hacker
+    conditions:
+    - is variable_set visitedcottoncafe:yes
     actions:
     - dialog Ah, the Tuxepedia! Have you been cataloging your finds?
 

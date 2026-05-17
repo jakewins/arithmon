@@ -65,33 +65,27 @@ export function loadEventsFromYaml(yamlText: string): EventDef[] {
   for (const [name, entry] of Object.entries(data.events)) {
     const actions = (entry.actions ?? []).map(parseActionString);
 
+    const explicitConditions = (entry.conditions ?? []).map(parseConditionString);
     let conditions: ConditionDef[];
+    let finalActions: ActionDef[];
     if (entry.behav) {
       const expanded = expandBehavior(entry.behav, actions);
-      conditions = expanded.conditions;
-      events.push({
-        id: nextId++,
-        name,
-        x: entry.x,
-        y: entry.y,
-        width: entry.width,
-        height: entry.height,
-        conditions,
-        actions: expanded.actions,
-      });
+      conditions = [...expanded.conditions, ...explicitConditions];
+      finalActions = expanded.actions;
     } else {
-      conditions = (entry.conditions ?? []).map(parseConditionString);
-      events.push({
-        id: nextId++,
-        name,
-        x: entry.x,
-        y: entry.y,
-        width: entry.width,
-        height: entry.height,
-        conditions,
-        actions,
-      });
+      conditions = explicitConditions;
+      finalActions = actions;
     }
+    events.push({
+      id: nextId++,
+      name,
+      x: entry.x,
+      y: entry.y,
+      width: entry.width,
+      height: entry.height,
+      conditions,
+      actions: finalActions,
+    });
   }
 
   return events;
