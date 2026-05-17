@@ -10,6 +10,7 @@ import { generate as generate1OAD7 } from "./data/skills/1-oa-d7";
 import { generate as generate1OAD8 } from "./data/skills/1-oa-d8";
 import { generate as generate1NBTB2 } from "./data/skills/1-nbt-b2";
 import { generate as generate1OAA1 } from "./data/skills/1-oa-a1";
+import { generate as generate1NBTB3 } from "./data/skills/1-nbt-b3";
 import { session, type GameSession, type SkillState } from "./session";
 
 export type { SkillState };
@@ -26,7 +27,8 @@ export type SkillNodeId =
   | "1.OA.D.7"
   | "1.OA.D.8"
   | "1.NBT.B.2"
-  | "1.OA.A.1";
+  | "1.OA.A.1"
+  | "1.NBT.B.3";
 
 export interface SkillNode<Id extends string = SkillNodeId> {
   id: Id;
@@ -227,6 +229,13 @@ export function createSkillTree(gameSession: GameSession): SkillTree {
     id: "1.NBT.B.2",
     prerequisites: ["K.NBT.A.1"],
     generate: generate1NBTB2,
+  });
+
+  // Register 1.NBT.B.3 — unlocks once 1.NBT.B.2 reaches box >= 2
+  tree.register({
+    id: "1.NBT.B.3",
+    prerequisites: ["1.NBT.B.2"],
+    generate: generate1NBTB3,
   });
 
   // Register 1.OA.A.1 — unlocks once both 1.OA.C.6 and 1.OA.D.8 reach box >= 2
