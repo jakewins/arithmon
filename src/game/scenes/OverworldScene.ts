@@ -181,6 +181,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       "events-spyder_greenwash_greenhouse",
       "assets/events/spyder_greenwash_greenhouse.yaml",
     );
+    this.load.text("events-spyder_cotton_town", "assets/events/spyder_cotton_town.yaml");
     this.load.text("events-spyder_cotton_tunnel", "assets/events/spyder_cotton_tunnel.yaml");
     this.load.text("events-spyder_dragons_cave", "assets/events/spyder_dragons_cave.yaml");
     this.load.text("events-spyder_dryads_grove", "assets/events/spyder_dryads_grove.yaml");
