@@ -89,23 +89,30 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Separator line
     this.add.rectangle(WIDTH / 2, panelY + 28, panelW - 24, 1, 0x4488cc, 0.5);
 
-    // Question text
-    this.add
-      .text(WIDTH / 2, panelY + 52, displayQuestion, {
-        fontSize: "14px",
+    // Question text — use smaller font + word wrap for longer text (e.g. word problems)
+    const isLongQuestion = displayQuestion.length > 40;
+    const questionFontSize = isLongQuestion ? "10px" : "14px";
+    const questionObj = this.add
+      .text(WIDTH / 2, panelY + 38, displayQuestion, {
+        fontSize: questionFontSize,
         color: "#ffffff",
         fontStyle: "bold",
+        wordWrap: { width: panelW - 24 },
+        align: "center",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5, 0);
+
+    // Position UI elements below the question text
+    const contentY = questionObj.y + questionObj.height + 8;
 
     if (widget.type === "radio") {
-      this.createRadioUI(widget, panelY, panelW);
+      this.createRadioUI(widget, contentY, panelW);
     } else if (widget.type === "dual-input") {
-      this.createDualInputUI(widget, panelY, panelW);
+      this.createDualInputUI(widget, contentY, panelW);
     } else if (widget.type === "comparison") {
-      this.createComparisonUI(widget, panelY);
+      this.createComparisonUI(widget, contentY);
     } else {
-      this.createNumericInputUI(panelY, panelW);
+      this.createNumericInputUI(contentY, panelW);
     }
 
     // Feedback text (correct/incorrect)
@@ -180,9 +187,9 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     }
   }
 
-  private createNumericInputUI(panelY: number, panelW: number) {
+  private createNumericInputUI(contentY: number, panelW: number) {
     // Answer input area
-    const inputY = panelY + 84;
+    const inputY = contentY;
     this.add.rectangle(WIDTH / 2, inputY, 80, 22, 0x222244).setStrokeStyle(1, 0x6666aa);
 
     this.answerText = this.add
@@ -247,13 +254,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
   private createDualInputUI(
     widget: ProblemWidget & { type: "dual-input" },
-    panelY: number,
+    contentY: number,
     _panelW: number,
   ) {
     // Dummy answerText so updateAnswerDisplay() doesn't crash if called
     this.answerText = this.add.text(0, 0, "").setVisible(false);
 
-    const inputY = panelY + 84;
+    const inputY = contentY;
     const boxW = 56;
     const gap = 24;
     const leftX = WIDTH / 2 - gap - boxW / 2;
@@ -397,9 +404,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     });
   }
 
-  private createRadioUI(widget: ProblemWidget & { type: "radio" }, panelY: number, panelW: number) {
+  private createRadioUI(
+    widget: ProblemWidget & { type: "radio" },
+    contentY: number,
+    panelW: number,
+  ) {
     const choices = widget.options.choices;
-    const startY = panelY + 78;
+    const startY = contentY;
     const spacing = 24;
 
     for (let i = 0; i < choices.length; i++) {
@@ -425,12 +436,12 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.hintText = this.add.text(0, 0, "").setVisible(false);
   }
 
-  private createComparisonUI(widget: ProblemWidget & { type: "comparison" }, panelY: number) {
+  private createComparisonUI(widget: ProblemWidget & { type: "comparison" }, contentY: number) {
     // Dummy elements so other methods don't crash
     this.answerText = this.add.text(0, 0, "").setVisible(false);
     this.hintText = this.add.text(0, 0, "").setVisible(false);
 
-    const rowY = panelY + 84;
+    const rowY = contentY;
     const { left, right } = widget.options;
 
     // Left value
