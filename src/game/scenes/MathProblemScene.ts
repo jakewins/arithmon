@@ -785,7 +785,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.answerText = this.add.text(0, 0, "").setVisible(false);
     this.hintText = this.add.text(0, 0, "").setVisible(false);
 
-    const dropY = contentY + 4;
+    const dropY = contentY + 12;
 
     // Tappable placeholder box
     const placeholderBg = this.add
