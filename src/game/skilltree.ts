@@ -129,7 +129,10 @@ export class SkillTree<Id extends string = SkillNodeId> {
     let correct: boolean;
     let expected: number | string | [number, number];
 
-    if (widget.type === "comparison") {
+    if (widget.type === "number-line") {
+      expected = widget.options.answer;
+      correct = answer === expected;
+    } else if (widget.type === "comparison") {
       expected = widget.options.answer;
       correct = answer === expected;
     } else if (widget.type === "radio") {

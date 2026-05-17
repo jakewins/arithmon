@@ -29,6 +29,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     null,
   ];
   private activeField: 0 | 1 = 0;
+  // Number-line state
+  private nlMarker: Phaser.GameObjects.Rectangle | null = null;
+  private nlValueText: Phaser.GameObjects.Text | null = null;
+  private nlValue = 0;
+  private nlRange: [number, number] = [0, 20];
+  private nlLineX = 0;
+  private nlLineW = 0;
   private injectedProblem: PerseusProblem | null = null;
   private isInjected = false;
 
@@ -51,6 +58,9 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.dualTexts = [null, null];
     this.dualBoxes = [null, null];
     this.activeField = 0;
+    this.nlMarker = null;
+    this.nlValueText = null;
+    this.nlValue = 0;
 
     this.isInjected = this.injectedProblem !== null;
     this.problem = this.injectedProblem ?? skillTree.getNextProblem();
@@ -111,6 +121,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.createDualInputUI(widget, contentY, panelW);
     } else if (widget.type === "comparison") {
       this.createComparisonUI(widget, contentY);
+    } else if (widget.type === "number-line") {
+      this.createNumberLineUI(widget, contentY, panelW);
     } else {
       this.createNumericInputUI(contentY, panelW);
     }
@@ -157,6 +169,12 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const parts = text.split(",");
       this.dualAnswers = [parts[0] ?? "", parts[1] ?? ""];
       this.updateDualDisplay();
+    } else if (widget.type === "number-line") {
+      const val = parseInt(text, 10);
+      if (!isNaN(val)) {
+        this.nlValue = val;
+        this.updateNumberLineMarker();
+      }
     } else {
       this.currentAnswer = text;
       if (widget.type !== "radio" && widget.type !== "comparison") {
@@ -182,6 +200,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       }
     } else if (widget.type === "dual-input") {
       this.submitDualAnswer();
+    } else if (widget.type === "number-line") {
+      this.submitNumberLineAnswer();
     } else {
       this.submitNumericAnswer();
     }
@@ -485,6 +505,179 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     }
   }
 
+  private createNumberLineUI(
+    widget: ProblemWidget & { type: "number-line" },
+    contentY: number,
+    panelW: number,
+  ) {
+    // Dummy elements so other methods don't crash
+    this.answerText = this.add.text(0, 0, "").setVisible(false);
+    this.hintText = this.add.text(0, 0, "").setVisible(false);
+
+    const { range, step, labelStep } = widget.options;
+    this.nlRange = range;
+    this.nlValue = range[0];
+
+    const lineY = contentY + 16;
+    const margin = 28;
+    const lineX = (WIDTH - panelW) / 2 + margin;
+    const lineW = panelW - margin * 2;
+    this.nlLineX = lineX;
+    this.nlLineW = lineW;
+
+    // Main horizontal line
+    this.add.rectangle(lineX + lineW / 2, lineY, lineW, 2, 0x6688aa);
+
+    // Tick marks and labels
+    const totalSteps = (range[1] - range[0]) / step;
+    for (let i = 0; i <= totalSteps; i++) {
+      const val = range[0] + i * step;
+      const x = lineX + (i / totalSteps) * lineW;
+      const isLabel = (val - range[0]) % labelStep === 0;
+      const tickH = isLabel ? 8 : 4;
+
+      this.add.rectangle(x, lineY, 1, tickH, 0x6688aa);
+
+      if (isLabel) {
+        this.add
+          .text(x, lineY + 8, String(val), {
+            fontSize: "8px",
+            color: "#88aacc",
+          })
+          .setOrigin(0.5, 0);
+      }
+    }
+
+    // Draggable marker
+    const markerX = lineX; // starts at range[0]
+    this.nlMarker = this.add
+      .rectangle(markerX, lineY - 1, 8, 14, 0xffcc00)
+      .setStrokeStyle(1, 0xffaa00)
+      .setInteractive({ useHandCursor: true, draggable: true });
+
+    // Value label above marker
+    this.nlValueText = this.add
+      .text(markerX, lineY - 16, String(range[0]), {
+        fontSize: "10px",
+        color: "#ffcc00",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5, 1);
+
+    // Drag handling
+    this.input.on(
+      "drag",
+      (_pointer: Phaser.Input.Pointer, obj: Phaser.GameObjects.GameObject, dragX: number) => {
+        if (obj !== this.nlMarker || this.resolved) return;
+        // Clamp and snap
+        const clamped = Phaser.Math.Clamp(dragX, lineX, lineX + lineW);
+        const frac = (clamped - lineX) / lineW;
+        const rawVal = range[0] + frac * (range[1] - range[0]);
+        const snapped = Math.round(rawVal / step) * step;
+        this.nlValue = Phaser.Math.Clamp(snapped, range[0], range[1]);
+        this.updateNumberLineMarker();
+      },
+    );
+
+    // Click-to-place on the line area
+    const hitZone = this.add
+      .rectangle(lineX + lineW / 2, lineY, lineW + 16, 30, 0x000000, 0)
+      .setInteractive({ useHandCursor: true });
+
+    hitZone.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (this.resolved) return;
+      const clamped = Phaser.Math.Clamp(pointer.x, lineX, lineX + lineW);
+      const frac = (clamped - lineX) / lineW;
+      const rawVal = range[0] + frac * (range[1] - range[0]);
+      const snapped = Math.round(rawVal / step) * step;
+      this.nlValue = Phaser.Math.Clamp(snapped, range[0], range[1]);
+      this.updateNumberLineMarker();
+    });
+
+    // Submit button
+    const submitY = lineY + 32;
+    this.add
+      .text(WIDTH / 2, submitY, "▶ SUBMIT", {
+        fontSize: "11px",
+        color: "#ffcc00",
+        backgroundColor: "#333333",
+        padding: { x: 8, y: 4 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.submitNumberLineAnswer());
+
+    // Hint button
+    this.add
+      .text(WIDTH / 2, submitY + 24, "? HINT", {
+        fontSize: "10px",
+        color: "#88aacc",
+        backgroundColor: "#222233",
+        padding: { x: 6, y: 3 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.showNextHint());
+
+    // Keyboard: left/right arrows to nudge
+    this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (this.resolved) return;
+      if (event.key === "ArrowLeft") {
+        this.nlValue = Math.max(this.nlValue - step, range[0]);
+        this.updateNumberLineMarker();
+      } else if (event.key === "ArrowRight") {
+        this.nlValue = Math.min(this.nlValue + step, range[1]);
+        this.updateNumberLineMarker();
+      } else if (event.key === "Enter") {
+        this.submitNumberLineAnswer();
+      }
+    });
+  }
+
+  private updateNumberLineMarker() {
+    const frac = (this.nlValue - this.nlRange[0]) / (this.nlRange[1] - this.nlRange[0]);
+    const x = this.nlLineX + frac * this.nlLineW;
+    this.nlMarker?.setX(x);
+    this.nlValueText?.setX(x);
+    this.nlValueText?.setText(String(this.nlValue));
+  }
+
+  private submitNumberLineAnswer() {
+    if (this.resolved) return;
+    this.resolved = true;
+
+    const result = this.grade(this.nlValue);
+    debugBridge.emit("math_problem_answered", {
+      correct: result.correct,
+      answer: this.nlValue,
+    });
+
+    this.data.set("correct", result.correct);
+
+    if (result.correct) {
+      this.feedbackText.setText("CORRECT!");
+      this.feedbackText.setColor("#44cc44");
+      this.nlMarker?.setFillStyle(0x44cc44);
+    } else {
+      this.feedbackText.setText(`INCORRECT — answer was ${result.expected}`);
+      this.feedbackText.setColor("#cc4444");
+      this.nlMarker?.setFillStyle(0xcc4444);
+
+      // Show correct position marker
+      const expected = result.expected as number;
+      const frac = (expected - this.nlRange[0]) / (this.nlRange[1] - this.nlRange[0]);
+      const correctX = this.nlLineX + frac * this.nlLineW;
+      this.add
+        .rectangle(correctX, this.nlMarker!.y, 8, 14, 0x44cc44, 0.6)
+        .setStrokeStyle(1, 0x44cc44);
+    }
+
+    this.time.delayedCall(2000, () => {
+      this.scene.stop("MathProblemScene");
+      this.scene.resume(this.returnScene);
+    });
+  }
+
   private selectComparison(index: number) {
     if (this.resolved) return;
     this.resolved = true;
@@ -579,7 +772,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       return skillTree.gradeAnswer(this.problem.id, answer);
     }
     const widget = Object.values(this.problem.question.widgets)[0];
-    if (widget.type === "comparison") {
+    if (widget.type === "number-line") {
+      const expected = widget.options.answer;
+      return { correct: answer === expected, expected };
+    } else if (widget.type === "comparison") {
       const expected = widget.options.answer;
       return { correct: answer === expected, expected };
     } else if (widget.type === "dual-input") {

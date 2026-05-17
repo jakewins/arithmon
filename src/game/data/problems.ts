@@ -41,7 +41,22 @@ export interface ComparisonWidget {
   };
 }
 
-export type ProblemWidget = NumericInputWidget | RadioWidget | DualInputWidget | ComparisonWidget;
+export interface NumberLineWidget {
+  type: "number-line";
+  options: {
+    range: [number, number];
+    step: number;
+    labelStep: number;
+    answer: number;
+  };
+}
+
+export type ProblemWidget =
+  | NumericInputWidget
+  | RadioWidget
+  | DualInputWidget
+  | ComparisonWidget
+  | NumberLineWidget;
 
 export interface PerseusProblem {
   id: string;
