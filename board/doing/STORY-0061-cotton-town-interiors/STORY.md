@@ -175,7 +175,7 @@ Do NOT implement the first-visit cutscene, barmaid healing, or Cayden battle yet
 
 **QA**: Use `/puppeteer` to teleport to `spyder_cotton_cafe`. Screenshot to verify the map renders with all NPCs visible. Walk around, interact with each NPC to confirm dialogue. Exit and confirm landing at (31,17) on cotton town.
 
-### 5. Cotton Cafe — barmaid healing
+### 5. ~~Cotton Cafe — barmaid healing~~ DONE
 
 Add the barmaid healing interaction, matching upstream's flow:
 - Player talks to barmaid → "Welcome back. Shall I chuck your tuxemon in the healing unit?" (from upstream) → yes/no choice

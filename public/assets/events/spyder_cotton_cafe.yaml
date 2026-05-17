@@ -61,9 +61,28 @@ events:
     - dialog Ah, the Tuxepedia! Have you been cataloging your finds?
 
   Talk Barmaid:
-    behav: talk spyder_cottontown_barmaid
+    x: 0
+    y: 5
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
     actions:
-    - dialog Welcome back. Let me know if you need anything.
+    - char_face spyder_cottontown_barmaid,player
+    - dialog Welcome back. Shall I chuck your tuxemon in the healing unit?
+    - translated_dialog_choice yes:no,healchoice
+
+  Heal Party:
+    conditions:
+    - is variable_set healchoice:yes
+    actions:
+    - dialog Okay! Just give me a second and I'll heal your Tuxemon!
+    - screen_transition 1
+    - wait 0.5
+    - set_monster_health
+    - set_monster_status
+    - set_teleport_faint player,spyder_cotton_cafe.tmx,1,10
+    - set_variable healchoice:done
+    - dialog There you go! All healed up.
 
   Talk Lotus:
     behav: talk spyder_cottoncafe_lotus
