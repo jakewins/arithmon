@@ -51,12 +51,26 @@ export interface NumberLineWidget {
   };
 }
 
+export interface DropdownChoice {
+  content: string;
+  correct: boolean;
+}
+
+export interface DropdownWidget {
+  type: "dropdown";
+  options: {
+    placeholder: string;
+    choices: DropdownChoice[];
+  };
+}
+
 export type ProblemWidget =
   | NumericInputWidget
   | RadioWidget
   | DualInputWidget
   | ComparisonWidget
-  | NumberLineWidget;
+  | NumberLineWidget
+  | DropdownWidget;
 
 export interface PerseusProblem {
   id: string;

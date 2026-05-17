@@ -139,6 +139,10 @@ export class SkillTree<Id extends string = SkillNodeId> {
       const correctChoice = widget.options.choices.find((c) => c.correct);
       expected = correctChoice?.content ?? "";
       correct = answer === expected;
+    } else if (widget.type === "dropdown") {
+      const correctChoice = widget.options.choices.find((c) => c.correct);
+      expected = correctChoice?.content ?? "";
+      correct = answer === expected;
     } else if (widget.type === "dual-input") {
       const [exp0, exp1] = widget.options.answers;
       expected = [exp0.value, exp1.value];

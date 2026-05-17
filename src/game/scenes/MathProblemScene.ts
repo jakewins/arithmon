@@ -36,6 +36,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   private nlRange: [number, number] = [0, 20];
   private nlLineX = 0;
   private nlLineW = 0;
+  // Dropdown state
+  private dropdownSelected: string | null = null;
+  private dropdownPlaceholder: Phaser.GameObjects.Text | null = null;
+  private dropdownOverlay: Phaser.GameObjects.GameObject[] = [];
+  private dropdownOpen = false;
   private injectedProblem: PerseusProblem | null = null;
   private isInjected = false;
 
@@ -61,6 +66,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.nlMarker = null;
     this.nlValueText = null;
     this.nlValue = 0;
+    this.dropdownSelected = null;
+    this.dropdownPlaceholder = null;
+    this.dropdownOverlay = [];
+    this.dropdownOpen = false;
 
     this.isInjected = this.injectedProblem !== null;
     this.problem = this.injectedProblem ?? skillTree.getNextProblem();
@@ -123,6 +132,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.createComparisonUI(widget, contentY);
     } else if (widget.type === "number-line") {
       this.createNumberLineUI(widget, contentY, panelW);
+    } else if (widget.type === "dropdown") {
+      this.createDropdownUI(widget, contentY, panelW);
     } else {
       this.createNumericInputUI(contentY, panelW);
     }
@@ -175,6 +186,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
         this.nlValue = val;
         this.updateNumberLineMarker();
       }
+    } else if (widget.type === "dropdown") {
+      const index = parseInt(text, 10);
+      if (!isNaN(index) && widget.options.choices[index]) {
+        this.selectDropdownChoice(index);
+      }
     } else {
       this.currentAnswer = text;
       if (widget.type !== "radio" && widget.type !== "comparison") {
@@ -202,6 +218,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.submitDualAnswer();
     } else if (widget.type === "number-line") {
       this.submitNumberLineAnswer();
+    } else if (widget.type === "dropdown") {
+      this.submitDropdownAnswer();
     } else {
       this.submitNumericAnswer();
     }
@@ -758,6 +776,159 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     });
   }
 
+  private createDropdownUI(
+    widget: ProblemWidget & { type: "dropdown" },
+    contentY: number,
+    panelW: number,
+  ) {
+    // Dummy elements so other methods don't crash
+    this.answerText = this.add.text(0, 0, "").setVisible(false);
+    this.hintText = this.add.text(0, 0, "").setVisible(false);
+
+    const dropY = contentY + 4;
+
+    // Tappable placeholder box
+    const placeholderBg = this.add
+      .rectangle(WIDTH / 2, dropY, 120, 24, 0x222244)
+      .setStrokeStyle(2, 0x4488cc);
+
+    this.dropdownPlaceholder = this.add
+      .text(WIDTH / 2, dropY, widget.options.placeholder, {
+        fontSize: "13px",
+        color: "#88aacc",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    placeholderBg.setInteractive({ useHandCursor: true }).on("pointerdown", () => {
+      if (this.resolved) return;
+      if (this.dropdownOpen) {
+        this.closeDropdown();
+      } else {
+        this.openDropdown(widget, dropY);
+      }
+    });
+
+    // Submit button below
+    const submitY = dropY + 36;
+    this.add
+      .text(WIDTH / 2, submitY, "▶ SUBMIT", {
+        fontSize: "11px",
+        color: "#ffcc00",
+        backgroundColor: "#333333",
+        padding: { x: 8, y: 4 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.submitDropdownAnswer());
+
+    // Hint button
+    this.add
+      .text(WIDTH / 2, submitY + 24, "? HINT", {
+        fontSize: "10px",
+        color: "#88aacc",
+        backgroundColor: "#222233",
+        padding: { x: 6, y: 3 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.showNextHint());
+
+    // Hint display
+    this.hintText = this.add
+      .text(WIDTH / 2, submitY + 52, "", {
+        fontSize: "9px",
+        color: "#88aacc",
+        wordWrap: { width: panelW - 40 },
+        align: "center",
+      })
+      .setOrigin(0.5, 0);
+  }
+
+  private openDropdown(widget: ProblemWidget & { type: "dropdown" }, anchorY: number) {
+    this.closeDropdown();
+    this.dropdownOpen = true;
+
+    const choices = widget.options.choices;
+    const itemH = 22;
+    const listH = choices.length * itemH + 4;
+    const listY = anchorY + 18;
+
+    // Background panel
+    const bg = this.add
+      .rectangle(WIDTH / 2, listY + listH / 2, 130, listH, 0x111133, 0.96)
+      .setStrokeStyle(1, 0x4488cc)
+      .setDepth(10);
+    this.dropdownOverlay.push(bg);
+
+    for (let i = 0; i < choices.length; i++) {
+      const y = listY + 2 + i * itemH + itemH / 2;
+      const btn = this.add
+        .text(WIDTH / 2, y, choices[i].content, {
+          fontSize: "12px",
+          color: "#ffffff",
+          backgroundColor: "#333355",
+          padding: { x: 10, y: 3 },
+          fixedWidth: 110,
+          align: "center",
+        })
+        .setOrigin(0.5)
+        .setDepth(11)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", () => this.selectDropdownChoice(i));
+      this.dropdownOverlay.push(btn);
+    }
+  }
+
+  private closeDropdown() {
+    for (const obj of this.dropdownOverlay) {
+      obj.destroy();
+    }
+    this.dropdownOverlay = [];
+    this.dropdownOpen = false;
+  }
+
+  private selectDropdownChoice(index: number) {
+    const widget = Object.values(this.problem.question.widgets)[0];
+    if (widget.type !== "dropdown") return;
+
+    const choice = widget.options.choices[index];
+    this.dropdownSelected = choice.content;
+    this.dropdownPlaceholder?.setText(choice.content);
+    this.dropdownPlaceholder?.setColor("#ffcc00");
+    this.closeDropdown();
+  }
+
+  private submitDropdownAnswer() {
+    if (this.resolved) return;
+    if (this.dropdownSelected === null) return;
+    this.resolved = true;
+    this.closeDropdown();
+
+    const result = this.grade(this.dropdownSelected);
+    debugBridge.emit("math_problem_answered", {
+      correct: result.correct,
+      answer: this.dropdownSelected,
+    });
+
+    this.data.set("correct", result.correct);
+
+    if (result.correct) {
+      this.feedbackText.setText("CORRECT!");
+      this.feedbackText.setColor("#44cc44");
+      this.dropdownPlaceholder?.setColor("#44cc44");
+    } else {
+      this.feedbackText.setText(`INCORRECT — answer was ${result.expected}`);
+      this.feedbackText.setColor("#cc4444");
+      this.dropdownPlaceholder?.setColor("#cc4444");
+    }
+
+    this.time.delayedCall(2000, () => {
+      this.scene.stop("MathProblemScene");
+      this.scene.resume(this.returnScene);
+    });
+  }
+
   private updateAnswerDisplay() {
     this.answerText.setText(this.currentAnswer || "_");
   }
@@ -779,6 +950,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const correct = Array.isArray(answer) && answer[0] === exp0.value && answer[1] === exp1.value;
       return { correct, expected: [exp0.value, exp1.value] };
     } else if (widget.type === "radio") {
+      const correctChoice = widget.options.choices.find((c) => c.correct);
+      const expected = correctChoice?.content ?? "";
+      return { correct: answer === expected, expected };
+    } else if (widget.type === "dropdown") {
       const correctChoice = widget.options.choices.find((c) => c.correct);
       const expected = correctChoice?.content ?? "";
       return { correct: answer === expected, expected };
