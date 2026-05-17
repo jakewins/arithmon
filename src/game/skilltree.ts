@@ -3,12 +3,13 @@ import { generate as generateKOAA5 } from "./data/skills/k-oa-a5";
 import { generate as generateKOAA2 } from "./data/skills/k-oa-a2";
 import { generate as generateKOAA4 } from "./data/skills/k-oa-a4";
 import { generate as generateKOAA3 } from "./data/skills/k-oa-a3";
+import { generate as generateKNBTA1 } from "./data/skills/k-nbt-a1";
 import { session, type GameSession, type SkillState } from "./session";
 
 export type { SkillState };
 
 /** Union of all skill node IDs currently handled by the game. */
-export type SkillNodeId = "K.OA.A.5" | "K.OA.A.2" | "K.OA.A.4" | "K.OA.A.3";
+export type SkillNodeId = "K.OA.A.5" | "K.OA.A.2" | "K.OA.A.4" | "K.OA.A.3" | "K.NBT.A.1";
 
 export interface SkillNode<Id extends string = SkillNodeId> {
   id: Id;
@@ -167,6 +168,13 @@ export function createSkillTree(gameSession: GameSession): SkillTree {
     id: "K.OA.A.3",
     prerequisites: ["K.OA.A.2"],
     generate: generateKOAA3,
+  });
+
+  // Register K.NBT.A.1 — unlocks once both K.OA.A.3 and K.OA.A.4 reach box >= 2
+  tree.register({
+    id: "K.NBT.A.1",
+    prerequisites: ["K.OA.A.3", "K.OA.A.4"],
+    generate: generateKNBTA1,
   });
 
   return tree;
