@@ -80,6 +80,21 @@ const OCEANSET_OUTSIDE: TilesetAsset = {
   imageKey: "oceanset_outside_tiles",
   imagePath: "assets/maps/oceanset_outside.tiles.png",
 };
+const OFFICE_INTERIORS: TilesetAsset = {
+  name: "Office_interiors_shadowless_16x16",
+  imageKey: "office_interiors_shadowless",
+  imagePath: "assets/maps/Office_interiors_shadowless_16x16.png",
+};
+const INTERIORS_16X16: TilesetAsset = {
+  name: "Interiors_16x16",
+  imageKey: "interiors_16x16",
+  imagePath: "assets/maps/Interiors_16x16.png",
+};
+const TILESETS_16X16: TilesetAsset = {
+  name: "Tilesets_16x16",
+  imageKey: "tilesets_16x16",
+  imagePath: "assets/maps/Tilesets_16x16.png",
+};
 
 export const MAP_REGISTRY: Record<string, MapDef> = {
   test_collision: {
@@ -613,6 +628,13 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     jsonPath: "assets/maps/water_end_of_desert.json",
     tilesets: [CORE_OUTDOOR, OCEANSET_OUTSIDE],
     environment: "ocean",
+  },
+  spyder_omnichannel1: {
+    jsonKey: "map-spyder_omnichannel1",
+    jsonPath: "assets/maps/spyder_omnichannel1.json",
+    tilesets: [OFFICE_INTERIORS, INTERIORS_16X16, CORE_INDOOR_STAIRS, TILESETS_16X16],
+    environment: "grass",
+    inside: true,
   },
 };
 
