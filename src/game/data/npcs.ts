@@ -1,5 +1,7 @@
 export interface NpcSpriteDef {
   spritesheet: string;
+  /** Static props use a single-frame sprite (no walk animation). */
+  staticProp?: boolean;
 }
 
 const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
@@ -63,6 +65,11 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_cottonartshop_philis: { spritesheet: "granny" },
   spyder_cottonartshop_phoenix: { spritesheet: "goth" },
   spyder_cottonartshop_carter: { spritesheet: "shopkeeper" },
+  spyder_statue_blue: { spritesheet: "statue_blue", staticProp: true },
+  spyder_statue_red: { spritesheet: "statue_red", staticProp: true },
+  spyder_statue_orange: { spritesheet: "statue_orange", staticProp: true },
+  spyder_statue_green: { spritesheet: "statue_green", staticProp: true },
+  spyder_statue_grey: { spritesheet: "statue_grey", staticProp: true },
   spyder_cottontown_monk: { spritesheet: "monk" },
   spyder_dragonscave_lazybrute: { spritesheet: "knight" },
   spyder_confusedperson: { spritesheet: "childactor_fiery" },

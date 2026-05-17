@@ -1,5 +1,6 @@
 import type { EventAction, EventContext, Direction } from "../types";
 import { registerAction } from "../registry";
+import { getNpcSprite } from "../../data/npcs";
 
 export const FACING_FRAMES: Record<Direction, number> = {
   down: 1,
@@ -57,7 +58,9 @@ class CharFaceAction implements EventAction {
       const npc = ctx.npcs.get(this.target);
       if (npc) {
         npc.facing = dir;
-        npc.sprite.setFrame(FACING_FRAMES[dir]);
+        if (!getNpcSprite(npc.slug).staticProp) {
+          npc.sprite.setFrame(FACING_FRAMES[dir]);
+        }
       }
     }
 

@@ -1,6 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { FACING_FRAMES } from "./charFace";
+import { getNpcSprite } from "../../data/npcs";
 
 class CharStopAction implements EventAction {
   type = "char_stop";
@@ -20,7 +21,7 @@ class CharStopAction implements EventAction {
       }
     } else {
       const npc = ctx.npcs.get(this.target);
-      if (npc) {
+      if (npc && !getNpcSprite(npc.slug).staticProp) {
         npc.sprite.setFrame(FACING_FRAMES[npc.facing]);
       }
     }
