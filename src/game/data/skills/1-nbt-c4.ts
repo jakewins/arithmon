@@ -6,6 +6,7 @@
  * Sub-types:
  * - Two-digit + one-digit: e.g. 34 + 5 = 39 (sum ≤ 99)
  * - Two-digit + multiple of 10: e.g. 23 + 40 = 63 (sum ≤ 99)
+ * - Number-line variant (tens only): "Show 34 + 20 on the number line"
  */
 import type { PerseusProblem, ProblemWidget } from "../problems";
 import { makeRadioWidget } from "../radio-helpers";
@@ -13,6 +14,20 @@ import { makeRadioWidget } from "../radio-helpers";
 function randInt(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const NL_PHRASINGS = [
+  (a: number, b: number) => `**Show $${a} + ${b}$ on the number line.**`,
+  (a: number, b: number) => `**Find $${a} + ${b}$ on the number line.**`,
+];
+
+const TEXT_PHRASINGS = [
+  (a: number, b: number) => `What is $${a} + ${b}$?`,
+  (a: number, b: number) => `Solve: $${a} + ${b}$`,
+];
 
 let counter = 0;
 
@@ -36,22 +51,31 @@ export function generate(): PerseusProblem {
   const answer = a + b;
   const id = `1-nbt-c4-gen-${++counter}`;
 
-  const useRadio = Math.random() < 0.3;
+  const roll = Math.random();
   let widget: ProblemWidget;
   let widgetKey: string;
+  let phrasing: string;
 
-  if (useRadio) {
+  if (isTensVariant && roll < 0.2) {
+    // Number-line only for the tens sub-type — step 10 maps naturally
+    widget = {
+      type: "number-line",
+      options: { range: [0, 100], step: 10, labelStep: 10, answer },
+    };
+    widgetKey = "number-line 1";
+    phrasing = pick(NL_PHRASINGS)(a, b);
+  } else if (roll < 0.45) {
     widget = makeRadioWidget(answer, 0, 99);
     widgetKey = "radio 1";
+    phrasing = `**${pick(TEXT_PHRASINGS)(a, b)}**`;
   } else {
     widget = {
       type: "numeric-input",
       options: { answers: [{ value: answer, status: "correct" }] },
     };
     widgetKey = "numeric-input 1";
+    phrasing = `**${pick(TEXT_PHRASINGS)(a, b)}**`;
   }
-
-  const phrasing = Math.random() < 0.5 ? `What is $${a} + ${b}$?` : `Solve: $${a} + ${b}$`;
 
   const hint = isTensVariant
     ? "Adding tens is like counting by tens."
@@ -61,7 +85,7 @@ export function generate(): PerseusProblem {
     id,
     standard: "1.NBT.C.4",
     question: {
-      content: `**${phrasing}**\n\n[[☃ ${widgetKey}]]`,
+      content: `${phrasing}\n\n[[☃ ${widgetKey}]]`,
       widgets: { [widgetKey]: widget },
     },
     hints: [{ content: hint }, { content: `$${a} + ${b} = ${answer}$` }],

@@ -31,6 +31,8 @@ describe("1.NBT.C.4 problem generator", () => {
         const correct = widget.options.choices.filter((c) => c.correct);
         expect(correct.length).toBe(1);
         expect(parseInt(correct[0].content, 10)).toBe(expected);
+      } else if (widget.type === "number-line") {
+        expect(widget.options.answer).toBe(expected);
       }
     }
   });
@@ -63,13 +65,50 @@ describe("1.NBT.C.4 problem generator", () => {
     expect(types.has("tens")).toBe(true);
   });
 
-  it("produces both radio and numeric-input widgets", () => {
+  it("produces radio, numeric-input, and number-line widgets", () => {
     const types = new Set<string>();
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
       const widget = Object.values(generate().question.widgets)[0];
       types.add(widget.type);
     }
     expect(types.has("radio")).toBe(true);
     expect(types.has("numeric-input")).toBe(true);
+    expect(types.has("number-line")).toBe(true);
+  });
+
+  it("number-line widgets have correct range and step", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(widget.options.range).toEqual([0, 100]);
+        expect(widget.options.step).toBe(10);
+        expect(widget.options.labelStep).toBe(10);
+        expect(widget.options.answer).toBeGreaterThanOrEqual(0);
+        expect(widget.options.answer).toBeLessThanOrEqual(99);
+      }
+    }
+  });
+
+  it("number-line problems mention 'number line' in the question", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(problem.question.content.toLowerCase()).toContain("number line");
+      }
+    }
+  });
+
+  it("number-line variant only appears for tens sub-type", () => {
+    for (let i = 0; i < 500; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        const match = problem.question.content.match(/\$(\d+) \+ (\d+)\$/);
+        const b = parseInt(match![2], 10);
+        expect(b % 10).toBe(0);
+      }
+    }
   });
 });
