@@ -1,0 +1,71 @@
+events:
+  # --- Music ---
+
+  Play Music:
+    conditions:
+    - not music_playing music_cathedral_theme
+    actions:
+    - play_music music_cathedral_theme
+
+  # --- NPC spawns ---
+
+  Create Picnicker:
+    conditions:
+    - not char_exists spyder_cottonhouse2_neva
+    actions:
+    - create_npc spyder_cottonhouse2_neva,3,2
+    - char_face spyder_cottonhouse2_neva,up
+
+  Create Catgirl:
+    conditions:
+    - not char_exists spyder_cottonhouse2_sidney
+    actions:
+    - create_npc spyder_cottonhouse2_sidney,0,6
+    - char_face spyder_cottonhouse2_sidney,up
+
+  Create Shopkeeper:
+    conditions:
+    - not char_exists spyder_cottonhouse2_davis
+    actions:
+    - create_npc spyder_cottonhouse2_davis,9,3
+    - char_face spyder_cottonhouse2_davis,left
+
+  # --- NPC interactions ---
+
+  Talk Picnicker:
+    behav: talk spyder_cottonhouse2_neva
+    actions:
+    - dialog Some conditions replace one another. Learning how conditions interact is key to becoming a master of tuxemon fighting.
+
+  Talk Catgirl:
+    behav: talk spyder_cottonhouse2_sidney
+    actions:
+    - dialog Have you met the old man in City Park? He's obsessed with breaking records!
+
+  Talk Shopkeeper:
+    behav: talk spyder_cottonhouse2_davis
+    actions:
+    - dialog I don't have a problem with people from other regions. Just don't come after my job, alright?
+
+  # --- Map connections ---
+
+  Go Outside Front:
+    x: 6
+    y: 7
+    width: 2
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    actions:
+    - transition_teleport player,spyder_cotton_town.tmx,25,9,0.3
+    - char_face player,down
+
+  Go Outside Back:
+    x: 5
+    y: 1
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    actions:
+    - transition_teleport player,spyder_cotton_town.tmx,27,5,0.3
+    - char_face player,up

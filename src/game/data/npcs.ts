@@ -50,6 +50,9 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_nimrod_enforcer: { spritesheet: "tennisplayer_fiery" },
   spyder_cottoncafe_juliana: { spritesheet: "homemaker" },
   spyder_cottonhouse1_rodger: { spritesheet: "firefighter" },
+  spyder_cottonhouse2_neva: { spritesheet: "picnicker" },
+  spyder_cottonhouse2_sidney: { spritesheet: "catgirl" },
+  spyder_cottonhouse2_davis: { spritesheet: "shopkeeper" },
 };
 
 export function getNpcSprite(slug: string): NpcSpriteDef {

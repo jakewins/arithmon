@@ -91,7 +91,7 @@ Use upstream dialogue where available; write reasonable placeholders for empty t
 
 **QA**: Use `/puppeteer` to teleport to `spyder_cotton_house1`. Screenshot to confirm the interior renders. Walk to NPCs, interact, confirm dialogue appears. Walk to the exit, confirm teleport back to cotton town at (27,27).
 
-### 3. Cotton House 2 — map, events, NPCs (two exits)
+### 3. ~~Cotton House 2 — map, events, NPCs (two exits)~~ DONE
 
 Another simple interior (10x8, 3 NPCs) but with **two exit doors** — front and back.
 
