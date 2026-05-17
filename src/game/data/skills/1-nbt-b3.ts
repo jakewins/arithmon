@@ -39,10 +39,82 @@ const NL_PHRASINGS = [
   (n: number) => `**Find $${n}$ on the number line.**`,
 ];
 
+function compareWord(a: number, b: number): "greater" | "less" | "equal" {
+  if (a > b) return "greater";
+  if (a < b) return "less";
+  return "equal";
+}
+
+const DROPDOWN_PHRASINGS = [
+  (left: number, right: number) => `**$${left}$ is [[☃ answer]] than $${right}$.**`,
+  (left: number, right: number) => `**$${left}$ is [[☃ answer]] $${right}$.**`,
+];
+
 export function generate(): PerseusProblem {
   const id = `1-nbt-b3-gen-${++counter}`;
 
-  // ~20% chance of number-line variant
+  // ~20% dropdown variant
+  if (Math.random() < 0.2) {
+    const variant = pickVariant();
+    let left: number;
+    let right: number;
+
+    switch (variant) {
+      case "tens-differ": {
+        const tensA = randInt(1, 9);
+        let tensB = randInt(1, 9);
+        while (tensB === tensA) tensB = randInt(1, 9);
+        left = tensA * 10 + randInt(0, 9);
+        right = tensB * 10 + randInt(0, 9);
+        break;
+      }
+      case "ones-differ": {
+        const tens = randInt(1, 9);
+        const onesA = randInt(0, 9);
+        let onesB = randInt(0, 9);
+        while (onesB === onesA) onesB = randInt(0, 9);
+        left = tens * 10 + onesA;
+        right = tens * 10 + onesB;
+        break;
+      }
+      case "equal": {
+        left = randInt(10, 99);
+        right = left;
+        break;
+      }
+    }
+
+    const correct = compareWord(left, right);
+    const phrasing = pick(DROPDOWN_PHRASINGS)(left, right);
+    const widget: ProblemWidget = {
+      type: "dropdown",
+      options: {
+        placeholder: "___",
+        choices: [
+          { content: "greater", correct: correct === "greater" },
+          { content: "less", correct: correct === "less" },
+          { content: "equal", correct: correct === "equal" },
+        ],
+      },
+    };
+
+    return {
+      id,
+      standard: "1.NBT.B.3",
+      question: {
+        content: phrasing,
+        widgets: { answer: widget },
+      },
+      hints: [
+        {
+          content: "First compare the tens. If the tens are the same, compare the ones.",
+        },
+        { content: `$${left}$ is ${correct} than $${right}$.` },
+      ],
+    };
+  }
+
+  // ~20% chance of number-line variant (now ~16% overall)
   if (Math.random() < 0.2) {
     const answer = randInt(10, 99);
     const phrasing = pick(NL_PHRASINGS)(answer);

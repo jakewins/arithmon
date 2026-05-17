@@ -5,6 +5,10 @@ function getAnswer(problem: ReturnType<typeof generate>): string {
   const widget = Object.values(problem.question.widgets)[0];
   if (widget.type === "comparison") return widget.options.answer;
   if (widget.type === "number-line") return String(widget.options.answer);
+  if (widget.type === "dropdown") {
+    const correct = widget.options.choices.find((c) => c.correct);
+    return correct ? correct.content : "";
+  }
   throw new Error(`Unexpected widget type: ${widget.type}`);
 }
 
@@ -24,7 +28,7 @@ describe("1.NBT.B.3 problem generator", () => {
     expect(problem.hints.length).toBeGreaterThanOrEqual(1);
 
     const widget = Object.values(problem.question.widgets)[0];
-    expect(["comparison", "number-line"]).toContain(widget.type);
+    expect(["comparison", "number-line", "dropdown"]).toContain(widget.type);
   });
 
   it("produces unique ids across calls", () => {
@@ -86,14 +90,15 @@ describe("1.NBT.B.3 problem generator", () => {
     }
   });
 
-  it("produces both comparison and number-line widgets", () => {
+  it("produces comparison, number-line, and dropdown widgets", () => {
     const types = new Set<string>();
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 500; i++) {
       const widget = Object.values(generate().question.widgets)[0];
       types.add(widget.type);
     }
     expect(types.has("comparison")).toBe(true);
     expect(types.has("number-line")).toBe(true);
+    expect(types.has("dropdown")).toBe(true);
   });
 
   it("number-line widgets have correct range and step", () => {
@@ -117,6 +122,36 @@ describe("1.NBT.B.3 problem generator", () => {
       if (widget.type === "number-line") {
         expect(problem.question.content.toLowerCase()).toContain("number line");
       }
+    }
+  });
+
+  it("dropdown has exactly one correct choice from [greater, less, equal]", () => {
+    for (let i = 0; i < 500; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type !== "dropdown") continue;
+      const { choices } = widget.options;
+      expect(choices).toHaveLength(3);
+      const correctChoices = choices.filter((c) => c.correct);
+      expect(correctChoices).toHaveLength(1);
+      expect(["greater", "less", "equal"]).toContain(correctChoices[0].content);
+    }
+  });
+
+  it("dropdown correct choice matches actual numeric comparison", () => {
+    for (let i = 0; i < 500; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type !== "dropdown") continue;
+      // Extract numbers from the question content
+      const nums = problem.question.content.match(/\$(\d+)\$/g);
+      if (!nums || nums.length < 2) continue;
+      const left = parseInt(nums[0].replace(/\$/g, ""), 10);
+      const right = parseInt(nums[1].replace(/\$/g, ""), 10);
+      const correct = widget.options.choices.find((c) => c.correct)!.content;
+      if (left > right) expect(correct).toBe("greater");
+      else if (left < right) expect(correct).toBe("less");
+      else expect(correct).toBe("equal");
     }
   });
 });
