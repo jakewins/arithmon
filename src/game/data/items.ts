@@ -41,4 +41,36 @@ export const ITEMS: Record<string, ItemDef> = {
     effects: [{ type: "revive", hp_percent: 50 }],
     buyPrice: 100,
   },
+  p_starry_night: {
+    slug: "p_starry_night",
+    name: "Starry Night",
+    description:
+      "Painting 'Starry, Starry, Starry Night', medium: oil on canvas. Hand-signed by the artist.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 1000,
+  },
+  p_monsters_eyes: {
+    slug: "p_monsters_eyes",
+    name: "Eyes Meet",
+    description:
+      "Painting 'Monsters' Eyes Meet', medium: oil on canvas. Hand-signed by the artist.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 1000,
+  },
+  p_trepidation: {
+    slug: "p_trepidation",
+    name: "Trepidation",
+    description: "Painting 'Trepidation', medium: oil on canvas. Hand-signed by the artist.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 1000,
+  },
 };
