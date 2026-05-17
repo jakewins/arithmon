@@ -73,4 +73,14 @@ export const ITEMS: Record<string, ItemDef> = {
     effects: [],
     buyPrice: 1000,
   },
+  spyder_pass: {
+    slug: "spyder_pass",
+    name: "Spyder Pass",
+    description: "This should let you in to places only Spyder conspirators are meant to go.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 0,
+  },
 };
