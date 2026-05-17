@@ -186,7 +186,7 @@ Use the upstream event structure as reference (objects #19, #27, #26 in the TMX)
 
 **QA**: Use `/puppeteer` to teleport to the cafe with a damaged monster party. Interact with the barmaid, choose yes, confirm monsters are healed. Screenshot the dialogue sequence.
 
-### 6. Cotton Cafe — Cayden trainer battle
+### 6. ~~Cotton Cafe — Cayden trainer battle~~ DONE
 
 Add the optional trainer battle with Cayden:
 - Player talks to Cayden → "Do you want a quick battle?" (from upstream) → yes/no choice via `translated_dialog_choice`

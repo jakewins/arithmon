@@ -37,6 +37,14 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 250,
   },
+  spyder_cottoncafe_cayden: {
+    name: "Cayden",
+    monsters: [
+      { slug: "capiti", level: 4 },
+      { slug: "cataspike", level: 4 },
+    ],
+    goldReward: 100,
+  },
   spyder_dojo_zhao: {
     name: "Master Zhao",
     monsters: [

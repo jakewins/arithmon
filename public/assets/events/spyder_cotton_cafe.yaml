@@ -89,10 +89,32 @@ events:
     actions:
     - "dialog Hmm, I'm not sure I fancy this coffee."
 
-  Talk Cayden:
-    behav: talk spyder_cottoncafe_cayden
+  Ask Battle Cayden:
+    conditions:
+    - is char_facing_char player,spyder_cottoncafe_cayden
+    - is button_pressed INTERACT
+    - not battle_outcome player,spyder_cottoncafe_cayden,won
     actions:
-    - dialog I like the vibe in here. Dark, moody, just how I like it.
+    - char_face spyder_cottoncafe_cayden,player
+    - dialog Do you want a quick battle?
+    - translated_dialog_choice yes:no,cafebattle
+
+  Battle Cayden:
+    conditions:
+    - is variable_set cafebattle:yes
+    - not battle_outcome player,spyder_cottoncafe_cayden,won
+    actions:
+    - set_variable cafebattle:done
+    - start_battle spyder_cottoncafe_cayden
+
+  Talk Cayden Post Win:
+    conditions:
+    - is char_facing_char player,spyder_cottoncafe_cayden
+    - is button_pressed INTERACT
+    - is battle_outcome player,spyder_cottoncafe_cayden,won
+    actions:
+    - char_face spyder_cottoncafe_cayden,player
+    - "dialog Don't look at me. I'm just here for the free canapes and heals."
 
   Talk Wilford:
     behav: talk spyder_cottoncafe_wilford
