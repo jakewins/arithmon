@@ -88,6 +88,52 @@ events:
     actions:
     - "dialog Hmph. You're stronger than you look. Fine, go ahead."
 
+  # --- Enforcer cutscene and battle ---
+
+  Spot Enforcer:
+    x: 1
+    y: 12
+    width: 2
+    conditions:
+    - not variable_set hospitalcure:yes
+    - is char_at player
+    actions:
+    - lock_controls
+    - create_npc spyder_omnichannel_enforcer,8,7
+    - pathfind spyder_omnichannel_enforcer,3,12
+    - char_face player,right
+    - "dialog Hey! You're not supposed to be in here. This is Omnichannel property!"
+    - char_face player,down
+    - pathfind player,2,13
+    - remove_npc spyder_omnichannel_enforcer
+    - set_variable hospitalcure:yes
+    - unlock_controls
+
+  Battle Enforcer:
+    x: 1
+    y: 10
+    width: 2
+    conditions:
+    - not battle_outcome player,spyder_omnichannel_enforcer,won
+    - is char_at player
+    actions:
+    - lock_controls
+    - create_npc spyder_omnichannel_enforcer,4,3
+    - pathfind spyder_omnichannel_enforcer,3,10
+    - char_face player,right
+    - "dialog Back again? This time I won't go easy on you!"
+    - start_battle spyder_omnichannel_enforcer
+
+  Enforcer Post Battle:
+    conditions:
+    - is battle_outcome player,spyder_omnichannel_enforcer,won
+    - is char_exists spyder_omnichannel_enforcer
+    actions:
+    - "dialog Tch... fine. You've earned your way in. But don't think this is over."
+    - pathfind spyder_omnichannel_enforcer,2,12
+    - remove_npc spyder_omnichannel_enforcer
+    - unlock_controls
+
   # --- Map connections ---
 
   Go Outside:

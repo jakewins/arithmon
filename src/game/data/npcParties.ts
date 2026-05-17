@@ -95,6 +95,11 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     ],
     goldReward: 400,
   },
+  spyder_omnichannel_enforcer: {
+    name: "Enforcer",
+    monsters: [{ slug: "rabbitosaur", level: 35 }],
+    goldReward: 350,
+  },
   spyder_omnichannel_william: {
     name: "William",
     monsters: [
