@@ -273,6 +273,18 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     environment: "grass",
     inside: true,
   },
+  spyder_cotton_town: {
+    jsonKey: "map-spyder_cotton_town",
+    jsonPath: "assets/maps/spyder_cotton_town.json",
+    tilesets: [
+      CORE_CITY_AND_COUNTRY,
+      CORE_BUILDINGS,
+      CORE_OUTDOOR,
+      CORE_SET_PIECES,
+      CORE_OUTDOOR_NATURE,
+    ],
+    environment: "grass",
+  },
   spyder_cotton_tunnel: {
     jsonKey: "map-spyder_cotton_tunnel",
     jsonPath: "assets/maps/spyder_cotton_tunnel.json",
