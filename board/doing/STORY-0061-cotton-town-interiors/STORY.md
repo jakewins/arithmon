@@ -44,7 +44,7 @@ For every TODO below:
 
 ## Todos
 
-### 1. Add missing NPC sprites
+### 1. ~~Add missing NPC sprites~~ DONE
 
 Copy these sprites from upstream into `public/assets/sprites/`:
 - `goth.png` from `/home/jake/Code/third/tuxemon/mods/tuxemon/gfx/sprites/player/goth.png`
