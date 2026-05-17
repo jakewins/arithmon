@@ -3,7 +3,7 @@
  * "Understand the meaning of the equal sign, and determine if equations
  * involving addition and subtraction are true or false."
  */
-import type { PerseusProblem, RadioWidget } from "../problems";
+import type { DropdownWidget, PerseusProblem, RadioWidget } from "../problems";
 import { shuffle } from "../radio-helpers";
 
 function randInt(min: number, max: number): number {
@@ -77,6 +77,37 @@ export function generate(): PerseusProblem {
   const isTrue = Math.random() < 0.5;
   const eq = isTrue ? generateTrueEquation() : generateFalseEquation();
   const id = `1-oa-d7-gen-${++counter}`;
+
+  // ~30% chance of dropdown variant
+  if (Math.random() < 0.3) {
+    const widget: DropdownWidget = {
+      type: "dropdown",
+      options: {
+        placeholder: "choose",
+        choices: [
+          { content: "True", correct: eq.isTrue },
+          { content: "False", correct: !eq.isTrue },
+        ],
+      },
+    };
+
+    return {
+      id,
+      standard: "1.OA.D.7",
+      question: {
+        content: `**Is $${eq.left} = ${eq.right}$ true or false?** [[☃ answer]]`,
+        widgets: { answer: widget },
+      },
+      hints: [
+        { content: `Work out each side separately. Do they give the same number?` },
+        {
+          content: eq.isTrue
+            ? `Both sides equal the same value, so the equation is **true**.`
+            : `The two sides give different values, so the equation is **false**.`,
+        },
+      ],
+    };
+  }
 
   const widget: RadioWidget = {
     type: "radio",
