@@ -8,6 +8,7 @@ function getAnswer(problem: ReturnType<typeof generate>): number {
     return parseInt(correct!.content, 10);
   }
   if (widget.type === "numeric-input") return widget.options.answers[0].value;
+  if (widget.type === "number-line") return widget.options.answer;
   throw new Error(`Unexpected widget type: ${widget.type}`);
 }
 
@@ -19,7 +20,7 @@ describe("1.OA.C.6 problem generator", () => {
     expect(problem.hints.length).toBeGreaterThanOrEqual(1);
 
     const widget = Object.values(problem.question.widgets)[0];
-    expect(["numeric-input", "radio"]).toContain(widget.type);
+    expect(["numeric-input", "radio", "number-line"]).toContain(widget.type);
   });
 
   it("produces unique ids across calls", () => {
@@ -112,14 +113,39 @@ describe("1.OA.C.6 problem generator", () => {
     expect(seenLargeOperand).toBe(true);
   });
 
-  it("produces both numeric-input and radio widget types", () => {
+  it("produces numeric-input, radio, and number-line widget types", () => {
     const types = new Set<string>();
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
       const widget = Object.values(generate().question.widgets)[0];
       types.add(widget.type);
     }
     expect(types.has("numeric-input")).toBe(true);
     expect(types.has("radio")).toBe(true);
+    expect(types.has("number-line")).toBe(true);
+  });
+
+  it("number-line widgets have correct range and step", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(widget.options.range).toEqual([0, 20]);
+        expect(widget.options.step).toBe(1);
+        expect(widget.options.labelStep).toBe(5);
+        expect(widget.options.answer).toBeGreaterThanOrEqual(0);
+        expect(widget.options.answer).toBeLessThanOrEqual(20);
+      }
+    }
+  });
+
+  it("number-line problems mention 'number line' in the question", () => {
+    for (let i = 0; i < 200; i++) {
+      const problem = generate();
+      const widget = Object.values(problem.question.widgets)[0];
+      if (widget.type === "number-line") {
+        expect(problem.question.content.toLowerCase()).toContain("number line");
+      }
+    }
   });
 
   it("radio widgets have exactly one correct choice", () => {
