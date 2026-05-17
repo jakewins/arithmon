@@ -518,7 +518,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.nlRange = range;
     this.nlValue = range[0];
 
-    const lineY = contentY + 16;
+    const lineY = contentY + 24;
     const margin = 28;
     const lineX = (WIDTH - panelW) / 2 + margin;
     const lineW = panelW - margin * 2;
