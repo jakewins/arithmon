@@ -35,6 +35,14 @@ export interface DebugCommandHandler {
     enemyLevel?: number,
     environment?: string,
   ): void;
+  debugSpawnNpc?(
+    slug: string,
+    spritesheet: string,
+    tileX: number,
+    tileY: number,
+    facing?: Direction,
+  ): void;
+  debugPathfindNpc?(slug: string, target: string): Promise<void>;
 }
 
 export interface DebugEvent {
@@ -262,6 +270,31 @@ export class DebugBridge {
     const handler = this.getCommandHandler();
     if (handler?.debugStartCombat) {
       handler.debugStartCombat();
+    }
+  }
+
+  /**
+   * Spawn an NPC at a tile for QA testing. The spritesheet must already be
+   * preloaded by the active scene (any sheet in `allNpcSpritesheets()` works).
+   */
+  spawnNpc(
+    slug: string,
+    spritesheet: string,
+    tileX: number,
+    tileY: number,
+    facing: Direction = "down",
+  ): void {
+    const handler = this.getCommandHandler();
+    if (handler?.debugSpawnNpc) {
+      handler.debugSpawnNpc(slug, spritesheet, tileX, tileY, facing);
+    }
+  }
+
+  /** Make a previously-spawned NPC pathfind toward `target` (slug or "player"). */
+  async pathfindNpcTo(slug: string, target: string): Promise<void> {
+    const handler = this.getCommandHandler();
+    if (handler?.debugPathfindNpc) {
+      return handler.debugPathfindNpc(slug, target);
     }
   }
 

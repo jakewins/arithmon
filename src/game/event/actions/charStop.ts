@@ -22,6 +22,7 @@ class CharStopAction implements EventAction {
     } else {
       const npc = ctx.npcs.get(this.target);
       if (npc && !getNpcSprite(npc.slug).staticProp) {
+        npc.sprite.anims.stop();
         npc.sprite.setFrame(FACING_FRAMES[npc.facing]);
       }
     }

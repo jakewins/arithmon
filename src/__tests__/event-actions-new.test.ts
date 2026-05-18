@@ -263,7 +263,13 @@ describe("char_position action", () => {
 describe("char_stop action", () => {
   it("resets NPC sprite frame to standing", () => {
     const setFrame = vi.fn();
-    const sprite = { x: 0, y: 0, setFrame } as unknown as Phaser.GameObjects.Sprite;
+    const animsStop = vi.fn();
+    const sprite = {
+      x: 0,
+      y: 0,
+      setFrame,
+      anims: { stop: animsStop },
+    } as unknown as Phaser.GameObjects.Sprite;
     const npcs = new Map<string, NpcState>();
     npcs.set("guard", { slug: "guard", tileX: 5, tileY: 5, facing: "left", sprite });
 
@@ -278,6 +284,7 @@ describe("char_stop action", () => {
       { npcs },
     );
 
+    expect(animsStop).toHaveBeenCalled();
     expect(setFrame).toHaveBeenCalledWith(4); // left facing frame
   });
 });

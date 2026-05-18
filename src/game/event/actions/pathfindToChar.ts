@@ -1,16 +1,11 @@
 import type { EventAction, EventContext, Direction } from "../types";
 import { registerAction } from "../registry";
 import { findPath } from "../pathfinding";
+import { FACING_FRAMES } from "./charFace";
+import { getNpcSprite } from "../../data/npcs";
 
 const TILE_SIZE = 16;
 const NPC_SPEED = 60;
-
-const FACING_FRAMES: Record<Direction, number> = {
-  down: 1,
-  left: 4,
-  right: 7,
-  up: 10,
-};
 
 class PathfindToCharAction implements EventAction {
   type = "pathfind_to_char";
@@ -18,6 +13,8 @@ class PathfindToCharAction implements EventAction {
 
   private slug: string;
   private targetSlug: string;
+  private spritesheet = "";
+  private animated = false;
 
   private waypoints: [number, number][] = [];
   private waypointIndex = 0;
@@ -35,6 +32,10 @@ class PathfindToCharAction implements EventAction {
       this.done = true;
       return;
     }
+
+    const spriteDef = getNpcSprite(npc.slug);
+    this.spritesheet = spriteDef.spritesheet;
+    this.animated = !spriteDef.staticProp;
 
     let targetX: number, targetY: number;
     if (this.targetSlug === "player") {
@@ -99,6 +100,10 @@ class PathfindToCharAction implements EventAction {
 
       this.waypointIndex++;
       if (this.waypointIndex >= this.waypoints.length) {
+        if (this.animated) {
+          npc.sprite.anims.stop();
+          npc.sprite.setFrame(FACING_FRAMES[npc.facing]);
+        }
         this.done = true;
         return;
       }
@@ -119,10 +124,7 @@ class PathfindToCharAction implements EventAction {
     this.currentTargetPixelY = ty * TILE_SIZE;
   }
 
-  private updateFacing(npc: {
-    facing: Direction;
-    sprite: { x: number; y: number; setFrame(f: number): void };
-  }): void {
+  private updateFacing(npc: { facing: Direction; sprite: Phaser.GameObjects.Sprite }): void {
     const dx = this.currentTargetPixelX - npc.sprite.x;
     const dy = this.currentTargetPixelY - npc.sprite.y;
     let dir: Direction;
@@ -133,7 +135,12 @@ class PathfindToCharAction implements EventAction {
     }
     if (dir !== npc.facing) {
       npc.facing = dir;
-      npc.sprite.setFrame(FACING_FRAMES[dir]);
+      if (!this.animated) {
+        npc.sprite.setFrame(FACING_FRAMES[dir]);
+      }
+    }
+    if (this.animated) {
+      npc.sprite.anims.play(`npc-walk-${this.spritesheet}-${dir}`, true);
     }
   }
 

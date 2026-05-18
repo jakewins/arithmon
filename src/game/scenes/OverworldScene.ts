@@ -3,8 +3,20 @@ import { Monster, getLeadMonster } from "../model/Monster";
 import { EventEngine } from "../event/engine";
 import { session } from "../session";
 import { loadEventsFromYaml } from "../event/loader";
-import type { Direction, EventContext, NpcState, PendingTeleport } from "../event/types";
-import { allNpcSpritesheets, PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
+import type {
+  Direction,
+  EventAction,
+  EventContext,
+  NpcState,
+  PendingTeleport,
+} from "../event/types";
+import { createAction } from "../event/registry";
+import {
+  allNpcSpritesheets,
+  allAnimatedNpcSpritesheets,
+  PLAYER_SPRITE_TEMPLATES,
+  registerNpcSprite,
+} from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { getEncounterTable, rollEncounter } from "../data/encounters";
 import { FACING_FRAMES } from "../event/actions/charFace";
@@ -52,6 +64,8 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   private teleporting = false;
   private walkGrid?: PF.Grid;
   private pendingChoiceOverride?: number;
+  /** Debug-only actions ticked by the scene update loop. Each resolves on done. */
+  private debugActions: { action: EventAction; resolve: () => void }[] = [];
   /** Per-tile directional restrictions keyed by "x,y" → AllowedDirs. */
   private directionalGrid = new Map<string, AllowedDirs>();
 
@@ -345,10 +359,12 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.player.setDepth(5);
 
     // Walk animations — keyed to the current texture
-    this.createWalkAnimation("walk-down", 0, playerTexture);
-    this.createWalkAnimation("walk-left", 1, playerTexture);
-    this.createWalkAnimation("walk-right", 2, playerTexture);
-    this.createWalkAnimation("walk-up", 3, playerTexture);
+    this.createDirectionalWalkAnims("walk", playerTexture);
+
+    // NPC walk anims — one set per spritesheet, keyed npc-walk-{sheet}-{dir}.
+    for (const sheet of allAnimatedNpcSpritesheets()) {
+      this.createDirectionalWalkAnims(`npc-walk-${sheet}`, sheet);
+    }
 
     this.collisionBodies = this.physics.add.staticGroup();
 
@@ -768,18 +784,28 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     }
   }
 
-  private createWalkAnimation(key: string, row: number, textureKey: string) {
-    this.anims.create({
-      key,
-      frames: [
-        { key: textureKey, frame: row * 3 + 0 },
-        { key: textureKey, frame: row * 3 + 1 },
-        { key: textureKey, frame: row * 3 + 2 },
-        { key: textureKey, frame: row * 3 + 1 },
-      ],
-      frameRate: 8,
-      repeat: -1,
-    });
+  private createDirectionalWalkAnims(keyPrefix: string, textureKey: string) {
+    const rows: ReadonlyArray<[Direction, number]> = [
+      ["down", 0],
+      ["left", 1],
+      ["right", 2],
+      ["up", 3],
+    ];
+    for (const [dir, row] of rows) {
+      const key = `${keyPrefix}-${dir}`;
+      if (this.anims.exists(key)) continue;
+      this.anims.create({
+        key,
+        frames: [
+          { key: textureKey, frame: row * 3 + 0 },
+          { key: textureKey, frame: row * 3 + 1 },
+          { key: textureKey, frame: row * 3 + 2 },
+          { key: textureKey, frame: row * 3 + 1 },
+        ],
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
   }
 
   update(_time: number, delta: number) {
@@ -860,6 +886,20 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     };
 
     this.eventEngine.update(ctx, delta / 1000);
+
+    // Tick any debug-driven actions (e.g. QA-spawned pathfind_to_char)
+    if (this.debugActions.length > 0) {
+      const dtSec = delta / 1000;
+      this.debugActions = this.debugActions.filter((entry) => {
+        entry.action.update(ctx, dtSec);
+        if (entry.action.done) {
+          entry.action.cleanup(ctx);
+          entry.resolve();
+          return false;
+        }
+        return true;
+      });
+    }
 
     // Sync facing back from context (char_face action may have changed it)
     this.playerFacing = ctx.player.facing;
@@ -1019,6 +1059,48 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.scene.get("CombatScene").events.once("shutdown", () => {
       this.inCombat = false;
     });
+  }
+
+  debugSpawnNpc(
+    slug: string,
+    spritesheet: string,
+    tileX: number,
+    tileY: number,
+    facing: Direction = "down",
+  ): void {
+    registerNpcSprite(slug, { spritesheet });
+    const action = createAction("create_npc", [slug, String(tileX), String(tileY), facing]);
+    action.start(this.buildDebugContext());
+  }
+
+  debugPathfindNpc(slug: string, target: string): Promise<void> {
+    return new Promise((resolve) => {
+      const action = createAction("pathfind_to_char", [slug, target]);
+      action.start(this.buildDebugContext());
+      if (action.done) {
+        resolve();
+        return;
+      }
+      this.debugActions.push({ action, resolve });
+    });
+  }
+
+  private buildDebugContext(): EventContext {
+    const { tileX, tileY } = this.playerTile();
+    return {
+      scene: this,
+      session,
+      player: { tileX, tileY, facing: this.playerFacing },
+      playerSprite: this.player,
+      variables: session.player.gameVariables,
+      interactPressed: false,
+      playerMoved: false,
+      npcs: this.npcs,
+      controls: this.controlsState,
+      collisionBodies: this.collisionBodies,
+      walkGrid: this.walkGrid,
+      addEvents: (events) => this.eventEngine.mergeEvents(events),
+    };
   }
 
   private startCombat() {

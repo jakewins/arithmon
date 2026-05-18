@@ -84,11 +84,28 @@ export function getNpcSprite(slug: string): NpcSpriteDef {
   return NPC_REGISTRY[slug] ?? { spritesheet: "player" };
 }
 
+/**
+ * Register an NPC sprite mapping at runtime. Used by the debug bridge so QA
+ * scripts can spawn arbitrary slugs without baking them into the registry.
+ */
+export function registerNpcSprite(slug: string, def: NpcSpriteDef): void {
+  NPC_REGISTRY[slug] = def;
+}
+
 /** All unique spritesheets that need preloading. */
 export function allNpcSpritesheets(): string[] {
   const sheets = new Set<string>();
   for (const def of Object.values(NPC_REGISTRY)) {
     sheets.add(def.spritesheet);
+  }
+  return [...sheets];
+}
+
+/** Unique spritesheets that should receive walk-cycle animations (excludes static props). */
+export function allAnimatedNpcSpritesheets(): string[] {
+  const sheets = new Set<string>();
+  for (const def of Object.values(NPC_REGISTRY)) {
+    if (!def.staticProp) sheets.add(def.spritesheet);
   }
   return [...sheets];
 }
