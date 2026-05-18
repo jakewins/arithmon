@@ -10,6 +10,10 @@ Stories live as directories under `board/{backlog,next,doing,done}/`. Create new
 
 We use `devenv.nix` for stuff we need in the broader environment, like tiled, nodejs etc.
 
+## Upstream Reference
+
+A clone of the upstream [Tuxemon](https://github.com/Tuxemon/Tuxemon) game we're cloning lives at `./upstream` (gitignored). Refer to it for original maps, sprites, story content, and game mechanics.
+
 ## QA / Browser Testing
 
 The game has a debug bridge at `window.A` (see `src/game/debug.ts`). QA scripts live in `qa/` and use `qa/harness.ts`.
