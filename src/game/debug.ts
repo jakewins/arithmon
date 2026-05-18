@@ -43,6 +43,9 @@ export interface DebugCommandHandler {
     facing?: Direction,
   ): void;
   debugPathfindNpc?(slug: string, target: string): Promise<void>;
+  debugFaceNpc?(slug: string, direction: Direction): void;
+  debugRemoveNpc?(slug: string): boolean;
+  debugSetPlayerVisible?(visible: boolean): void;
 }
 
 export interface DebugEvent {
@@ -296,6 +299,29 @@ export class DebugBridge {
     if (handler?.debugPathfindNpc) {
       return handler.debugPathfindNpc(slug, target);
     }
+  }
+
+  /**
+   * Turn an already-spawned NPC to face a direction (or another character).
+   * Routes through the real `char_face` action.
+   */
+  faceNpc(slug: string, direction: Direction): void {
+    const handler = this.getCommandHandler();
+    if (handler?.debugFaceNpc) {
+      handler.debugFaceNpc(slug, direction);
+    }
+  }
+
+  /** Despawn an NPC previously created via spawnNpc. Returns false if not found. */
+  removeNpc(slug: string): boolean {
+    const handler = this.getCommandHandler();
+    return handler?.debugRemoveNpc?.(slug) ?? false;
+  }
+
+  /** Toggle the player sprite's visibility. Camera still follows the player tile. */
+  setPlayerVisible(visible: boolean): void {
+    const handler = this.getCommandHandler();
+    handler?.debugSetPlayerVisible?.(visible);
   }
 
   /** Spawn a battle with specific monsters for testing. */

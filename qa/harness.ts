@@ -53,6 +53,17 @@ interface DebugBridgeAPI {
   openJournal(): void;
   setupGame(opts?: SetupGameOptions): Promise<void>;
   showProblem(problem: PerseusProblem): Promise<void>;
+  spawnNpc(
+    slug: string,
+    spritesheet: string,
+    tileX: number,
+    tileY: number,
+    facing?: "up" | "down" | "left" | "right",
+  ): void;
+  pathfindNpcTo(slug: string, target: string): Promise<void>;
+  faceNpc(slug: string, direction: "up" | "down" | "left" | "right"): void;
+  removeNpc(slug: string): boolean;
+  setPlayerVisible(visible: boolean): void;
 }
 
 declare global {
@@ -237,4 +248,86 @@ export async function typeAnswer(page: Page, text: string): Promise<void> {
 /** Submit the current math problem answer via the debug bridge. */
 export async function submitAnswer(page: Page): Promise<void> {
   await page.evaluate(() => window.A!.submitAnswer());
+}
+
+export type Direction = "up" | "down" | "left" | "right";
+
+/**
+ * Spawn an NPC at a tile via the real create_npc action. The spritesheet
+ * must already be preloaded by the active scene.
+ */
+export async function spawnNpc(
+  page: Page,
+  slug: string,
+  spritesheet: string,
+  tileX: number,
+  tileY: number,
+  facing: Direction = "down",
+): Promise<void> {
+  await page.evaluate(
+    ({ slug, spritesheet, tileX, tileY, facing }) =>
+      window.A!.spawnNpc(slug, spritesheet, tileX, tileY, facing),
+    { slug, spritesheet, tileX, tileY, facing },
+  );
+}
+
+/** Run a real pathfind_to_char action for a previously-spawned NPC. */
+export async function pathfindNpcTo(page: Page, slug: string, target: string): Promise<void> {
+  await page.evaluate(
+    ({ slug, target }) => window.A!.pathfindNpcTo(slug, target),
+    { slug, target },
+  );
+}
+
+/** Face an already-spawned NPC in a direction via the real char_face action. */
+export async function faceNpc(page: Page, slug: string, direction: Direction): Promise<void> {
+  await page.evaluate(
+    ({ slug, direction }) => window.A!.faceNpc(slug, direction),
+    { slug, direction },
+  );
+}
+
+/** Despawn an NPC previously created via spawnNpc. Resolves to true if removed. */
+export async function removeNpc(page: Page, slug: string): Promise<boolean> {
+  return page.evaluate((s) => window.A!.removeNpc(s), slug);
+}
+
+/** Toggle the player sprite's visibility. Camera still follows the player tile. */
+export async function setPlayerVisible(page: Page, visible: boolean): Promise<void> {
+  await page.evaluate((v) => window.A!.setPlayerVisible(v), visible);
+}
+
+export interface SetupNpcStageOptions {
+  /** Map to use as the neutral stage (default: "qa_npc_stage"). */
+  map?: string;
+  /** Player spawn tile X (default: 5, center of qa_npc_stage). */
+  tileX?: number;
+  /** Player spawn tile Y (default: 5, center of qa_npc_stage). */
+  tileY?: number;
+  /** Whether to hide the player sprite (default: true). */
+  hidePlayer?: boolean;
+}
+
+/**
+ * Boot the game into a dedicated neutral interior (qa_npc_stage — a clone
+ * of spyder_cotton_house1 with all event objects stripped) and hide the
+ * player. Real OverworldScene, real collisions, real pathfinding grid;
+ * nothing on the map spawns NPCs or fires events, so spawned QA subjects
+ * are unobstructed.
+ *
+ * Camera follows the (invisible) player tile, so spawn NPCs on or near
+ * (tileX, tileY) to keep them in frame.
+ */
+export async function setupNpcStage(
+  page: Page,
+  opts: SetupNpcStageOptions = {},
+): Promise<{ tileX: number; tileY: number }> {
+  const map = opts.map ?? "qa_npc_stage";
+  const tileX = opts.tileX ?? 5;
+  const tileY = opts.tileY ?? 5;
+  await setupGame(page, { map, tileX, tileY });
+  if (opts.hidePlayer !== false) {
+    await setPlayerVisible(page, false);
+  }
+  return { tileX, tileY };
 }

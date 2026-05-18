@@ -1085,6 +1085,24 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     });
   }
 
+  debugFaceNpc(slug: string, direction: Direction): void {
+    const action = createAction("char_face", [slug, direction]);
+    action.start(this.buildDebugContext());
+  }
+
+  debugRemoveNpc(slug: string): boolean {
+    const npc = this.npcs.get(slug);
+    if (!npc) return false;
+    npc.sprite.destroy();
+    npc.collisionBody?.destroy();
+    this.npcs.delete(slug);
+    return true;
+  }
+
+  debugSetPlayerVisible(visible: boolean): void {
+    this.player.setVisible(visible);
+  }
+
   private buildDebugContext(): EventContext {
     const { tileX, tileY } = this.playerTile();
     return {

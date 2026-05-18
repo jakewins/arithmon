@@ -97,6 +97,13 @@ const TILESETS_16X16: TilesetAsset = {
 };
 
 export const MAP_REGISTRY: Record<string, MapDef> = {
+  qa_npc_stage: {
+    jsonKey: "map-qa_npc_stage",
+    jsonPath: "assets/maps/qa_npc_stage.json",
+    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    environment: "grass",
+    inside: true,
+  },
   test_collision: {
     jsonKey: "map-test_collision",
     jsonPath: "assets/maps/test_collision.json",
