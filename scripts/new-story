@@ -8,7 +8,7 @@ BOARD_DIR="$REPO_ROOT/board"
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <slug> [lane]"
   echo "  slug: short kebab-case description (e.g. hello-world)"
-  echo "  lane: backlog, next, doing, done (default: next)"
+  echo "  lane: next, implementing, reviewing, done (default: next)"
   exit 1
 fi
 

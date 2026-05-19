@@ -4,7 +4,7 @@ Arithmon is a browser-based Tuxemon clone built on Phaser 4 + TypeScript + Vite,
 
 ## Project Board
 
-Stories live as directories under `board/{backlog,next,doing,done}/`. Create new stories with `scripts/new-story <slug> [lane]`.
+Stories live as directories under `board/{next,implementing,reviewing,done}/`. Create new stories with `scripts/new-story <slug> [lane]`.
 
 ## Environment
 
