@@ -25,7 +25,9 @@ export function calculateDamage(
 ): DamageResult {
   const defenderDef = MONSTERS[defender.slug];
   const effectiveness = effectivenessMultiplier(technique.element, defenderDef.types);
-  const base = ((7 + attacker.level) * attacker.attack * technique.power) / defender.defense;
+  const offenseStat = technique.range === "melee" ? attacker.melee : attacker.ranged;
+  const defenseStat = technique.range === "melee" ? defender.armor : defender.dodge;
+  const base = ((7 + attacker.level) * offenseStat * technique.power) / defenseStat;
   return {
     damage: Math.floor(base * effectiveness),
     effectiveness,

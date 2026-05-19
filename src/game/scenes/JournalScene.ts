@@ -375,8 +375,10 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     if (isCaught) {
       const statLines = [
         `Base HP:  ${entry.def.baseStats.hp}`,
-        `Base ATK: ${entry.def.baseStats.attack}`,
-        `Base DEF: ${entry.def.baseStats.defense}`,
+        `Base MEL: ${entry.def.baseStats.melee}`,
+        `Base RNG: ${entry.def.baseStats.ranged}`,
+        `Base ARM: ${entry.def.baseStats.armor}`,
+        `Base DDG: ${entry.def.baseStats.dodge}`,
         `Base SPD: ${entry.def.baseStats.speed}`,
       ];
       for (let i = 0; i < statLines.length; i++) {

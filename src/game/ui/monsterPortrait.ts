@@ -46,7 +46,7 @@ export interface StatsObjects {
 }
 
 /**
- * Render the stat block: HP, ATK, DEF, SPD, Level, XP progress.
+ * Render the stat block: Lv, HP, the six combat stats, and XP progress.
  */
 export function createStatsDisplay(
   scene: Scene,
@@ -64,8 +64,10 @@ export function createStatsDisplay(
   const lines = [
     `Lv ${monster.level}`,
     `HP  ${monster.currentHp}/${monster.maxHp}`,
-    `ATK ${monster.attack}`,
-    `DEF ${monster.defense}`,
+    `MEL ${monster.melee}`,
+    `RNG ${monster.ranged}`,
+    `ARM ${monster.armor}`,
+    `DDG ${monster.dodge}`,
     `SPD ${monster.speed}`,
   ];
 

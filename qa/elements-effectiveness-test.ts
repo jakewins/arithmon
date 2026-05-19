@@ -1,4 +1,4 @@
-import { launchGame, setupGame } from "./harness";
+import { launchGame, setupGame, getState } from "./harness";
 import type { Page } from "@playwright/test";
 
 interface CombatEv {
@@ -6,38 +6,39 @@ interface CombatEv {
   message: string;
 }
 
-async function fireEmberAt(page: Page, enemySlug: string): Promise<CombatEv[]> {
-  // Spawn a fresh ignibus-vs-target battle then submit an ember attack.
-  await page.evaluate(async (enemy) => {
-    await window.A!.spawnBattle("ignibus", enemy, 20, 20);
-  }, enemySlug);
-  // Let CombatScene boot.
+async function attack(
+  page: Page,
+  playerSlug: string,
+  enemySlug: string,
+  technique: string,
+): Promise<CombatEv[]> {
+  await page.evaluate(
+    async ([p, e]) => {
+      await window.A!.spawnBattle(p, e, 20, 20);
+    },
+    [playerSlug, enemySlug],
+  );
   await page.waitForTimeout(400);
-  // Drain the INTRO state.
-  await page.evaluate(() => {
-    // Submitting "fight" from INTRO is a no-op; submit from DECISION instead.
-    // The scene's intro() is called automatically; ensure we're in DECISION.
-  });
-  // Submit ember
-  const events = await page.evaluate(() => {
-    return window.A!.submitCombatAction({ type: "fight", technique: "ember" });
-  });
+  const events = await page.evaluate((t) => {
+    return window.A!.submitCombatAction({ type: "fight", technique: t });
+  }, technique);
   return events as CombatEv[];
 }
 
-async function endBattle(page: Page) {
-  // Run from combat and tear it down.
-  await page.evaluate(() => {
-    const A = window.A!;
-    // Force-end: keep submitting "run" until END, or directly stop scene via teleport.
-    void A;
-  });
-  // Teleport back to overworld to fully tear down CombatScene.
+async function teardown(page: Page) {
   await page.evaluate(async () => {
     await window.A!.teleport("spyder_paper_town", 10, 12);
   });
   await page.waitForTimeout(300);
 }
+
+const parseDamage = (events: CombatEv[]): number | null => {
+  const dmg = events.find((e) => e.type === "damage");
+  const m = dmg && /took (\d+) damage/.exec(dmg.message);
+  return m ? Number(m[1]) : null;
+};
+const effMsg = (events: CombatEv[]): string | null =>
+  events.find((e) => e.type === "effectiveness")?.message ?? null;
 
 async function main() {
   const { page, close } = await launchGame();
@@ -48,49 +49,71 @@ async function main() {
     monsters: [{ slug: "ignibus", level: 5 }],
   });
 
-  const vsWood = await fireEmberAt(page, "budaye");
-  console.log("\nember -> budaye (wood):");
-  for (const e of vsWood) console.log(`  [${e.type}] ${e.message}`);
-
-  await endBattle(page);
-
-  const vsEarth = await fireEmberAt(page, "grintot");
-  console.log("\nember -> grintot (earth):");
-  for (const e of vsEarth) console.log(`  [${e.type}] ${e.message}`);
-
-  const parseDamage = (events: CombatEv[]) => {
-    const dmg = events.find((e) => e.type === "damage");
-    const m = dmg && /took (\d+) damage/.exec(dmg.message);
-    return m ? Number(m[1]) : null;
+  let pass = true;
+  const failed = (msg: string) => {
+    console.error(`FAIL: ${msg}`);
+    pass = false;
   };
+
+  // --- Element effectiveness (STORY-0066): fire→wood (2x) vs fire→earth (0.5x) ---
+  const vsWood = await attack(page, "ignibus", "budaye", "ember");
+  await teardown(page);
+  const vsEarth = await attack(page, "ignibus", "grintot", "ember");
+  await teardown(page);
+
   const woodDmg = parseDamage(vsWood);
   const earthDmg = parseDamage(vsEarth);
-  const woodEff = vsWood.find((e) => e.type === "effectiveness")?.message ?? null;
-  const earthEff = vsEarth.find((e) => e.type === "effectiveness")?.message ?? null;
+  console.log(`\nember (fire) → budaye (wood): ${woodDmg} dmg  (${effMsg(vsWood)})`);
+  console.log(`ember (fire) → grintot (earth): ${earthDmg} dmg  (${effMsg(vsEarth)})`);
 
-  console.log("\nResults:");
-  console.log(`  fire→wood: ${woodDmg} dmg  (${woodEff})`);
-  console.log(`  fire→earth: ${earthDmg} dmg  (${earthEff})`);
-
-  let pass = true;
   if (woodDmg === null || earthDmg === null) {
-    console.error("FAIL: missing damage event");
-    pass = false;
+    failed("missing damage event for element test");
   } else {
     const ratio = woodDmg / earthDmg;
-    console.log(`  ratio: ${ratio.toFixed(2)}x  (expected ~4x)`);
-    if (ratio < 3 || ratio > 5) {
-      console.error(`FAIL: ratio ${ratio} not in [3, 5]`);
-      pass = false;
+    console.log(`  effectiveness ratio: ${ratio.toFixed(2)}x  (expected ~4x)`);
+    if (ratio < 3 || ratio > 5) failed(`ratio ${ratio} not in [3, 5]`);
+  }
+  if (effMsg(vsWood) !== "It's super effective!")
+    failed(`expected "super effective", got: ${effMsg(vsWood)}`);
+  if (effMsg(vsEarth) !== "It's not very effective…")
+    failed(`expected "not very effective", got: ${effMsg(vsEarth)}`);
+
+  // --- Melee vs ranged split (STORY-0067) ---
+  // grintot (brute) has high armor and low dodge — a ranged attack should
+  // out-damage a melee attack of comparable power. Use ignibus (polliwog,
+  // ranged-heavy) so its ranged stat is high.
+  // We compare two same-element attackers to isolate the range pivot:
+  //   - bodySlam: melee, power 1.6, normal vs earth = 1x
+  //   - psybeam:  ranged, power 1.8, cosmic vs earth = 1x
+  // psybeam should out-damage bodySlam against grintot when launched by a
+  // ranged-statted attacker, because dodge < armor for brute.
+  const meleeAttack = await attack(page, "ignibus", "grintot", "bodySlam");
+  await teardown(page);
+  const rangedAttack = await attack(page, "ignibus", "grintot", "psybeam");
+  await teardown(page);
+
+  const meleeDmg = parseDamage(meleeAttack);
+  const rangedDmg = parseDamage(rangedAttack);
+  console.log(`\nbodySlam (melee, normal) → grintot: ${meleeDmg} dmg`);
+  console.log(`psybeam (ranged, cosmic) → grintot: ${rangedDmg} dmg`);
+  if (meleeDmg === null || rangedDmg === null) {
+    failed("missing damage event for range test");
+  } else if (rangedDmg <= meleeDmg) {
+    failed(`ranged (${rangedDmg}) should beat melee (${meleeDmg}) vs high-armor grintot`);
+  }
+
+  // --- Verify getState exposes all six stats on the party lead ---
+  const state = (await getState(page)) as {
+    session?: { monsters?: { stats?: Record<string, number> }[] };
+  };
+  const lead = state.session?.monsters?.[0]?.stats;
+  console.log(`\nparty lead stats: ${JSON.stringify(lead)}`);
+  if (!lead) {
+    failed("no party lead stats in getState()");
+  } else {
+    for (const k of ["hp", "melee", "ranged", "armor", "dodge", "speed"]) {
+      if (typeof lead[k] !== "number") failed(`missing/non-numeric stats.${k}`);
     }
-  }
-  if (woodEff !== "It's super effective!") {
-    console.error(`FAIL: expected "super effective", got: ${woodEff}`);
-    pass = false;
-  }
-  if (earthEff !== "It's not very effective…") {
-    console.error(`FAIL: expected "not very effective", got: ${earthEff}`);
-    pass = false;
   }
 
   console.log(pass ? "\nOK ✅" : "\nFAIL ❌");

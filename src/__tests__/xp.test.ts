@@ -60,12 +60,13 @@ describe("Monster XP system", () => {
   });
 
   it("recalculates stats on level-up", () => {
+    // rockitten = hunter shape, base hp = 5
     const m = Monster.spawn("rockitten", 5);
-    const oldMaxHp = m.maxHp; // 8 * 12 = 96
+    const oldMaxHp = m.maxHp; // 5 * 12 = 60
     const xpNeeded = xpForLevel(6) - xpForLevel(5);
     m.addXp(xpNeeded);
-    // New maxHp = 8 * (6 + 7) = 104
-    expect(m.maxHp).toBe(8 * 13);
+    // New maxHp = 5 * (6 + 7) = 65
+    expect(m.maxHp).toBe(5 * 13);
     expect(m.maxHp).toBeGreaterThan(oldMaxHp);
   });
 

@@ -6,10 +6,19 @@ let nextMonsterId = 1;
 
 export const MAX_TECHNIQUES = 4;
 
+export interface MonsterStatsSnapshot {
+  maxHp: number;
+  melee: number;
+  ranged: number;
+  armor: number;
+  dodge: number;
+  speed: number;
+}
+
 export interface LevelUpResult {
   newLevel: number;
-  oldStats: { maxHp: number; attack: number; defense: number; speed: number };
-  newStats: { maxHp: number; attack: number; defense: number; speed: number };
+  oldStats: MonsterStatsSnapshot;
+  newStats: MonsterStatsSnapshot;
   newMoves: TechniqueDef[];
 }
 
@@ -19,8 +28,10 @@ export class Monster {
   readonly name: string;
   level: number;
   maxHp: number;
-  attack: number;
-  defense: number;
+  melee: number;
+  ranged: number;
+  armor: number;
+  dodge: number;
   speed: number;
   techniques: TechniqueDef[];
   totalXp: number;
@@ -32,10 +43,7 @@ export class Monster {
     slug: string,
     name: string,
     level: number,
-    maxHp: number,
-    attack: number,
-    defense: number,
-    speed: number,
+    stats: MonsterStatsSnapshot,
     techniques: TechniqueDef[],
     totalXp: number,
   ) {
@@ -43,20 +51,30 @@ export class Monster {
     this.slug = slug;
     this.name = name;
     this.level = level;
-    this.maxHp = maxHp;
-    this.attack = attack;
-    this.defense = defense;
-    this.speed = speed;
+    this.maxHp = stats.maxHp;
+    this.melee = stats.melee;
+    this.ranged = stats.ranged;
+    this.armor = stats.armor;
+    this.dodge = stats.dodge;
+    this.speed = stats.speed;
     this.techniques = techniques;
     this.totalXp = totalXp;
-    this.currentHp = maxHp;
+    this.currentHp = stats.maxHp;
   }
 
   static spawn(slug: string, level: number): Monster {
     const def = MONSTERS[slug];
     if (!def) throw new Error(`Unknown monster: ${slug}`);
 
-    const stat = (base: number) => base * (level + 7);
+    const scale = (base: number) => base * (level + 7);
+    const stats: MonsterStatsSnapshot = {
+      maxHp: scale(def.baseStats.hp),
+      melee: scale(def.baseStats.melee),
+      ranged: scale(def.baseStats.ranged),
+      armor: scale(def.baseStats.armor),
+      dodge: scale(def.baseStats.dodge),
+      speed: scale(def.baseStats.speed),
+    };
 
     const techniques = def.moveset
       .filter((m) => m.learnedAt <= level)
@@ -66,17 +84,7 @@ export class Monster {
         return tech;
       });
 
-    return new Monster(
-      def.slug,
-      def.name,
-      level,
-      stat(def.baseStats.hp),
-      stat(def.baseStats.attack),
-      stat(def.baseStats.defense),
-      stat(def.baseStats.speed),
-      techniques,
-      xpForLevel(level),
-    );
+    return new Monster(def.slug, def.name, level, stats, techniques, xpForLevel(level));
   }
 
   get fainted(): boolean {
@@ -97,6 +105,17 @@ export class Monster {
     return Math.min(1, (this.totalXp - currentLevelXp) / range);
   }
 
+  private snapshot(): MonsterStatsSnapshot {
+    return {
+      maxHp: this.maxHp,
+      melee: this.melee,
+      ranged: this.ranged,
+      armor: this.armor,
+      dodge: this.dodge,
+      speed: this.speed,
+    };
+  }
+
   /**
    * Add XP and process any level-ups. Returns an array of level-up results
    * (empty if no level-ups occurred).
@@ -114,19 +133,16 @@ export class Monster {
 
   private levelUp(): LevelUpResult {
     const def = MONSTERS[this.slug];
-    const oldStats = {
-      maxHp: this.maxHp,
-      attack: this.attack,
-      defense: this.defense,
-      speed: this.speed,
-    };
+    const oldStats = this.snapshot();
 
     this.level++;
-    const stat = (base: number) => base * (this.level + 7);
-    this.maxHp = stat(def.baseStats.hp);
-    this.attack = stat(def.baseStats.attack);
-    this.defense = stat(def.baseStats.defense);
-    this.speed = stat(def.baseStats.speed);
+    const scale = (base: number) => base * (this.level + 7);
+    this.maxHp = scale(def.baseStats.hp);
+    this.melee = scale(def.baseStats.melee);
+    this.ranged = scale(def.baseStats.ranged);
+    this.armor = scale(def.baseStats.armor);
+    this.dodge = scale(def.baseStats.dodge);
+    this.speed = scale(def.baseStats.speed);
 
     // Heal the HP difference
     const hpGain = this.maxHp - oldStats.maxHp;
@@ -149,12 +165,7 @@ export class Monster {
     return {
       newLevel: this.level,
       oldStats,
-      newStats: {
-        maxHp: this.maxHp,
-        attack: this.attack,
-        defense: this.defense,
-        speed: this.speed,
-      },
+      newStats: this.snapshot(),
       newMoves,
     };
   }

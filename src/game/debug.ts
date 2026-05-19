@@ -182,6 +182,14 @@ export class DebugBridge {
           maxHp: m.maxHp,
           totalXp: m.totalXp,
           xpProgress: m.xpProgress,
+          stats: {
+            hp: m.maxHp,
+            melee: m.melee,
+            ranged: m.ranged,
+            armor: m.armor,
+            dodge: m.dodge,
+            speed: m.speed,
+          },
         })),
         inventory: getInventoryItems(p.inventory).map((e) => ({
           slug: e.item.slug,
