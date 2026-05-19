@@ -14,6 +14,13 @@ import {
 } from "./formula";
 import { debugBridge } from "../debug";
 
+function describeEffectiveness(multiplier: number): string | null {
+  if (multiplier === 0) return "It had no effect…";
+  if (multiplier < 1) return "It's not very effective…";
+  if (multiplier > 1) return "It's super effective!";
+  return null;
+}
+
 export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "FORCE_SWAP" | "END";
 export type PlayerAction =
   | { type: "fight"; technique: string }
@@ -46,7 +53,8 @@ export interface CombatEvent {
     | "item_revive"
     | "capture_shake"
     | "capture_success"
-    | "capture_fail";
+    | "capture_fail"
+    | "effectiveness";
   message: string;
 }
 
@@ -422,12 +430,17 @@ export class CombatMachine {
       return events;
     }
 
-    const damage = calculateDamage(attacker, technique, defender);
+    const { damage, effectiveness } = calculateDamage(attacker, technique, defender);
     defender.currentHp = Math.max(0, defender.currentHp - damage);
     events.push({
       type: "damage",
       message: `${defender.name} took ${damage} damage!`,
     });
+
+    const effectivenessMessage = describeEffectiveness(effectiveness);
+    if (effectivenessMessage) {
+      events.push({ type: "effectiveness", message: effectivenessMessage });
+    }
 
     return events;
   }

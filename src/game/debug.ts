@@ -28,6 +28,7 @@ export interface DebugCommandHandler {
   debugWalkStep?(dir: Direction): Promise<{ tileX: number; tileY: number }>;
   debugStartCombat?(): void;
   debugSetEnemyHp?(hp: number): void;
+  debugSubmitCombatAction?(action: unknown): { type: string; message: string }[];
   debugSpawnBattle?(
     playerSlug: string,
     enemySlug: string,
@@ -274,6 +275,18 @@ export class DebugBridge {
     if (handler?.debugStartCombat) {
       handler.debugStartCombat();
     }
+  }
+
+  /**
+   * Submit a combat action directly to the CombatScene's machine. Returns the
+   * resulting event list synchronously. Bypasses menu UI; intended for QA.
+   */
+  submitCombatAction(action: unknown): { type: string; message: string }[] {
+    const handler = this.getCommandHandler();
+    if (handler?.debugSubmitCombatAction) {
+      return handler.debugSubmitCombatAction(action);
+    }
+    return [];
   }
 
   /**

@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import { CombatMachine, CombatEvent, MAX_DARK_POWER } from "../combat/machine";
+import { CombatMachine, CombatEvent, MAX_DARK_POWER, PlayerAction } from "../combat/machine";
 import { Monster, PARTY_LIMIT } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
 import { type ItemDef } from "../item/item";
@@ -654,6 +654,14 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   debugSetEnemyHp(hp: number): void {
     this.machine.enemy.currentHp = Math.max(0, Math.min(hp, this.machine.enemy.maxHp));
     this.updateHpBars();
+  }
+
+  /**
+   * Submit a combat action directly to the machine for QA scripting. Bypasses
+   * the menu UI and skips the event queue — events are returned synchronously.
+   */
+  debugSubmitCombatAction(action: PlayerAction): CombatEvent[] {
+    return this.machine.submitAction(action);
   }
 
   debugIsBlocking(): boolean {

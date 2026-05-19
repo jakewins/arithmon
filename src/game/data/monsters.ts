@@ -1,6 +1,10 @@
+import type { ElementSlug } from "./elements";
+
 export interface MonsterDef {
   slug: string;
   name: string;
+  /** Element types (1–2). Order matters: first is primary. Ported from upstream. */
+  types: [ElementSlug] | [ElementSlug, ElementSlug];
   baseStats: {
     hp: number;
     attack: number;
@@ -17,6 +21,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   rockitten: {
     slug: "rockitten",
     name: "Rockitten",
+    types: ["earth"],
     baseStats: {
       hp: 8,
       attack: 6,
@@ -34,6 +39,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   budaye: {
     slug: "budaye",
     name: "Budaye",
+    types: ["wood"],
     baseStats: {
       hp: 7,
       attack: 5,
@@ -51,6 +57,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   ignibus: {
     slug: "ignibus",
     name: "Ignibus",
+    types: ["fire"],
     baseStats: {
       hp: 6,
       attack: 8,
@@ -68,6 +75,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   grintot: {
     slug: "grintot",
     name: "Grintot",
+    types: ["earth"],
     baseStats: {
       hp: 9,
       attack: 5,
@@ -85,6 +93,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   memnomnom: {
     slug: "memnomnom",
     name: "Memnomnom",
+    types: ["normal"],
     baseStats: {
       hp: 7,
       attack: 7,
@@ -102,6 +111,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   dollfin: {
     slug: "dollfin",
     name: "Dollfin",
+    types: ["water"],
     baseStats: {
       hp: 7,
       attack: 6,
@@ -119,6 +129,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   pairagrin: {
     slug: "pairagrin",
     name: "Pairagrin",
+    types: ["sky"],
     baseStats: {
       hp: 7,
       attack: 6,
@@ -136,6 +147,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   aardorn: {
     slug: "aardorn",
     name: "Aardorn",
+    types: ["normal"],
     baseStats: {
       hp: 8,
       attack: 6,
@@ -153,6 +165,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   cataspike: {
     slug: "cataspike",
     name: "Cataspike",
+    types: ["metal"],
     baseStats: {
       hp: 6,
       attack: 7,
@@ -170,6 +183,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   cardiling: {
     slug: "cardiling",
     name: "Cardiling",
+    types: ["fire"],
     baseStats: {
       hp: 6,
       attack: 7,
@@ -187,6 +201,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   eyenemy: {
     slug: "eyenemy",
     name: "Eyenemy",
+    types: ["cosmic"],
     baseStats: {
       hp: 7,
       attack: 5,
@@ -204,6 +219,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   axolightl: {
     slug: "axolightl",
     name: "Axolightl",
+    types: ["water"],
     baseStats: {
       hp: 8,
       attack: 5,
@@ -221,6 +237,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   elofly: {
     slug: "elofly",
     name: "Elofly",
+    types: ["normal"],
     baseStats: { hp: 5, attack: 7, defense: 4, speed: 9 },
     baseXpYield: 55,
     catchRate: 200,
@@ -233,6 +250,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   squabbit: {
     slug: "squabbit",
     name: "Squabbit",
+    types: ["heroic"],
     baseStats: { hp: 7, attack: 6, defense: 5, speed: 7 },
     baseXpYield: 60,
     catchRate: 150,
@@ -245,6 +263,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   shybulb: {
     slug: "shybulb",
     name: "Shybulb",
+    types: ["wood"],
     baseStats: { hp: 7, attack: 5, defense: 7, speed: 5 },
     baseXpYield: 50,
     catchRate: 220,
@@ -257,6 +276,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   cairfrey: {
     slug: "cairfrey",
     name: "Cairfrey",
+    types: ["normal"],
     baseStats: { hp: 8, attack: 6, defense: 8, speed: 4 },
     baseXpYield: 70,
     catchRate: 150,
@@ -269,6 +289,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   polyrock: {
     slug: "polyrock",
     name: "Polyrock",
+    types: ["earth"],
     baseStats: { hp: 9, attack: 7, defense: 9, speed: 3 },
     baseXpYield: 75,
     catchRate: 130,
@@ -281,6 +302,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   djinnbo: {
     slug: "djinnbo",
     name: "Djinnbo",
+    types: ["fire"],
     baseStats: { hp: 7, attack: 8, defense: 5, speed: 8 },
     baseXpYield: 90,
     catchRate: 80,
@@ -293,6 +315,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   sapsnap: {
     slug: "sapsnap",
     name: "Sapsnap",
+    types: ["wood"],
     baseStats: { hp: 6, attack: 8, defense: 5, speed: 7 },
     baseXpYield: 60,
     catchRate: 140,
@@ -305,6 +328,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   katapill: {
     slug: "katapill",
     name: "Katapill",
+    types: ["metal"],
     baseStats: { hp: 6, attack: 4, defense: 6, speed: 5 },
     baseXpYield: 40,
     catchRate: 255,
@@ -317,6 +341,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   anoleaf: {
     slug: "anoleaf",
     name: "Anoleaf",
+    types: ["wood"],
     baseStats: { hp: 7, attack: 6, defense: 7, speed: 6 },
     baseXpYield: 65,
     catchRate: 130,
@@ -329,6 +354,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   foofle: {
     slug: "foofle",
     name: "Foofle",
+    types: ["normal"],
     baseStats: { hp: 6, attack: 6, defense: 5, speed: 8 },
     baseXpYield: 55,
     catchRate: 180,
@@ -341,6 +367,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   vamporm: {
     slug: "vamporm",
     name: "Vamporm",
+    types: ["venom"],
     baseStats: { hp: 7, attack: 8, defense: 4, speed: 7 },
     baseXpYield: 70,
     catchRate: 140,
@@ -353,6 +380,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   dracune: {
     slug: "dracune",
     name: "Dracune",
+    types: ["venom"],
     baseStats: { hp: 8, attack: 9, defense: 6, speed: 7 },
     baseXpYield: 95,
     catchRate: 60,
@@ -365,6 +393,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   dandicub: {
     slug: "dandicub",
     name: "Dandicub",
+    types: ["wood"],
     baseStats: { hp: 6, attack: 5, defense: 6, speed: 6 },
     baseXpYield: 45,
     catchRate: 220,
@@ -378,6 +407,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   dandylion: {
     slug: "dandylion",
     name: "Dandylion",
+    types: ["wood"],
     baseStats: { hp: 8, attack: 7, defense: 7, speed: 7 },
     baseXpYield: 80,
     catchRate: 100,
@@ -391,6 +421,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   capiti: {
     slug: "capiti",
     name: "Capiti",
+    types: ["normal"],
     baseStats: { hp: 7, attack: 6, defense: 8, speed: 5 },
     baseXpYield: 65,
     catchRate: 150,
@@ -403,6 +434,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   dinoflop: {
     slug: "dinoflop",
     name: "Dinoflop",
+    types: ["earth"],
     baseStats: { hp: 7, attack: 7, defense: 6, speed: 5 },
     baseXpYield: 60,
     catchRate: 160,
@@ -415,6 +447,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   furnursus: {
     slug: "furnursus",
     name: "Furnursus",
+    types: ["fire"],
     baseStats: { hp: 9, attack: 8, defense: 7, speed: 4 },
     baseXpYield: 80,
     catchRate: 120,
@@ -427,6 +460,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   boltnu: {
     slug: "boltnu",
     name: "Boltnu",
+    types: ["metal"],
     baseStats: { hp: 6, attack: 8, defense: 5, speed: 8 },
     baseXpYield: 70,
     catchRate: 140,
@@ -439,6 +473,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   metesaur: {
     slug: "metesaur",
     name: "Metesaur",
+    types: ["earth"],
     baseStats: { hp: 10, attack: 6, defense: 9, speed: 3 },
     baseXpYield: 85,
     catchRate: 100,
@@ -451,6 +486,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   agnite: {
     slug: "agnite",
     name: "Agnite",
+    types: ["fire"],
     baseStats: { hp: 6, attack: 7, defense: 5, speed: 7 },
     baseXpYield: 55,
     catchRate: 200,
@@ -464,6 +500,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   agnidon: {
     slug: "agnidon",
     name: "Agnidon",
+    types: ["fire"],
     baseStats: { hp: 8, attack: 9, defense: 6, speed: 8 },
     baseXpYield: 90,
     catchRate: 80,
@@ -476,6 +513,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   embra: {
     slug: "embra",
     name: "Embra",
+    types: ["fire"],
     baseStats: { hp: 7, attack: 8, defense: 6, speed: 7 },
     baseXpYield: 75,
     catchRate: 130,
@@ -488,6 +526,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   coleorus: {
     slug: "coleorus",
     name: "Coleorus",
+    types: ["lightning"],
     baseStats: { hp: 8, attack: 6, defense: 8, speed: 5 },
     baseXpYield: 70,
     catchRate: 110,
@@ -500,6 +539,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   tourbidi: {
     slug: "tourbidi",
     name: "Tourbidi",
+    types: ["wood"],
     baseStats: { hp: 7, attack: 5, defense: 6, speed: 8 },
     baseXpYield: 65,
     catchRate: 150,
@@ -512,6 +552,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   pythwire: {
     slug: "pythwire",
     name: "Pythwire",
+    types: ["lightning"],
     baseStats: { hp: 7, attack: 9, defense: 5, speed: 8 },
     baseXpYield: 95,
     catchRate: 70,
@@ -524,6 +565,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   ouroboutlet: {
     slug: "ouroboutlet",
     name: "Ouroboutlet",
+    types: ["lightning"],
     baseStats: { hp: 8, attack: 8, defense: 7, speed: 6 },
     baseXpYield: 100,
     catchRate: 60,
@@ -536,6 +578,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   sockeserp: {
     slug: "sockeserp",
     name: "Sockeserp",
+    types: ["lightning"],
     baseStats: { hp: 9, attack: 7, defense: 8, speed: 5 },
     baseXpYield: 90,
     catchRate: 75,
@@ -548,6 +591,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   toufigel: {
     slug: "toufigel",
     name: "Toufigel",
+    types: ["normal"],
     baseStats: { hp: 6, attack: 5, defense: 6, speed: 7 },
     baseXpYield: 55,
     catchRate: 180,
@@ -560,6 +604,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   pipis: {
     slug: "pipis",
     name: "Pipis",
+    types: ["sky"],
     baseStats: { hp: 5, attack: 4, defense: 5, speed: 8 },
     baseXpYield: 40,
     catchRate: 220,
@@ -572,6 +617,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   strella: {
     slug: "strella",
     name: "Strella",
+    types: ["sky"],
     baseStats: { hp: 7, attack: 8, defense: 6, speed: 8 },
     baseXpYield: 85,
     catchRate: 80,
@@ -584,6 +630,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   elowind: {
     slug: "elowind",
     name: "Elowind",
+    types: ["sky"],
     baseStats: { hp: 7, attack: 9, defense: 5, speed: 10 },
     baseXpYield: 85,
     catchRate: 70,
@@ -598,6 +645,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   cardiwing: {
     slug: "cardiwing",
     name: "Cardiwing",
+    types: ["fire"],
     baseStats: { hp: 7, attack: 9, defense: 6, speed: 9 },
     baseXpYield: 85,
     catchRate: 70,
@@ -612,6 +660,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   rabbitosaur: {
     slug: "rabbitosaur",
     name: "Rabbitosaur",
+    types: ["heroic"],
     baseStats: { hp: 9, attack: 8, defense: 7, speed: 7 },
     baseXpYield: 85,
     catchRate: 70,

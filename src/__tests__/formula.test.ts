@@ -7,10 +7,13 @@ describe("calculateDamage", () => {
   it("computes damage using the formula", () => {
     const attacker = Monster.spawn("rockitten", 5);
     const defender = Monster.spawn("rockitten", 5);
-    const technique = TECHNIQUES["ram"]; // power 1.5
+    const technique = TECHNIQUES["ram"]; // power 1.5, normal vs earth = 1x
 
     // floor((7 + 5) * 72 * 1.5 / 72) = floor(12 * 1.5) = floor(18) = 18
-    expect(calculateDamage(attacker, technique, defender)).toBe(18);
+    expect(calculateDamage(attacker, technique, defender)).toEqual({
+      damage: 18,
+      effectiveness: 1,
+    });
   });
 
   it("returns higher damage at higher levels", () => {
@@ -18,9 +21,24 @@ describe("calculateDamage", () => {
     const high = Monster.spawn("rockitten", 10);
     const tech = TECHNIQUES["ram"];
 
-    const lowDmg = calculateDamage(low, tech, low);
-    const highDmg = calculateDamage(high, tech, high);
+    const lowDmg = calculateDamage(low, tech, low).damage;
+    const highDmg = calculateDamage(high, tech, high).damage;
     expect(highDmg).toBeGreaterThan(lowDmg);
+  });
+
+  it("applies element effectiveness multipliers", () => {
+    const ignibus = Monster.spawn("ignibus", 5);
+    const budaye = Monster.spawn("budaye", 5); // wood
+    const grintot = Monster.spawn("grintot", 5); // earth
+    const ember = TECHNIQUES["ember"]; // fire
+
+    const vsWood = calculateDamage(ignibus, ember, budaye);
+    const vsEarth = calculateDamage(ignibus, ember, grintot);
+
+    expect(vsWood.effectiveness).toBe(2);
+    expect(vsEarth.effectiveness).toBe(0.5);
+    // 2x vs 0.5x = 4x ratio (within flooring noise)
+    expect(vsWood.damage).toBeGreaterThan(vsEarth.damage * 3);
   });
 });
 

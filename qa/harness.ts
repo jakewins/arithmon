@@ -45,6 +45,14 @@ interface DebugBridgeAPI {
   typeAnswer(text: string): Promise<void>;
   submitAnswer(): Promise<void>;
   startCombat(): Promise<void>;
+  spawnBattle(
+    playerSlug: string,
+    enemySlug: string,
+    playerLevel?: number,
+    enemyLevel?: number,
+    environment?: string,
+  ): Promise<void>;
+  submitCombatAction(action: unknown): { type: string; message: string }[];
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;
   teleport(mapKey: string, tileX: number, tileY: number): Promise<void>;

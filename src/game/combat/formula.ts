@@ -1,6 +1,7 @@
 import { Monster } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
 import { MONSTERS } from "../data/monsters";
+import { effectivenessMultiplier } from "./elements";
 
 /** Cumulative XP required to reach a given level. Uses medium-fast cubic curve. */
 export function xpForLevel(level: number): number {
@@ -12,12 +13,23 @@ export function calculateXpReward(defeatedLevel: number, baseXpYield: number): n
   return Math.floor((baseXpYield * defeatedLevel) / 5);
 }
 
+export interface DamageResult {
+  damage: number;
+  effectiveness: number;
+}
+
 export function calculateDamage(
   attacker: Monster,
   technique: TechniqueDef,
   defender: Monster,
-): number {
-  return Math.floor(((7 + attacker.level) * attacker.attack * technique.power) / defender.defense);
+): DamageResult {
+  const defenderDef = MONSTERS[defender.slug];
+  const effectiveness = effectivenessMultiplier(technique.element, defenderDef.types);
+  const base = ((7 + attacker.level) * attacker.attack * technique.power) / defender.defense;
+  return {
+    damage: Math.floor(base * effectiveness),
+    effectiveness,
+  };
 }
 
 export function rollAccuracy(accuracy: number): boolean {

@@ -1,6 +1,10 @@
+import type { ElementSlug } from "./elements";
+
 export interface TechniqueDef {
   slug: string;
   name: string;
+  /** Element type. Determines effectiveness multiplier vs. defender's types. */
+  element: ElementSlug;
   power: number;
   accuracy: number;
   range: "melee" | "ranged";
@@ -11,6 +15,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   ram: {
     slug: "ram",
     name: "Ram",
+    element: "normal",
     power: 1.5,
     accuracy: 0.85,
     range: "melee",
@@ -19,6 +24,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   scratch: {
     slug: "scratch",
     name: "Scratch",
+    element: "normal",
     power: 1.0,
     accuracy: 0.95,
     range: "melee",
@@ -27,6 +33,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   rockThrow: {
     slug: "rockThrow",
     name: "Rock Throw",
+    element: "earth",
     power: 2.0,
     accuracy: 0.75,
     range: "ranged",
@@ -35,6 +42,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   pounce: {
     slug: "pounce",
     name: "Pounce",
+    element: "normal",
     power: 1.8,
     accuracy: 0.8,
     range: "melee",
@@ -43,6 +51,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   growl: {
     slug: "growl",
     name: "Growl",
+    element: "normal",
     power: 0.5,
     accuracy: 1.0,
     range: "ranged",
@@ -51,6 +60,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   bite: {
     slug: "bite",
     name: "Bite",
+    element: "normal",
     power: 1.2,
     accuracy: 0.9,
     range: "melee",
@@ -59,6 +69,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   ember: {
     slug: "ember",
     name: "Ember",
+    element: "fire",
     power: 1.4,
     accuracy: 0.9,
     range: "ranged",
@@ -67,6 +78,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   fireball: {
     slug: "fireball",
     name: "Fireball",
+    element: "fire",
     power: 2.2,
     accuracy: 0.7,
     range: "ranged",
@@ -75,6 +87,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   waterGun: {
     slug: "waterGun",
     name: "Water Gun",
+    element: "water",
     power: 1.3,
     accuracy: 0.9,
     range: "ranged",
@@ -83,6 +96,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   bodySlam: {
     slug: "bodySlam",
     name: "Body Slam",
+    element: "normal",
     power: 1.6,
     accuracy: 0.85,
     range: "melee",
@@ -91,6 +105,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   vineWhip: {
     slug: "vineWhip",
     name: "Vine Whip",
+    element: "wood",
     power: 1.3,
     accuracy: 0.9,
     range: "melee",
@@ -99,6 +114,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   leafStorm: {
     slug: "leafStorm",
     name: "Leaf Storm",
+    element: "wood",
     power: 2.0,
     accuracy: 0.75,
     range: "ranged",
@@ -107,6 +123,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   peck: {
     slug: "peck",
     name: "Peck",
+    element: "sky",
     power: 1.1,
     accuracy: 0.95,
     range: "melee",
@@ -115,6 +132,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   wingAttack: {
     slug: "wingAttack",
     name: "Wing Attack",
+    element: "sky",
     power: 1.6,
     accuracy: 0.85,
     range: "melee",
@@ -123,6 +141,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   tackle: {
     slug: "tackle",
     name: "Tackle",
+    element: "normal",
     power: 1.0,
     accuracy: 0.95,
     range: "melee",
@@ -131,6 +150,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   hornAttack: {
     slug: "hornAttack",
     name: "Horn Attack",
+    element: "normal",
     power: 1.4,
     accuracy: 0.85,
     range: "melee",
@@ -139,6 +159,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   poisonSting: {
     slug: "poisonSting",
     name: "Poison Sting",
+    element: "venom",
     power: 1.0,
     accuracy: 0.9,
     range: "ranged",
@@ -147,6 +168,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   spikeLaunch: {
     slug: "spikeLaunch",
     name: "Spike Launch",
+    element: "metal",
     power: 1.8,
     accuracy: 0.8,
     range: "ranged",
@@ -155,6 +177,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   glare: {
     slug: "glare",
     name: "Glare",
+    element: "normal",
     power: 0.8,
     accuracy: 1.0,
     range: "ranged",
@@ -163,6 +186,7 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
   psybeam: {
     slug: "psybeam",
     name: "Psybeam",
+    element: "cosmic",
     power: 1.8,
     accuracy: 0.85,
     range: "ranged",
