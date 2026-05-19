@@ -97,7 +97,7 @@ export async function launchGame(): Promise<{
   close: () => Promise<void>;
 }> {
   const browser = await chromium.launch({
-    headless: false,
+    headless: process.env.HEADLESS === "1" ? true : false,
     executablePath: findChromium(),
   });
   const page = await browser.newPage({ viewport: VIEWPORT });

@@ -29,12 +29,18 @@ class CreateNpcAction implements EventAction {
 
   start(ctx: EventContext): void {
     const pixelX = this.tileX * TILE_SIZE + TILE_SIZE / 2;
-    const pixelY = this.tileY * TILE_SIZE;
 
     const { spritesheet, staticProp } = getNpcSprite(this.slug);
 
+    // Static props anchor at bottom-center on the tile bottom so off-size
+    // sprites (16x16, 32x32, multi-tile) sit correctly on their placement
+    // tile. Walking sprites keep default origin (centered, vertical center on
+    // tile top — gives feet at tile bottom for a 16x32 sprite).
+    const pixelY = staticProp ? this.tileY * TILE_SIZE + TILE_SIZE : this.tileY * TILE_SIZE;
+
     const frame = staticProp ? 0 : FACING_FRAMES[this.facing];
     const sprite = ctx.scene.add.sprite(pixelX, pixelY, spritesheet, frame);
+    if (staticProp) sprite.setOrigin(0.5, 1);
     sprite.setDepth(5);
 
     // Add a collision body so the player can't walk through the NPC

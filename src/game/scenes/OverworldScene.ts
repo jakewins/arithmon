@@ -290,11 +290,12 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       });
     }
 
-    // NPC spritesheets — same frame layout as player (16x32, 3 cols × 4 rows)
+    // NPC spritesheets — walking sprites are 16x32 (3 cols × 4 rows); static
+    // props can override frame dimensions via NpcSpriteDef.
     for (const sheet of allNpcSpritesheets()) {
-      this.load.spritesheet(sheet, `assets/sprites/${sheet}.png`, {
-        frameWidth: 16,
-        frameHeight: 32,
+      this.load.spritesheet(sheet.name, `assets/sprites/${sheet.name}.png`, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
       });
     }
   }
