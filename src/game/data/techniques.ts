@@ -1,10 +1,12 @@
 import type { ElementSlug } from "./elements";
 import type { StatusSlug } from "./statuses";
+import type { StatName } from "../combat/statStages";
 
 export type TechniqueEffect =
   | { kind: "damage"; power: number }
   | { kind: "applyStatus"; status: StatusSlug; chance: number; target: "self" | "opponent" }
-  | { kind: "heal"; amount: number; target: "self" };
+  | { kind: "heal"; amount: number; target: "self" }
+  | { kind: "statStage"; stat: StatName; delta: number; target: "self" | "opponent" };
 
 export interface TechniqueDef {
   slug: string;
@@ -62,7 +64,16 @@ export const TECHNIQUES: Record<string, TechniqueDef> = {
     range: "ranged",
     accuracy: 1.0,
     dpCost: 1,
-    effects: [{ kind: "damage", power: 0.5 }],
+    effects: [{ kind: "statStage", stat: "melee", delta: -1, target: "opponent" }],
+  },
+  harden: {
+    slug: "harden",
+    name: "Harden",
+    element: "normal",
+    range: "melee",
+    accuracy: 1.0,
+    dpCost: 1,
+    effects: [{ kind: "statStage", stat: "armor", delta: +1, target: "self" }],
   },
   bite: {
     slug: "bite",

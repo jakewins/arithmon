@@ -679,6 +679,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       xpProgress: mon.xpProgress,
       techniqueCount: mon.techniques.length,
       status: mon.status.map((s) => ({ slug: s.slug, turnsRemaining: s.turnsRemaining })),
+      statStages: { ...mon.statStages },
     });
     return {
       combat: {

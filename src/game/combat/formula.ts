@@ -3,6 +3,7 @@ import { TechniqueDef } from "../data/techniques";
 import { MONSTERS } from "../data/monsters";
 import { effectivenessMultiplier } from "./elements";
 import { meleeMultiplier } from "./statusHandler";
+import { effectiveStat } from "./statStages";
 
 /** Cumulative XP required to reach a given level. Uses medium-fast cubic curve. */
 export function xpForLevel(level: number): number {
@@ -32,8 +33,14 @@ export function calculateDamage(
 ): DamageResult {
   const defenderDef = MONSTERS[defender.slug];
   const effectiveness = effectivenessMultiplier(technique.element, defenderDef.types);
-  const offenseStat = technique.range === "melee" ? attacker.melee : attacker.ranged;
-  const defenseStat = technique.range === "melee" ? defender.armor : defender.dodge;
+  const rawOffense = technique.range === "melee" ? attacker.melee : attacker.ranged;
+  const rawDefense = technique.range === "melee" ? defender.armor : defender.dodge;
+  const offenseStage =
+    technique.range === "melee" ? attacker.statStages.melee : attacker.statStages.ranged;
+  const defenseStage =
+    technique.range === "melee" ? defender.statStages.armor : defender.statStages.dodge;
+  const offenseStat = effectiveStat(rawOffense, offenseStage);
+  const defenseStat = effectiveStat(rawDefense, defenseStage);
   const offenseMultiplier = technique.range === "melee" ? meleeMultiplier(attacker) : 1;
   const base = ((7 + attacker.level) * offenseStat * power) / defenseStat;
   return {

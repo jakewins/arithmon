@@ -48,7 +48,8 @@ export interface CombatEvent {
     | "status_tick"
     | "status_wear_off"
     | "status_gated"
-    | "heal";
+    | "heal"
+    | "stat_stage";
   message: string;
 }
 
@@ -104,6 +105,10 @@ export class CombatMachine {
   intro(): CombatEvent[] {
     const from = this.state;
     this.state = "DECISION";
+    // Stat stages are battle-local — start each combat fresh.
+    for (const m of [...this.party, ...this.enemyParty]) {
+      m.resetStatStages();
+    }
     debugBridge.emit("combat_state", { from, to: this.state });
     const message = this.trainerName
       ? `Trainer ${this.trainerName} wants to battle!`
@@ -168,7 +173,10 @@ export class CombatMachine {
         return [];
       }
       const oldName = this.player.name;
+      // Returning monster keeps no stages; the incoming one starts fresh.
+      this.player.resetStatStages();
       this.player = target;
+      this.player.resetStatStages();
       events.push({
         type: "swap_out",
         message: `${oldName}, come back!`,
@@ -271,6 +279,7 @@ export class CombatMachine {
     const nextEnemy = this.enemyParty.find((m) => m !== this.enemy && !m.fainted);
     if (nextEnemy) {
       this.enemy = nextEnemy;
+      this.enemy.resetStatStages();
       events.push({
         type: "swap_in",
         message: this.trainerName
@@ -298,6 +307,7 @@ export class CombatMachine {
     if (!target || target.fainted) return [];
 
     this.player = target;
+    this.player.resetStatStages();
     const events: CombatEvent[] = [{ type: "swap_in", message: `Go, ${this.player.name}!` }];
 
     this.state = "DECISION";
@@ -487,5 +497,7 @@ function mapExecutorEvent(
       return { type: "status_apply", message: ev.message };
     case "heal":
       return { type: "heal", message: ev.message };
+    case "stat_stage":
+      return { type: "stat_stage", message: ev.message };
   }
 }

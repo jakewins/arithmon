@@ -2,6 +2,7 @@ import type { Monster } from "../model/Monster";
 import type { TechniqueDef, TechniqueEffect } from "../data/techniques";
 import { calculateDamage, rollAccuracy } from "./formula";
 import { applyStatus } from "./statusHandler";
+import { adjustStage } from "./statStages";
 
 export interface ExecutorEvent {
   type:
@@ -11,7 +12,8 @@ export interface ExecutorEvent {
     | "effectiveness"
     | "status_apply"
     | "status_resist"
-    | "heal";
+    | "heal"
+    | "stat_stage";
   message: string;
   /** Damage amount for `damage`, heal amount for `heal`. */
   amount?: number;
@@ -122,5 +124,31 @@ function applyEffect(
         },
       ];
     }
+    case "statStage": {
+      const target = effect.target === "self" ? attacker : defender;
+      const current = target.statStages[effect.stat];
+      const { newStage, clamped } = adjustStage(current, effect.delta);
+      if (clamped && newStage === current) {
+        return [
+          {
+            type: "stat_stage",
+            message: `${target.name}'s ${effect.stat} can't go ${effect.delta > 0 ? "higher" : "lower"}!`,
+          },
+        ];
+      }
+      target.statStages[effect.stat] = newStage;
+      return [
+        {
+          type: "stat_stage",
+          message: describeStageChange(target.name, effect.stat, effect.delta),
+        },
+      ];
+    }
   }
+}
+
+function describeStageChange(name: string, stat: string, delta: number): string {
+  const direction = delta > 0 ? "rose" : "fell";
+  const intensity = Math.abs(delta) >= 2 ? " sharply" : "";
+  return `${name}'s ${stat} ${direction}${intensity}!`;
 }

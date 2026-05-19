@@ -1,6 +1,7 @@
 import { MONSTERS } from "../data/monsters";
 import { TECHNIQUES, TechniqueDef } from "../data/techniques";
 import type { StatusInstance } from "../data/statuses";
+import { freshStatStages, type StatStages } from "../combat/statStages";
 import { xpForLevel } from "../combat/formula";
 
 let nextMonsterId = 1;
@@ -38,7 +39,16 @@ export class Monster {
   totalXp: number;
   currentHp: number;
   status: StatusInstance[] = [];
+  /**
+   * Temporary in-battle stat stages in [-6, +6]. Reset by the combat machine
+   * at battle start and end (see `resetStatStages`).
+   */
+  statStages: StatStages = freshStatStages();
   bond = 0;
+
+  resetStatStages(): void {
+    this.statStages = freshStatStages();
+  }
 
   private constructor(
     slug: string,

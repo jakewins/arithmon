@@ -262,6 +262,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
     catchRate: 130,
     moveset: [
       { slug: "tackle", learnedAt: 1 },
+      { slug: "harden", learnedAt: 3 },
       { slug: "rockThrow", learnedAt: 4 },
       { slug: "bodySlam", learnedAt: 9 },
     ],
