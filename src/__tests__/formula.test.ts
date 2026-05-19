@@ -12,7 +12,7 @@ describe("calculateDamage", () => {
     const defender = Monster.spawn("rockitten", 5);
     const technique = TECHNIQUES["ram"];
 
-    expect(calculateDamage(attacker, technique, defender)).toEqual({
+    expect(calculateDamage(attacker, technique, defender, 1.5)).toEqual({
       damage: 36,
       effectiveness: 1,
     });
@@ -23,8 +23,8 @@ describe("calculateDamage", () => {
     const high = Monster.spawn("rockitten", 10);
     const tech = TECHNIQUES["ram"];
 
-    const lowDmg = calculateDamage(low, tech, low).damage;
-    const highDmg = calculateDamage(high, tech, high).damage;
+    const lowDmg = calculateDamage(low, tech, low, 1.5).damage;
+    const highDmg = calculateDamage(high, tech, high, 1.5).damage;
     expect(highDmg).toBeGreaterThan(lowDmg);
   });
 
@@ -34,8 +34,8 @@ describe("calculateDamage", () => {
     const grintot = Monster.spawn("grintot", 5); // earth
     const ember = TECHNIQUES["ember"]; // fire, ranged
 
-    const vsWood = calculateDamage(ignibus, ember, budaye);
-    const vsEarth = calculateDamage(ignibus, ember, grintot);
+    const vsWood = calculateDamage(ignibus, ember, budaye, 1.4);
+    const vsEarth = calculateDamage(ignibus, ember, grintot, 1.4);
 
     expect(vsWood.effectiveness).toBe(2);
     expect(vsEarth.effectiveness).toBe(0.5);
@@ -49,7 +49,7 @@ describe("calculateDamage", () => {
     const ram = TECHNIQUES["ram"]; // melee, power 1.5, normal element vs earth = 1x
 
     // floor((7+5) * 96 * 1.5 / 84) = floor(20.57) = 20
-    expect(calculateDamage(att, ram, def).damage).toBe(20);
+    expect(calculateDamage(att, ram, def, 1.5).damage).toBe(20);
   });
 
   it("ranged techniques use attacker.ranged vs defender.dodge", () => {
@@ -58,7 +58,7 @@ describe("calculateDamage", () => {
     const psybeam = TECHNIQUES["psybeam"]; // ranged, power 1.8, cosmic vs earth = 1x
 
     // floor((7+5) * 96 * 1.8 / 60) = floor(34.56) = 34
-    expect(calculateDamage(att, psybeam, def).damage).toBe(34);
+    expect(calculateDamage(att, psybeam, def, 1.8).damage).toBe(34);
   });
 });
 

@@ -45,6 +45,7 @@ interface DebugBridgeAPI {
   typeAnswer(text: string): Promise<void>;
   submitAnswer(): Promise<void>;
   startCombat(): Promise<void>;
+  setForceStatusApply(on: boolean): void;
   spawnBattle(
     playerSlug: string,
     enemySlug: string,

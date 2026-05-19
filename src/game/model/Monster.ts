@@ -1,5 +1,6 @@
 import { MONSTERS } from "../data/monsters";
 import { TECHNIQUES, TechniqueDef } from "../data/techniques";
+import type { StatusInstance } from "../data/statuses";
 import { xpForLevel } from "../combat/formula";
 
 let nextMonsterId = 1;
@@ -36,7 +37,7 @@ export class Monster {
   techniques: TechniqueDef[];
   totalXp: number;
   currentHp: number;
-  status: string[] = [];
+  status: StatusInstance[] = [];
   bond = 0;
 
   private constructor(

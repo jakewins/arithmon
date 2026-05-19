@@ -1269,8 +1269,11 @@ describe("set_monster_status action", () => {
   it("clears all status effects from party monsters", () => {
     const m1 = Monster.spawn("rockitten", 5);
     const m2 = Monster.spawn("rockitten", 3);
-    m1.status = ["poison", "sleep"];
-    m2.status = ["burn"];
+    m1.status = [
+      { slug: "poisoned", turnsRemaining: 4 },
+      { slug: "sleep", turnsRemaining: 2 },
+    ];
+    m2.status = [{ slug: "burn", turnsRemaining: 4 }];
     session.player.monsters = [m1, m2];
 
     const event: EventDef = {

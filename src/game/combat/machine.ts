@@ -4,22 +4,11 @@ import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
 import { ITEMS } from "../data/items";
 import { type Inventory, removeItem } from "../item/inventory";
 import { type ItemEffect } from "../item/item";
-import {
-  calculateDamage,
-  calculateXpReward,
-  rollAccuracy,
-  rollFleeChance,
-  shakeCheck,
-  attemptCapture,
-} from "./formula";
+import { calculateXpReward, rollFleeChance, shakeCheck, attemptCapture } from "./formula";
+import { executeTechnique, type ExecutorEvent } from "./techniqueExecutor";
+import { gatesAction, tickStatuses } from "./statusHandler";
+import { STATUSES } from "../data/statuses";
 import { debugBridge } from "../debug";
-
-function describeEffectiveness(multiplier: number): string | null {
-  if (multiplier === 0) return "It had no effect…";
-  if (multiplier < 1) return "It's not very effective…";
-  if (multiplier > 1) return "It's super effective!";
-  return null;
-}
 
 export type CombatState = "INTRO" | "DECISION" | "ACTION" | "RESOLVE" | "FORCE_SWAP" | "END";
 export type PlayerAction =
@@ -54,7 +43,12 @@ export interface CombatEvent {
     | "capture_shake"
     | "capture_success"
     | "capture_fail"
-    | "effectiveness";
+    | "effectiveness"
+    | "status_apply"
+    | "status_tick"
+    | "status_wear_off"
+    | "status_gated"
+    | "heal";
   message: string;
 }
 
@@ -212,33 +206,7 @@ export class CombatMachine {
       });
       events.push(...this.performAttack(this.player, this.enemy, true, technique));
       if (this.enemy.currentHp <= 0) {
-        events.push({
-          type: "faint",
-          message: `${this.enemy.name} fainted!`,
-        });
-        events.push(...this.awardXp());
-
-        // Check if trainer has more monsters
-        const nextEnemy = this.enemyParty.find((m) => m !== this.enemy && !m.fainted);
-        if (nextEnemy) {
-          this.enemy = nextEnemy;
-          events.push({
-            type: "swap_in",
-            message: this.trainerName
-              ? `${this.trainerName} sent out ${nextEnemy.name}!`
-              : `A new ${nextEnemy.name} appeared!`,
-          });
-          this.state = "DECISION";
-          debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
-          debugBridge.emit("combat_action", { action, events });
-          return events;
-        }
-
-        this.state = "END";
-        this.outcome = "win";
-        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
-        debugBridge.emit("combat_action", { action, events });
-        return events;
+        return this.handleEnemyFaint(events, action);
       }
     }
 
@@ -248,29 +216,75 @@ export class CombatMachine {
       : undefined;
     events.push(...this.performAttack(this.enemy, this.player, false, enemyTech));
     if (this.player.currentHp <= 0) {
+      return this.handlePlayerFaint(events, action);
+    }
+    if (this.enemy.currentHp <= 0) {
+      // Enemy could KO itself via a self-targeted effect or e.g. recoil. Treat
+      // as a win, same as the player-turn KO branch above.
+      return this.handleEnemyFaint(events, action);
+    }
+
+    // End-of-turn: tick statuses on both monsters and emit damage logs.
+    events.push(...this.tickEndOfTurn());
+    if (this.enemy.currentHp <= 0) {
+      return this.handleEnemyFaint(events, action);
+    }
+    if (this.player.currentHp <= 0) {
+      return this.handlePlayerFaint(events, action);
+    }
+
+    this.state = "DECISION";
+    debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+    debugBridge.emit("combat_action", { action, events });
+    return events;
+  }
+
+  private handlePlayerFaint(events: CombatEvent[], action: PlayerAction): CombatEvent[] {
+    events.push({
+      type: "faint",
+      message: `${this.player.name} fainted!`,
+    });
+    if (this.hasSwapTargets()) {
+      this.state = "FORCE_SWAP";
       events.push({
-        type: "faint",
-        message: `${this.player.name} fainted!`,
+        type: "force_swap",
+        message: "Choose a monster to send out!",
       });
-      // Check if there are other non-fainted party members
-      if (this.hasSwapTargets()) {
-        this.state = "FORCE_SWAP";
-        events.push({
-          type: "force_swap",
-          message: "Choose a monster to send out!",
-        });
-        debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
-        debugBridge.emit("combat_action", { action, events });
-        return events;
-      }
-      this.state = "END";
-      this.outcome = "lose";
+      debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+      debugBridge.emit("combat_action", { action, events });
+      return events;
+    }
+    this.state = "END";
+    this.outcome = "lose";
+    debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
+    debugBridge.emit("combat_action", { action, events });
+    return events;
+  }
+
+  private handleEnemyFaint(events: CombatEvent[], action: PlayerAction): CombatEvent[] {
+    events.push({
+      type: "faint",
+      message: `${this.enemy.name} fainted!`,
+    });
+    events.push(...this.awardXp());
+
+    const nextEnemy = this.enemyParty.find((m) => m !== this.enemy && !m.fainted);
+    if (nextEnemy) {
+      this.enemy = nextEnemy;
+      events.push({
+        type: "swap_in",
+        message: this.trainerName
+          ? `${this.trainerName} sent out ${nextEnemy.name}!`
+          : `A new ${nextEnemy.name} appeared!`,
+      });
+      this.state = "DECISION";
       debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
       debugBridge.emit("combat_action", { action, events });
       return events;
     }
 
-    this.state = "DECISION";
+    this.state = "END";
+    this.outcome = "win";
     debugBridge.emit("combat_state", { from: "ACTION", to: this.state });
     debugBridge.emit("combat_action", { action, events });
     return events;
@@ -416,32 +430,62 @@ export class CombatMachine {
     isPlayer: boolean,
     tech?: TechniqueDef,
   ): CombatEvent[] {
-    const events: CombatEvent[] = [];
     const technique = tech ?? attacker.techniques[0];
-    const label = isPlayer ? "player_attack" : "enemy_attack";
+    const events: CombatEvent[] = [];
 
-    events.push({
-      type: label,
-      message: `${attacker.name} uses ${technique.name}!`,
-    });
-
-    if (!rollAccuracy(technique.accuracy)) {
-      events.push({ type: "miss", message: "It missed!" });
+    // Sleep / other action-gating statuses: skip the attack entirely.
+    const gating = gatesAction(attacker);
+    if (gating) {
+      const def = STATUSES[gating.slug];
+      events.push({
+        type: "status_gated",
+        message: `${attacker.name} is ${def.displayName.toLowerCase()}!`,
+      });
       return events;
     }
 
-    const { damage, effectiveness } = calculateDamage(attacker, technique, defender);
-    defender.currentHp = Math.max(0, defender.currentHp - damage);
-    events.push({
-      type: "damage",
-      message: `${defender.name} took ${damage} damage!`,
-    });
-
-    const effectivenessMessage = describeEffectiveness(effectiveness);
-    if (effectivenessMessage) {
-      events.push({ type: "effectiveness", message: effectivenessMessage });
+    const label = isPlayer ? "player_attack" : "enemy_attack";
+    const executorEvents = executeTechnique(attacker, defender, technique, isPlayer);
+    for (const ev of executorEvents) {
+      events.push(mapExecutorEvent(ev, label));
     }
-
     return events;
+  }
+
+  /**
+   * End-of-turn pass: tick every active status on both monsters, decrement
+   * durations, and emit events.
+   */
+  private tickEndOfTurn(): CombatEvent[] {
+    const events: CombatEvent[] = [];
+    for (const monster of [this.player, this.enemy]) {
+      const statusEvents = tickStatuses(monster);
+      for (const se of statusEvents) {
+        events.push({ type: se.type, message: se.message });
+      }
+    }
+    return events;
+  }
+}
+
+function mapExecutorEvent(
+  ev: ExecutorEvent,
+  attackLabel: "player_attack" | "enemy_attack",
+): CombatEvent {
+  switch (ev.type) {
+    case "attack_use":
+      return { type: attackLabel, message: ev.message };
+    case "miss":
+      return { type: "miss", message: ev.message };
+    case "damage":
+      return { type: "damage", message: ev.message };
+    case "effectiveness":
+      return { type: "effectiveness", message: ev.message };
+    case "status_apply":
+      return { type: "status_apply", message: ev.message };
+    case "status_resist":
+      return { type: "status_apply", message: ev.message };
+    case "heal":
+      return { type: "heal", message: ev.message };
   }
 }

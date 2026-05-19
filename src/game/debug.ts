@@ -3,6 +3,7 @@ import type { PerseusProblem } from "./data/problems";
 import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
+import { debugFlags } from "./combat/techniqueExecutor";
 import { getInventoryItems, addItem } from "./item/inventory";
 import { markSeen, markCaught } from "./model/monsterRegistry";
 
@@ -275,6 +276,14 @@ export class DebugBridge {
       return handler.debugWalkStep(dir);
     }
     throw new Error("walkStep not supported by current scene");
+  }
+
+  /**
+   * Force technique status-apply rolls to succeed (or restore normal rolling).
+   * Used by QA to deterministically demo statuses.
+   */
+  setForceStatusApply(on: boolean): void {
+    debugFlags.forceStatusApply = on;
   }
 
   /** Trigger a wild combat encounter immediately. */

@@ -2,6 +2,7 @@ import { Monster } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
 import { MONSTERS } from "../data/monsters";
 import { effectivenessMultiplier } from "./elements";
+import { meleeMultiplier } from "./statusHandler";
 
 /** Cumulative XP required to reach a given level. Uses medium-fast cubic curve. */
 export function xpForLevel(level: number): number {
@@ -18,18 +19,25 @@ export interface DamageResult {
   effectiveness: number;
 }
 
+/**
+ * Compute the damage done by an attack of `power` (from the technique's
+ * `damage` effect) using `technique.range` to pick attacker/defender stats.
+ * Burn halves melee output (modeled as a status multiplier).
+ */
 export function calculateDamage(
   attacker: Monster,
   technique: TechniqueDef,
   defender: Monster,
+  power: number,
 ): DamageResult {
   const defenderDef = MONSTERS[defender.slug];
   const effectiveness = effectivenessMultiplier(technique.element, defenderDef.types);
   const offenseStat = technique.range === "melee" ? attacker.melee : attacker.ranged;
   const defenseStat = technique.range === "melee" ? defender.armor : defender.dodge;
-  const base = ((7 + attacker.level) * offenseStat * technique.power) / defenseStat;
+  const offenseMultiplier = technique.range === "melee" ? meleeMultiplier(attacker) : 1;
+  const base = ((7 + attacker.level) * offenseStat * power) / defenseStat;
   return {
-    damage: Math.floor(base * effectiveness),
+    damage: Math.floor(base * effectiveness * offenseMultiplier),
     effectiveness,
   };
 }
