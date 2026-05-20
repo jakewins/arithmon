@@ -68,6 +68,7 @@ class PathfindToCharAction implements EventAction {
       ctx.walkGrid,
       ctx.npcs,
       this.slug,
+      ctx.directionalGrid,
     );
 
     if (this.waypoints.length === 0) {

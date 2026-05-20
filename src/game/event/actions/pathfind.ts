@@ -93,6 +93,7 @@ class PathfindAction implements EventAction {
       ctx.walkGrid,
       ctx.npcs,
       this.isPlayer ? "__player__" : this.slug,
+      ctx.directionalGrid,
     );
 
     if (this.waypoints.length === 0) {

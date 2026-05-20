@@ -1,5 +1,6 @@
 import type { GameSession } from "../session";
 import type PF from "pathfinding";
+import type { DirectionalGrid } from "./pathfinding";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -46,6 +47,12 @@ export interface EventContext {
   collisionBodies?: Phaser.Physics.Arcade.StaticGroup;
   /** Walkability grid for A* pathfinding (built from collision layer). */
   walkGrid?: PF.Grid;
+  /**
+   * Per-tile directional restrictions (door / fence / stair tiles). When
+   * provided to `findPath`, these tiles are re-opened in the working grid
+   * and the resulting path is validated against enter_from / exit_from.
+   */
+  directionalGrid?: DirectionalGrid;
   /** Debug override: when set, the choice action selects this index and confirms. */
   debugChoiceOverride?: number;
   /** Merge additional events into the running engine (used by load_yaml). */

@@ -613,6 +613,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       this.walkGrid,
       this.npcs,
       "__player__",
+      this.directionalGrid,
     );
 
     if (waypoints.length === 0) {
@@ -854,6 +855,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       controls: this.controlsState,
       collisionBodies: this.collisionBodies,
       walkGrid: this.walkGrid,
+      directionalGrid: this.directionalGrid,
       debugChoiceOverride: this.pendingChoiceOverride,
       addEvents: (events) => this.eventEngine.mergeEvents(events),
     };
@@ -1090,6 +1092,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       controls: this.controlsState,
       collisionBodies: this.collisionBodies,
       walkGrid: this.walkGrid,
+      directionalGrid: this.directionalGrid,
       addEvents: (events) => this.eventEngine.mergeEvents(events),
     };
   }

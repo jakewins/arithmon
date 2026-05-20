@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { buildGrid, findPath, type CollisionRect } from "../game/event/pathfinding";
+import {
+  buildGrid,
+  findPath,
+  type CollisionRect,
+  type DirectionalGrid,
+} from "../game/event/pathfinding";
 import type { NpcState } from "../game/event/types";
 
 const TILE_SIZE = 16;
@@ -111,5 +116,65 @@ describe("findPath", () => {
       [1, 0],
       [2, 0],
     ]);
+  });
+
+  /*
+   * Directional ("doormat") tile handling — regression cover for STORY-0207.
+   *
+   * Doors / stairs / fences are marked unwalkable in the base grid because
+   * free-roam movement enforces enter_from / exit_from via isDirectionBlocked
+   * rather than via the A* grid. Scripted `pathfind player,...` actions
+   * (e.g. the kick-out in spyder_omnichannel1) need to land on those tiles
+   * when the approach matches, matching upstream Tuxemon's direction-aware
+   * pathfinder. findPath does that by re-opening directional tiles in its
+   * working grid clone, then validating each transition.
+   */
+  describe("directional-grid handling", () => {
+    it("walks onto a doormat tile when approach matches enter_from", () => {
+      // 3x3 grid; door at (1,2) is enter_from=up only, marked unwalkable in
+      // the base grid (mirrors what OverworldScene does for directional tiles).
+      const grid = buildGrid([], 3, 3, TILE_SIZE);
+      grid.setWalkableAt(1, 2, false);
+      const dirGrid: DirectionalGrid = new Map([
+        ["1,2", { enter_from: ["up"], exit_from: ["up"] }],
+      ]);
+      const npcs = new Map<string, NpcState>();
+
+      const path = findPath({ x: 1, y: 1 }, { x: 1, y: 2 }, grid, npcs, "p", dirGrid);
+      expect(path).toEqual([[1, 2]]);
+    });
+
+    it("returns no path when approach direction is blocked by enter_from", () => {
+      // Door at (1,2) only allows entry from above; trying to reach it from
+      // the side should fail even though the tile is geometrically adjacent.
+      const grid = buildGrid([], 3, 3, TILE_SIZE);
+      // Force the only available approach to come from the left so A* can't
+      // route around to the top.
+      grid.setWalkableAt(1, 1, false);
+      grid.setWalkableAt(1, 2, false);
+      const dirGrid: DirectionalGrid = new Map([
+        ["1,2", { enter_from: ["up"], exit_from: ["up"] }],
+      ]);
+      const npcs = new Map<string, NpcState>();
+
+      const path = findPath({ x: 0, y: 2 }, { x: 1, y: 2 }, grid, npcs, "p", dirGrid);
+      expect(path).toEqual([]);
+    });
+
+    it("leaves non-directional paths unaffected", () => {
+      // Without a directionalGrid the function behaves exactly as before:
+      // unwalkable tiles stay unwalkable.
+      const grid = buildGrid([], 3, 3, TILE_SIZE);
+      grid.setWalkableAt(1, 1, false);
+      const npcs = new Map<string, NpcState>();
+
+      const path = findPath({ x: 0, y: 0 }, { x: 2, y: 2 }, grid, npcs, "p");
+      expect(path.length).toBeGreaterThan(0);
+      expect(path[path.length - 1]).toEqual([2, 2]);
+      // Must not include the blocked tile.
+      for (const [x, y] of path) {
+        expect(x === 1 && y === 1).toBe(false);
+      }
+    });
   });
 });
