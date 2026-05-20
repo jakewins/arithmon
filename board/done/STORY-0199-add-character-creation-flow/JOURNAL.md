@@ -83,3 +83,50 @@ See `todos/done/01-port-player-sprite-pngs.md` for the fix steps.
 - Pre-commit gates: `npm run format:check`, `npm run lint`,
   `npx tsc --noEmit`, `npm test` (440/440) all pass.
 - Moved `todos/open/01-port-player-sprite-pngs.md` → `todos/done/`.
+
+## 2026-05-20 — Reviewer findings (re-review, approved)
+
+### Validated
+
+- All six player template PNGs in `public/assets/sprites/`
+  (`adventurer`, `adventurerblack`, `brownheroine_brown`, `enbyasian`,
+  `heroine`, `penguin`) are `cmp`-clean against
+  `upstream/mods/tuxemon/sprites/` and have six distinct md5s.
+- Each PNG's IHDR confirms 48×128 dimensions per
+  `[[feedback_npc_qa_dimension_check]]`.
+- `qa/character-creation-test.ts` now asserts
+  `state.player.texture === spec.template` against the live
+  `this.player.texture.key` exposed by `OverworldScene.getDebugState`.
+- `qa/character-creation-test.ts` runs both branches (`male-white` →
+  `adventurer`, `female-black` → `brownheroine_brown`) — both pass.
+  Final-frame screenshots
+  (`qa/screenshots/character-creation-{male-white,female-black}-final.png`)
+  are visibly distinct: male-white renders a male with blue cap +
+  orange shirt; female-black renders a brown-haired female in a blue
+  dress. md5s of the two final PNGs differ.
+- Curated QA suite re-run: `qa/smoke.ts`, `qa/title-screen-test.ts`,
+  `qa/bedroom-intro-test.ts` (both skip + cinematic paths),
+  `qa/shop-purchase-test.ts` — all pass against the port-8082 dev
+  server.
+- Pre-commit gates: `npm run format:check`, `npm run lint`,
+  `npx tsc --noEmit`, `npm test` (440/440) all pass.
+- `OverworldScene.getDebugState()` `player.texture` addition is a
+  one-line extension of the existing per-scene debug state object —
+  consistent with the convention used elsewhere in `src/game/debug.ts`.
+
+### Note (non-blocking)
+
+- The QA assertion technically doesn't catch the *exact* original
+  regression: each PNG is loaded under its own Phaser texture key
+  (`this.load.spritesheet(template, ...)`), so `player.texture.key`
+  equals the template slug regardless of underlying PNG bytes. The
+  assertion does catch a wrong-template-binding on the player sprite
+  (a related but distinct failure mode), and the underlying PNG fix
+  is the load-bearing change. If we want true byte-level regression
+  protection, a future story could add a small unit test that
+  `md5sum`s `public/assets/sprites/<template>.png` against a fixture
+  — out of scope here.
+
+### Verdict
+
+Approve — moving to `board/done/`.
