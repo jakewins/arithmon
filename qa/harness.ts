@@ -20,6 +20,12 @@ export interface SetupGameOptions {
   monsters?: { slug: string; level: number }[];
   items?: { slug: string; count: number }[];
   money?: number;
+  /** Intro-phase: scoop dante-talk gate (default "yes"; null to clear). */
+  dantefirst?: string | null;
+  /** Intro-phase: paper_town bin tutorial gate (default "yes"; null to clear). */
+  dantebin?: string | null;
+  /** Intro-phase: first-fight resolution gate (default "no"; null to clear). */
+  firstfightend?: string | null;
   /**
    * Override / extend default intro-skip variables. Use `null` to explicitly
    * unset a default (e.g. `intro_scoop: null` to drive the scoop cutscene
@@ -48,6 +54,7 @@ interface DebugBridgeAPI {
   interact(): Promise<void>;
   walkTo(x: number, y: number, facing?: string): Promise<void>;
   walkStep(dir: "up" | "down" | "left" | "right"): Promise<{ tileX: number; tileY: number }>;
+  face(dir: "up" | "down" | "left" | "right"): Promise<void>;
   selectChoice(index: number): Promise<void>;
   typeAnswer(text: string): Promise<void>;
   submitAnswer(): Promise<void>;
@@ -60,6 +67,7 @@ interface DebugBridgeAPI {
     enemyLevel?: number,
     environment?: string,
   ): Promise<void>;
+  setEnemyHp(hp: number): void;
   submitCombatAction(action: unknown): { type: string; message: string }[];
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;
@@ -305,18 +313,18 @@ export async function spawnNpc(
 
 /** Run a real pathfind_to_char action for a previously-spawned NPC. */
 export async function pathfindNpcTo(page: Page, slug: string, target: string): Promise<void> {
-  await page.evaluate(
-    ({ slug, target }) => window.A!.pathfindNpcTo(slug, target),
-    { slug, target },
-  );
+  await page.evaluate(({ slug, target }) => window.A!.pathfindNpcTo(slug, target), {
+    slug,
+    target,
+  });
 }
 
 /** Face an already-spawned NPC in a direction via the real char_face action. */
 export async function faceNpc(page: Page, slug: string, direction: Direction): Promise<void> {
-  await page.evaluate(
-    ({ slug, direction }) => window.A!.faceNpc(slug, direction),
-    { slug, direction },
-  );
+  await page.evaluate(({ slug, direction }) => window.A!.faceNpc(slug, direction), {
+    slug,
+    direction,
+  });
 }
 
 /** Despawn an NPC previously created via spawnNpc. Resolves to true if removed. */

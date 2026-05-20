@@ -23,8 +23,13 @@ The game has a debug bridge at `window.A` (see `src/game/debug.ts`). QA scripts 
 ```ts
 import { launchGame, setupGame, walkTo, screenshot } from "./harness";
 const { page, close } = await launchGame();
-await setupGame(page, { map: "spyder_paper_town", tileX: 10, tileY: 12 });
-// Game is now ready — player has a starter monster, is on the target map.
+await setupGame(page); // defaults: spyder_paper_town (20,11), party=[budaye L5]
+// Or override anything you need:
+//   await setupGame(page, { map: "spyder_paper_scoop", tileX: 4, tileY: 8, monsters: [] });
+//   await setupGame(page, { dantefirst: null, dantebin: null }); // re-run My-First-Mon
+// Game is now ready — player is post-intro: starter picked, Billie beaten,
+// free to roam paper_town. See SetupGameOptions in src/game/debug.ts for the
+// full set of intro-phase flags.
 ```
 
 Throwaway QA scripts (one-off exploration during a story, debugging aids, etc.) go in `qa/local/`, which is gitignored. Only the small curated suite at the top of `qa/` is checked in; do not add new files there unless you intend them to live forever.

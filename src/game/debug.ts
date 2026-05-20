@@ -84,19 +84,26 @@ function isDebugCommandHandler(scene: unknown): scene is DebugCommandHandler {
  * Options for `setupGame()` — skips the intro sequence and puts the game in a
  * ready-to-play state. Future agents: feel free to add generally useful setup
  * fields here (e.g. money, variables, skillStates) as needs arise.
+ *
+ * The defaults reflect the **complete post-intro state** after STORY-0195
+ * through STORY-0202: the player has picked a starter from the bins, beaten
+ * Billie, and is free to roam paper_town. Override any of the phase flags
+ * (`dantefirst`, `dantebin`, `firstfightend`, etc.) via the top-level fields
+ * below, or unset them entirely via `variables: { foo: null }` for QA that
+ * wants to drive a specific cutscene from scratch.
  */
 export interface SetupGameOptions {
-  /** Map to teleport to (default: "spyder_cotton_town"). */
+  /** Map to teleport to (default: "spyder_paper_town"). */
   map?: string;
-  /** Spawn tile X (default: 20). */
+  /** Spawn tile X (default: 20). Chosen for the post-intro town centre. */
   tileX?: number;
-  /** Spawn tile Y (default: 19). */
+  /** Spawn tile Y (default: 11). Free-roam tile north of the mart. */
   tileY?: number;
-  /** Campaign choice (default: "spyder_campaign"). */
+  /** Campaign choice — written to `scenario_choice` (default: "spyder_campaign"). */
   scenario?: string;
-  /** Gender choice (default: "gender_male"). */
+  /** Gender choice — written to `gender_choice` (default: "gender_male"). */
   gender?: string;
-  /** Race/appearance choice (default: "white_male"). */
+  /** Race/appearance choice — written to `race_choice` (default: "white_male"). */
   race?: string;
   /** Monsters to add to party (default: [{ slug: "budaye", level: 5 }]). */
   monsters?: { slug: string; level: number }[];
@@ -104,10 +111,21 @@ export interface SetupGameOptions {
   items?: { slug: string; count: number }[];
   /** Starting gold (default: 500). */
   money?: number;
+
+  // --- Intro-phase flags. Each maps to a single game variable; the defaults
+  // model the post-fight "free to roam" state. Set to `null` to unset for
+  // cutscene QA (or override with a specific value).
+
+  /** Whether the player has talked to Dante in the scoop (default: "yes"). */
+  dantefirst?: string | null;
+  /** Whether the My First Mon bin tutorial has fired (default: "yes"). */
+  dantebin?: string | null;
+  /** Whether the first fight cutscene is finished (default: "no"). */
+  firstfightend?: string | null;
+
   /**
-   * Override / extend the default intro-skip game variables. Use `null` as a
-   * value to explicitly unset a default key (e.g. `intro_scoop: null` to leave
-   * the scoop cutscene un-skipped for QA that wants to drive it from scratch).
+   * Override / extend any other game variables. Use `null` as a value to
+   * explicitly unset a default key.
    */
   variables?: Record<string, string | null>;
 }
@@ -548,14 +566,23 @@ export class DebugBridge {
    * Skip the intro sequence and put the game in a ready-to-play state.
    * Sets all character-creation variables, configures the player session,
    * adds starter monsters, and teleports to the target map.
+   *
+   * The default variable values reflect the **complete post-intro state** —
+   * character created, bedroom + scoop cutscenes done, Dante's bin tutorial
+   * completed, Billie defeated. QA scripts that need to drive a specific
+   * cutscene from scratch should null out the gating variables individually
+   * via `opts.variables` (e.g. `{ intro_scoop: null }`).
+   *
+   * Only variables actually consulted by event YAMLs or runtime code are set
+   * here — the audit lives in STORY-0198's `setupGame()` cleanup.
    */
   async setupGame(opts: SetupGameOptions = {}): Promise<void> {
     const scenario = opts.scenario ?? "spyder_campaign";
     const gender = opts.gender ?? "gender_male";
     const race = opts.race ?? "white_male";
-    const map = opts.map ?? "spyder_cotton_town";
+    const map = opts.map ?? "spyder_paper_town";
     const tileX = opts.tileX ?? 20;
-    const tileY = opts.tileY ?? 19;
+    const tileY = opts.tileY ?? 11;
     const monsters = opts.monsters ?? [{ slug: "budaye", level: 5 }];
 
     // If the title screen is up (the default boot state on launchGame),
@@ -563,30 +590,59 @@ export class DebugBridge {
     // No extra setup is needed here — existing QA scripts that only call
     // setupGame() continue to work unchanged.
 
-    // 1. Set intro-skip variables (character creation + campaign intro).
-    //    Mirrors the state the upstream YAML campaign would leave at the end
-    //    of the bedroom + paper_scoop cutscenes. Each gate is set so the
-    //    corresponding event won't re-fire when QA teleports past it.
+    // The scoop cutscene records the player's intro choice into both
+    // `myintrochoice` (raw choice) and `billie_choice` (sibling mirror used by
+    // First Fight to populate Billie's party). Default to the first monster.
+    const monsterSlug = monsters[0]?.slug ?? "budaye";
+
+    // Set every gating variable touched by the intro flow. Each is gated on
+    // by at least one event in `public/assets/events/`, or read by runtime
+    // code. The values mirror what the upstream YAML campaign leaves behind
+    // after a full intro playthrough.
     const vars = session.player.gameVariables;
+
+    // start_tuxemon.yaml choices — keep the same scene-rendered values that
+    // the cutscene would have written.
     vars.set("scenario_choice", scenario);
     vars.set("gender_choice", gender);
     vars.set("race_choice", race);
+
+    // spyder_bedroom.yaml gates (Intro Question / No Intro / Spyder Intro).
     vars.set("question_intro", "yes");
     vars.set("spyder_intro", "yes");
+
+    // spyder_paper_scoop.yaml gates (Intro Storekeeper / Choice / Continue
+    // Storekeeper / Billie <slug>). choice_phase=progress is the terminal
+    // state set by Confirm Monster Yes; intro_scoop=done is set on exit.
     vars.set("intro_scoop", "done");
-    vars.set("got_starter", "yes");
-    vars.set("firstfightdue", "no");
-    // The scoop cutscene's choice flow leaves these set. Without them, QA
-    // teleporting straight to the post-intro scoop would trip the Confirm
-    // Monster / Choice events (which check `choice_phase`). Default to budaye
-    // if no monster list is provided; otherwise mirror the first monster.
-    const monsterSlug = monsters[0]?.slug ?? "budaye";
     vars.set("choice_phase", "progress");
     vars.set("myintrochoice", monsterSlug);
     vars.set("billie_choice", monsterSlug);
-    // 1b. Apply caller-supplied variable overrides. A `null` value unsets the
-    // key entirely — useful for "fresh game" scoop QA that wants the cutscene
-    // gates clear.
+
+    // spyder_paper_manor.yaml gates Manor entry on `got_starter:yes`.
+    vars.set("got_starter", "yes");
+
+    // spyder_paper_town.yaml first-fight gates. firstfightdue/firstfightend
+    // are both consumed and cleared by the fight, so default to "off". The
+    // per-bin <slug>chosen markers are intentionally NOT set — the player
+    // already has a party (so the Chosen - X events are gated off by
+    // party_size>0), and leaving them unset preserves history.
+    vars.set("firstfightdue", "no");
+
+    // Top-level phase flags — apply individually so callers can null them.
+    const setPhaseVar = (key: string, value: string, override: string | null | undefined) => {
+      if (override === null) {
+        vars.remove(key);
+      } else {
+        vars.set(key, override ?? value);
+      }
+    };
+    setPhaseVar("dantefirst", "yes", opts.dantefirst);
+    setPhaseVar("dantebin", "yes", opts.dantebin);
+    setPhaseVar("firstfightend", "no", opts.firstfightend);
+
+    // Apply caller-supplied variable overrides last so they win over every
+    // default. A `null` value unsets the key entirely.
     if (opts.variables) {
       for (const [k, v] of Object.entries(opts.variables)) {
         if (v === null) {
@@ -597,29 +653,26 @@ export class DebugBridge {
       }
     }
 
-    // 2. Set player appearance from race choice
+    // Set player appearance from race choice (mirrors start_tuxemon's
+    // set_template / set_char_attribute pair).
     const raceInfo = RACE_DEFAULTS[race];
     if (raceInfo) {
       session.player.template = raceInfo.template;
       session.player.gender = raceInfo.gender;
     }
 
-    // 3. Add starter monsters
     for (const m of monsters) {
       this.addMonster(m.slug, m.level);
     }
 
-    // 4. Set starting gold
     session.player.money = opts.money ?? 500;
 
-    // 5. Add any requested items
     if (opts.items) {
       for (const item of opts.items) {
         this.addItem(item.slug, item.count);
       }
     }
 
-    // 6. Teleport to target map
     await this.teleport(map, tileX, tileY);
   }
 
