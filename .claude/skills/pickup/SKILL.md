@@ -9,6 +9,10 @@ allowed-tools: Bash Read Agent
 
 Hand off a story to an implementing sub-agent. Work happens in the **`trees/implementor`** worktree (branch `impl-wip`, port 8081) so the reviewer can run in parallel in `trees/reviewer`. The skill syncs the worktree, records a "claim" commit, fast-forwards `main`, dispatches the agent, and fast-forwards `main` again when the agent is done.
 
+## Shared state model
+
+`/pickup` and `/review` run in parallel and coordinate via the `main` branch in the root checkout (`/home/jake/Code/toy/arithmon`). **`main` is the single source of truth for board state.** Each run **resets its worktree to `main` on entry** (step 2 below) and **fast-forwards `main` from its wip branch on exit** (steps 4 and 7) — that's the entire hand-off protocol. Between runs the *other* role's worktree (`trees/reviewer` on `review-wip`) stays on its own old head and will look stale; don't read board state from it. Always invoke this skill from the root checkout, not from inside a worktree — the skill's `git -C trees/implementor ...` commands assume that.
+
 ## Args
 
 One argument, required:
