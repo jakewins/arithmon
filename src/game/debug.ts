@@ -104,6 +104,12 @@ export interface SetupGameOptions {
   items?: { slug: string; count: number }[];
   /** Starting gold (default: 500). */
   money?: number;
+  /**
+   * Override / extend the default intro-skip game variables. Use `null` as a
+   * value to explicitly unset a default key (e.g. `intro_scoop: null` to leave
+   * the scoop cutscene un-skipped for QA that wants to drive it from scratch).
+   */
+  variables?: Record<string, string | null>;
 }
 
 /**
@@ -557,7 +563,10 @@ export class DebugBridge {
     // No extra setup is needed here — existing QA scripts that only call
     // setupGame() continue to work unchanged.
 
-    // 1. Set intro-skip variables (character creation + campaign intro)
+    // 1. Set intro-skip variables (character creation + campaign intro).
+    //    Mirrors the state the upstream YAML campaign would leave at the end
+    //    of the bedroom + paper_scoop cutscenes. Each gate is set so the
+    //    corresponding event won't re-fire when QA teleports past it.
     const vars = session.player.gameVariables;
     vars.set("scenario_choice", scenario);
     vars.set("gender_choice", gender);
@@ -567,6 +576,26 @@ export class DebugBridge {
     vars.set("intro_scoop", "done");
     vars.set("got_starter", "yes");
     vars.set("firstfightdue", "no");
+    // The scoop cutscene's choice flow leaves these set. Without them, QA
+    // teleporting straight to the post-intro scoop would trip the Confirm
+    // Monster / Choice events (which check `choice_phase`). Default to budaye
+    // if no monster list is provided; otherwise mirror the first monster.
+    const monsterSlug = monsters[0]?.slug ?? "budaye";
+    vars.set("choice_phase", "progress");
+    vars.set("myintrochoice", monsterSlug);
+    vars.set("billie_choice", monsterSlug);
+    // 1b. Apply caller-supplied variable overrides. A `null` value unsets the
+    // key entirely — useful for "fresh game" scoop QA that wants the cutscene
+    // gates clear.
+    if (opts.variables) {
+      for (const [k, v] of Object.entries(opts.variables)) {
+        if (v === null) {
+          vars.remove(k);
+        } else {
+          vars.set(k, v);
+        }
+      }
+    }
 
     // 2. Set player appearance from race choice
     const raceInfo = RACE_DEFAULTS[race];

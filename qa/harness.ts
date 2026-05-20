@@ -20,6 +20,12 @@ export interface SetupGameOptions {
   monsters?: { slug: string; level: number }[];
   items?: { slug: string; count: number }[];
   money?: number;
+  /**
+   * Override / extend default intro-skip variables. Use `null` to explicitly
+   * unset a default (e.g. `intro_scoop: null` to drive the scoop cutscene
+   * from scratch).
+   */
+  variables?: Record<string, string | null>;
 }
 
 /** Problem data passed to showProblem. Matches PerseusProblem from src/game/data/problems.ts */
@@ -37,6 +43,7 @@ export interface PerseusProblem {
 interface DebugBridgeAPI {
   ready: boolean;
   events: readonly DebugEvent[];
+  clearEvents(): void;
   getState(): Record<string, unknown>;
   interact(): Promise<void>;
   walkTo(x: number, y: number, facing?: string): Promise<void>;

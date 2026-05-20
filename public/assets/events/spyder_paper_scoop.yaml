@@ -1,201 +1,4 @@
 events:
-  # --- NPC creation ---
-
-  Create NPCs:
-    actions:
-    - create_npc spyder_shopkeeper,7,6
-    - char_face spyder_shopkeeper,left
-    - create_npc spyder_dante,7,7
-    - char_face spyder_dante,left
-    - create_npc spyder_papermart_miles,4,7
-    - char_face spyder_papermart_miles,right
-    - create_npc spyder_papermart_shirley,4,6
-    - char_face spyder_papermart_shirley,right
-    - create_npc spyder_route2_roddick,4,5
-    - char_face spyder_route2_roddick,right
-    - create_npc spyder_papermart_harith,4,4
-    - char_face spyder_papermart_harith,right
-    - create_npc spyder_billie,4,3
-    - char_face spyder_billie,right
-    conditions:
-    - not char_exists spyder_shopkeeper
-    - not char_exists spyder_dante
-    - not char_exists spyder_papermart_miles
-    - not char_exists spyder_papermart_shirley
-    - not char_exists spyder_route2_roddick
-    - not char_exists spyder_papermart_harith
-    - not char_exists spyder_billie
-    - not variable_set intro_scoop:done
-    type: event
-
-  Create Shopkeeper:
-    actions:
-    - create_npc spyder_shopkeeper,7,4
-    - char_face spyder_shopkeeper,down
-    conditions:
-    - not char_exists spyder_shopkeeper
-    - is variable_set intro_scoop:done
-    type: event
-
-  Create Dante:
-    actions:
-    - create_npc spyder_dante,11,6,down
-    conditions:
-    - not char_exists spyder_dante
-    - is variable_set intro_scoop:done
-    type: event
-
-  # --- Shop interaction ---
-
-  Talk Shopkeeper:
-    behav: talk spyder_shopkeeper
-    actions:
-    - dialog Welcome to Paper Scoop! What can I get you?
-    - open_shop spyder_paper_scoop
-
-  # --- Music ---
-
-  Route Music:
-    actions:
-    - play_music music_cathedral_theme
-    conditions:
-    - not music_playing music_cathedral_theme
-    type: event
-
-  # --- Intro sequence ---
-
-  Intro Storekeeper:
-    actions:
-    - change_bg
-    - lock_controls
-    - translated_dialog spyder_intro_shopkeeper1
-    - pathfind spyder_dante,5,3
-    - char_face spyder_dante,left
-    - translated_dialog spyder_intro_shopkeeper2
-    - pathfind spyder_dante,5,4
-    - char_face spyder_dante,left
-    - wait 0.5
-    - pathfind spyder_dante,5,5
-    - char_face spyder_dante,left
-    - wait 0.5
-    - pathfind spyder_dante,5,6
-    - char_face spyder_dante,left
-    - wait 0.5
-    - pathfind spyder_dante,5,7
-    - char_face spyder_dante,left
-    - wait 0.5
-    - pathfind spyder_dante,5,8
-    - char_face spyder_dante,left
-    - translated_dialog spyder_intro_shopkeeper2
-    - char_face spyder_dante,right
-    - pathfind spyder_dante,7,7
-    - char_face spyder_dante,left
-    - translated_dialog spyder_intro_question_name
-    - rename_player player,random
-    - dialog Welcome, $player! Now, choose your first monster!
-    - set_variable choice_phase:yes
-    - unlock_controls
-    conditions:
-    - not variable_set intro_scoop:done
-    - not variable_set choice_phase
-    type: event
-
-  # --- Display cases ---
-
-  CapDev 1st:
-    actions:
-    - open_journal dollfin
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    x: 8
-    y: 8
-
-  CapDev 2nd:
-    actions:
-    - open_journal memnomnom
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    x: 9
-    y: 8
-
-  CapDev 3rd:
-    actions:
-    - open_journal budaye
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    x: 10
-    y: 8
-
-  CapDev 4th:
-    actions:
-    - open_journal grintot
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    x: 11
-    y: 8
-
-  CapDev 5th:
-    actions:
-    - open_journal ignibus
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    x: 12
-    y: 8
-
-  # --- Potions shelf ---
-
-  Potions:
-    actions:
-    - translated_dialog potions_in_shop
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    width: 5
-    x: 8
-    y: 5
-
-  # --- Monster choice flow ---
-  # Note: single-frame variable-setting events must appear before blocking
-  # events (dialog/choice) so they run first when multiple conditions match.
-
-  Confirm Monster No:
-    actions:
-    - set_variable choice_phase:yes
-    - set_variable areyousure:none
-    conditions:
-    - is variable_set areyousure:no
-    type: event
-
-  Confirm Monster Yes:
-    actions:
-    - set_variable choice_phase:progress
-    conditions:
-    - is variable_set areyousure:yes
-    type: event
-
-  Choice:
-    actions:
-    - choice_monster budaye:dollfin:grintot:ignibus:memnomnom,myintrochoice
-    - set_variable choice_phase:next
-    conditions:
-    - is variable_set choice_phase:yes
-    type: event
-
-  Confirm Monster:
-    actions:
-    - dialog Are you sure about your choice?
-    - translated_dialog_choice yes:no,areyousure
-    conditions:
-    - is variable_set choice_phase:next
-    type: event
-
-  # --- Billie choice routing ---
-
   Billie Budaye:
     actions:
     - set_variable billie_choice:budaye
@@ -203,7 +6,6 @@ events:
     - is variable_set myintrochoice:budaye
     - not variable_set billie_choice
     type: event
-
   Billie Dollfin:
     actions:
     - set_variable billie_choice:dollfin
@@ -211,7 +13,6 @@ events:
     - is variable_set myintrochoice:dollfin
     - not variable_set billie_choice
     type: event
-
   Billie Grintot:
     actions:
     - set_variable billie_choice:grintot
@@ -219,7 +20,6 @@ events:
     - is variable_set myintrochoice:grintot
     - not variable_set billie_choice
     type: event
-
   Billie Ignibus:
     actions:
     - set_variable billie_choice:ignibus
@@ -227,7 +27,6 @@ events:
     - is variable_set myintrochoice:ignibus
     - not variable_set billie_choice
     type: event
-
   Billie Memnomnom:
     actions:
     - set_variable billie_choice:memnomnom
@@ -235,61 +34,77 @@ events:
     - is variable_set myintrochoice:memnomnom
     - not variable_set billie_choice
     type: event
-
-  # --- Add chosen monster to party ---
-
-  Add Budaye:
+  CapDev 1st:
     actions:
-    - add_monster budaye,5
-    - set_variable got_starter:yes
+    - open_journal dollfin
     conditions:
-    - is variable_set myintrochoice:budaye
-    - is variable_set choice_phase:progress
-    - not variable_set got_starter:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
     type: event
-
-  Add Dollfin:
+    x: 8
+    y: 8
+  CapDev 2nd:
     actions:
-    - add_monster dollfin,5
-    - set_variable got_starter:yes
+    - open_journal memnomnom
     conditions:
-    - is variable_set myintrochoice:dollfin
-    - is variable_set choice_phase:progress
-    - not variable_set got_starter:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
     type: event
-
-  Add Grintot:
+    x: 9
+    y: 8
+  CapDev 3rd:
     actions:
-    - add_monster grintot,5
-    - set_variable got_starter:yes
+    - open_journal budaye
     conditions:
-    - is variable_set myintrochoice:grintot
-    - is variable_set choice_phase:progress
-    - not variable_set got_starter:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
     type: event
-
-  Add Ignibus:
+    x: 10
+    y: 8
+  CapDev 4th:
     actions:
-    - add_monster ignibus,5
-    - set_variable got_starter:yes
+    - open_journal grintot
     conditions:
-    - is variable_set myintrochoice:ignibus
-    - is variable_set choice_phase:progress
-    - not variable_set got_starter:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
     type: event
-
-  Add Memnomnom:
+    x: 11
+    y: 8
+  CapDev 5th:
     actions:
-    - add_monster memnomnom,5
-    - set_variable got_starter:yes
+    - open_journal ignibus
     conditions:
-    - is variable_set myintrochoice:memnomnom
-    - is variable_set choice_phase:progress
-    - not variable_set got_starter:yes
+    - is char_facing_tile player
+    - is button_pressed INTERACT
     type: event
-
-  # --- Exit choreography ---
-
+    x: 12
+    y: 8
+  Choice:
+    actions:
+    - choice_monster budaye:dollfin:grintot:ignibus:memnomnom,myintrochoice
+    - set_variable choice_phase:next
+    conditions:
+    - is variable_set choice_phase:yes
+    type: event
+  Confirm Monster:
+    actions:
+    - translated_dialog_choice yes:no,areyousure
+    conditions:
+    - is variable_set choice_phase:next
+    type: event
+  Confirm Monster No:
+    actions:
+    - set_variable choice_phase:yes
+    - set_variable areyousure:none
+    conditions:
+    - is variable_set areyousure:no
+    type: event
+  Confirm Monster Yes:
+    actions:
+    - set_variable choice_phase:progress
+    conditions:
+    - is variable_set areyousure:yes
+    type: event
   Continue Storekeeper:
     actions:
     - lock_controls
@@ -352,9 +167,47 @@ events:
     - not variable_set intro_scoop:done
     - is variable_set choice_phase:progress
     type: event
-
-  # --- Post-intro events ---
-
+  Create Dante:
+    actions:
+    - create_npc spyder_dante,11,6,wander
+    conditions:
+    - not char_exists spyder_dante
+    - is variable_set intro_scoop:done
+    type: event
+  Create NPCs:
+    actions:
+    - create_npc spyder_shopkeeper,7,6
+    - char_face spyder_shopkeeper,left
+    - create_npc spyder_dante,7,7
+    - char_face spyder_dante,left
+    - create_npc spyder_papermart_miles,4,7
+    - char_face spyder_papermart_miles,right
+    - create_npc spyder_papermart_shirley,4,6
+    - char_face spyder_papermart_shirley,right
+    - create_npc spyder_route2_roddick,4,5
+    - char_face spyder_route2_roddick,right
+    - create_npc spyder_papermart_harith,4,4
+    - char_face spyder_papermart_harith,right
+    - create_npc spyder_billie,4,3
+    - char_face spyder_billie,right
+    conditions:
+    - not char_exists spyder_shopkeeper
+    - not char_exists spyder_dante
+    - not char_exists spyder_papermart_miles
+    - not char_exists spyder_papermart_shirley
+    - not char_exists spyder_route2_roddick
+    - not char_exists spyder_papermart_harith
+    - not char_exists spyder_billie
+    - not variable_set intro_scoop:done
+    type: event
+  Create Shopkeeper:
+    actions:
+    - create_npc spyder_shopkeeper,0,4
+    - char_face spyder_shopkeeper,up
+    conditions:
+    - not char_exists spyder_shopkeeper
+    - is variable_set intro_scoop:done
+    type: event
   Go Outside:
     actions:
     - transition_teleport player,spyder_paper_town.tmx,19,13,0.3
@@ -362,64 +215,105 @@ events:
     - is char_at player
     - is char_facing player,down
     - is variable_set intro_scoop:done
+    type: event
     x: 6
     y: 10
-
-  Talk Dante No Party:
+  Intro Storekeeper:
     actions:
-    - char_face spyder_dante,player
-    - translated_dialog spyder_papertown_danteresting
-    - set_variable dantefirst:yes
+    - change_bg
+    - lock_controls
+    - translated_dialog spyder_intro_shopkeeper1
+    - pathfind spyder_dante,5,3
+    - char_face spyder_dante,left
+    - translated_dialog spyder_intro_shopkeeper2
+    - pathfind spyder_dante,5,4
+    - char_face spyder_dante,left
+    - wait 0.5
+    - pathfind spyder_dante,5,5
+    - char_face spyder_dante,left
+    - wait 0.5
+    - pathfind spyder_dante,5,6
+    - char_face spyder_dante,left
+    - wait 0.5
+    - pathfind spyder_dante,5,7
+    - char_face spyder_dante,left
+    - wait 0.5
+    - pathfind spyder_dante,5,8
+    - char_face spyder_dante,left
+    - translated_dialog spyder_intro_shopkeeper2
+    - char_face spyder_dante,right
+    - pathfind spyder_dante,7,7
+    - char_face spyder_dante,left
+    - translated_dialog spyder_intro_question_name
+    - rename_player player,random
+    - set_variable choice_phase:yes
+    - unlock_controls
     conditions:
-    - is variable_set intro_scoop:done
-    - not party_size player,greater_than,0
-    - is char_facing_char player,spyder_dante
+    - not variable_set intro_scoop:done
+    - not variable_set choice_phase
+    type: event
+  Potions:
+    actions:
+    - translated_dialog potions_in_shop
+    conditions:
+    - is char_facing_tile player
     - is button_pressed INTERACT
     type: event
-
-  Talk Dante Party:
+    width: 5
+    x: 8
+    y: 5
+  Route Music:
     actions:
-    - char_face spyder_dante,player
-    - translated_dialog spyder_papertown_danteworking
+    - play_music music_cathedral_theme
     conditions:
-    - is variable_set intro_scoop:done
-    - is party_size player,greater_than,0
-    - is char_facing_char player,spyder_dante
-    - is button_pressed INTERACT
+    - not music_playing music_cathedral_theme
     type: event
-
-  Talk Dante Player Returns:
-    actions:
-    - char_face spyder_dante,player
-    - translated_dialog spyder_papertown_dante1
-    - set_variable spokendante:yes
-    conditions:
-    - is battle_outcome player,won,spyder_route3_zoolander
-    - not variable_set spokendante:yes
-    - is char_facing_char player,spyder_dante
-    - is button_pressed INTERACT
-    type: event
-
   Talk Dante Daycare:
     actions:
-    - char_face spyder_dante,player
     - translated_dialog spyder_papertown_dante2
+    behav:
+    - talk spyder_dante
     conditions:
     - is battle_outcome player,won,spyder_route3_zoolander
     - not variable_set omnichannelradioannounce:yes
     - is variable_set spokendante:yes
-    - is char_facing_char player,spyder_dante
-    - is button_pressed INTERACT
     type: event
-
+  Talk Dante No Party:
+    actions:
+    - translated_dialog spyder_papertown_danteresting
+    - set_variable dantefirst:yes
+    behav:
+    - talk spyder_dante
+    conditions:
+    - is variable_set intro_scoop:done
+    - not party_size player,greater_than,0
+    type: event
   Talk Dante Omnichannel:
     actions:
-    - char_face spyder_dante,player
     - translated_dialog spyder_papertown_dante3
+    behav:
+    - talk spyder_dante
     conditions:
     - is battle_outcome player,won,spyder_route3_zoolander
     - is variable_set omnichannelradioannounce:yes
     - is variable_set spokendante:yes
-    - is char_facing_char player,spyder_dante
-    - is button_pressed INTERACT
+    type: event
+  Talk Dante Party:
+    actions:
+    - translated_dialog spyder_papertown_danteworking
+    behav:
+    - talk spyder_dante
+    conditions:
+    - is variable_set intro_scoop:done
+    - is party_size player,greater_than,0
+    type: event
+  Talk Dante Player Returns:
+    actions:
+    - translated_dialog spyder_papertown_dante1
+    - set_variable spokendante:yes
+    behav:
+    - talk spyder_dante
+    conditions:
+    - is battle_outcome player,won,spyder_route3_zoolander
+    - not variable_set spokendante:yes
     type: event

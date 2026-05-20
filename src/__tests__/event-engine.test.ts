@@ -255,6 +255,89 @@ events:
     expect(greeter.actions[0]).toEqual({ type: "char_face", args: ["greeter", "player"] });
     expect(greeter.actions[1]).toEqual({ type: "dialog", args: ["Hello there!"] });
   });
+
+  it.each([
+    ["create_npc spyder_dante,11,6,down", "down"],
+    ["create_npc spyder_dante,11,6,wander", "down"], // behavior keyword → default facing
+    ["create_npc spyder_dante,11,6,up", "up"],
+    ["create_npc spyder_dante,11,6", "down"], // no 4th arg → default
+  ])(
+    "create_npc tolerates behavior keywords in slot 4 (%s)",
+    async (line: string, expectedFacing: string) => {
+      // Construct via the action registry — Tuxemon's upstream allows the 4th
+      // argument to be either a Direction or a behavior keyword (wander, path,
+      // none). The action must not crash on unknown values; behaviors should
+      // fall back to facing down.
+      const { createAction } = await import("../game/event/registry");
+      await import("../game/event/actions/createNpc");
+      // Parse the same way the loader does: split on space then comma.
+      const args = line
+        .slice("create_npc ".length)
+        .split(",")
+        .map((s) => s.trim());
+      const action = createAction("create_npc", args) as unknown as { facing: string };
+      expect(action.facing).toBe(expectedFacing);
+    },
+  );
+
+  it("loads the verbatim spyder_paper_scoop.yaml", async () => {
+    // The scoop YAML is a literal copy of upstream — keep it parsing cleanly so
+    // anyone refactoring the loader notices a regression here before QA does.
+    const fs = await import("fs");
+    const path = await import("path");
+    const text = fs.readFileSync(
+      path.resolve(__dirname, "../../public/assets/events/spyder_paper_scoop.yaml"),
+      "utf-8",
+    );
+    const events = loadEventsFromYaml(text);
+    // 27 events: 5 Billie sibling routers + 5 CapDev + Choice + Confirm trio +
+    // Continue/Intro Storekeeper + Create NPCs/Shopkeeper/Dante + Go Outside +
+    // Potions + Route Music + 5 Talk Dante variants.
+    expect(events).toHaveLength(27);
+
+    // The Create Dante post-intro event uses `wander` in the 4th slot — verify
+    // the loader passes it through as an arg (createNpc tolerates it at runtime).
+    const createDante = events.find((e) => e.name === "Create Dante");
+    expect(createDante).toBeDefined();
+    expect(createDante!.actions[0]).toEqual({
+      type: "create_npc",
+      args: ["spyder_dante", "11", "6", "wander"],
+    });
+
+    // Talk Dante No Party uses `behav: [talk spyder_dante]` — confirm the list
+    // form expands to the char_facing_char + button_pressed condition pair.
+    const talkDante = events.find((e) => e.name === "Talk Dante No Party");
+    expect(talkDante).toBeDefined();
+    const condTypes = talkDante!.conditions.map((c) => c.type);
+    expect(condTypes).toContain("char_facing_char");
+    expect(condTypes).toContain("button_pressed");
+    expect(condTypes).toContain("variable_set"); // intro_scoop:done
+    expect(condTypes).toContain("party_size");
+  });
+
+  it("accepts behav as a YAML list (the upstream form)", () => {
+    // Upstream events serialize `behav: [- talk slug]` rather than a bare
+    // string. The loader must accept both shapes.
+    const yaml = `
+events:
+  Talk to Dante:
+    behav:
+      - talk spyder_dante
+    conditions:
+      - is variable_set intro_scoop:done
+    actions:
+      - dialog Hi!
+`;
+    const events = loadEventsFromYaml(yaml);
+    expect(events).toHaveLength(1);
+    expect(events[0].conditions).toEqual([
+      { operator: "is", type: "char_facing_char", args: ["player", "spyder_dante"] },
+      { operator: "is", type: "button_pressed", args: ["INTERACT"] },
+      { operator: "is", type: "variable_set", args: ["intro_scoop:done"] },
+    ]);
+    expect(events[0].actions[0]).toEqual({ type: "char_face", args: ["spyder_dante", "player"] });
+    expect(events[0].actions[1]).toEqual({ type: "dialog", args: ["Hi!"] });
+  });
 });
 
 describe("spyder_bedroom YAML", () => {

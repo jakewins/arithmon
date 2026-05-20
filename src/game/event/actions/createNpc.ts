@@ -11,6 +11,14 @@ const FACING_FRAMES: Record<Direction, number> = {
   up: 10,
 };
 
+/**
+ * Upstream's `create_npc` accepts an optional 4th argument that may be either
+ * a facing direction (down/left/right/up) or a behavior keyword (wander, path,
+ * none, etc.). Behaviors aren't implemented yet — we accept and ignore them so
+ * the action doesn't crash and the NPC defaults to facing down.
+ */
+const KNOWN_DIRECTIONS = new Set<Direction>(["up", "down", "left", "right"]);
+
 class CreateNpcAction implements EventAction {
   type = "create_npc";
   done = false;
@@ -24,7 +32,13 @@ class CreateNpcAction implements EventAction {
     this.slug = args[0];
     this.tileX = parseInt(args[1], 10);
     this.tileY = parseInt(args[2], 10);
-    this.facing = (args[3] as Direction) ?? "down";
+    const fourth = args[3];
+    if (fourth && KNOWN_DIRECTIONS.has(fourth as Direction)) {
+      this.facing = fourth as Direction;
+    } else {
+      // Unknown/behavior keyword (e.g. "wander") — fall back to facing down.
+      this.facing = "down";
+    }
   }
 
   start(ctx: EventContext): void {

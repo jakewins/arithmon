@@ -33,11 +33,13 @@ const KEY_ESC = 27;
 async function main() {
   const { page, close } = await launchGame();
 
-  // Start inside the Paper Scoop, post-intro, with 500 gold
-  await setupGame(page, { map: "spyder_paper_scoop", tileX: 6, tileY: 7, money: 500 });
-
-  // Walk up to face the shopkeeper (at 7,4)
-  await walkTo(page, 7, 5, "up");
+  // Start inside the Cotton Scoop (paper_scoop's shop is event-less post-port —
+  // it's the cutscene yard, not a buyable storefront). Cotton scoop has the
+  // shopkeeper at (2,3) on top of the counter; the player stands at (2,5)
+  // facing up — char_facing_char checks two tiles ahead, so we look past the
+  // counter at (2,4) to interact with the shopkeeper.
+  await setupGame(page, { map: "spyder_cotton_scoop", tileX: 2, tileY: 5, money: 500 });
+  await walkTo(page, 2, 5, "up");
 
   // Interact to trigger the Talk Shopkeeper event (starts dialog)
   await interact(page);
@@ -59,7 +61,7 @@ async function main() {
   // Start waiting for shop_buy event BEFORE pressing the key
   const buyEventPromise = waitForEvent(page, "shop_buy");
 
-  // Buy the first item (Potion at 20g) — press Space to confirm
+  // Buy the first item (Potion at 50g in cotton scoop) — press Space to confirm
   await pressKey(page, KEY_SPACE);
 
   await buyEventPromise;
@@ -70,8 +72,8 @@ async function main() {
   const goldAfter = stateAfter.session.money;
   console.log("Gold after purchase:", goldAfter);
 
-  if (goldAfter !== goldBefore - 20) {
-    throw new Error(`Expected gold to decrease by 20, got ${goldBefore} -> ${goldAfter}`);
+  if (goldAfter !== goldBefore - 50) {
+    throw new Error(`Expected gold to decrease by 50, got ${goldBefore} -> ${goldAfter}`);
   }
 
   const potion = stateAfter.session.inventory.find((i) => i.slug === "potion");

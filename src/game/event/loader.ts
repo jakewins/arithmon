@@ -4,7 +4,8 @@ import type { EventDef, ConditionDef, ActionDef } from "./types";
 interface YamlEvent {
   conditions?: string[];
   actions?: string[];
-  behav?: string;
+  /** Behavior shorthand — either a single string or a list. Upstream uses lists. */
+  behav?: string | string[];
   x?: number;
   y?: number;
   width?: number;
@@ -66,16 +67,18 @@ export function loadEventsFromYaml(yamlText: string): EventDef[] {
     const actions = (entry.actions ?? []).map(parseActionString);
 
     const explicitConditions = (entry.conditions ?? []).map(parseConditionString);
-    let conditions: ConditionDef[];
-    let finalActions: ActionDef[];
-    if (entry.behav) {
-      const expanded = expandBehavior(entry.behav, actions);
-      conditions = [...expanded.conditions, ...explicitConditions];
+    let finalActions: ActionDef[] = actions;
+    // Upstream supports `behav` as either a string or a list of behavior
+    // entries (e.g. `[talk spyder_dante]`). Normalize and expand each entry —
+    // multiple entries simply layer their conditions/actions in sequence.
+    const behavList = entry.behav ? (Array.isArray(entry.behav) ? entry.behav : [entry.behav]) : [];
+    const expandedConditions: ConditionDef[] = [];
+    for (const b of behavList) {
+      const expanded = expandBehavior(b, finalActions);
+      expandedConditions.push(...expanded.conditions);
       finalActions = expanded.actions;
-    } else {
-      conditions = explicitConditions;
-      finalActions = actions;
     }
+    const conditions: ConditionDef[] = [...expandedConditions, ...explicitConditions];
     events.push({
       id: nextId++,
       name,
