@@ -3,6 +3,7 @@ import { Monster } from "./model/Monster";
 import { createInventory, addItem } from "./item/inventory";
 import { createMonsterRegistry, markSeen, markCaught } from "./model/monsterRegistry";
 import { TECHNIQUES } from "./data/techniques";
+import { skillTree } from "./skilltree";
 
 const SAVE_KEY = "arithmon_save";
 
@@ -141,6 +142,11 @@ export function clearSave(): void {
     // localStorage may be unavailable; in-memory reset still happens below.
   }
   resetSession();
+  // resetSession() replaces session.skillStates with a fresh {}. The
+  // module-level skillTree singleton already ran register() against the
+  // old object, so we need to re-seed entries against the new one or
+  // getNextProblem() will throw on the first Recharge attempt.
+  skillTree.reseed();
   currentLocation = { mapKey: "starter", tileX: 10, tileY: 7, facing: "down" };
   pendingSavedLocation = null;
 }

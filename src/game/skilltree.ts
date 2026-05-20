@@ -67,6 +67,22 @@ export class SkillTree<Id extends string = SkillNodeId> {
     }
   }
 
+  /**
+   * Re-seed `session.skillStates` with a fresh entry for every registered
+   * node, and reset the encounter counter. Called by `clearSave()` after
+   * `resetSession()` replaces `session.skillStates` with a fresh `{}` — the
+   * existing registrations would otherwise leave the new object empty, and
+   * `getNextProblem()` would throw a TypeError on the first call.
+   */
+  reseed(): void {
+    for (const id of this.nodes.keys()) {
+      this.session.skillStates[id] = { box: 0, lastSeen: 0 };
+    }
+    this.session.skillEncounter = 0;
+    this.activeProblem = null;
+    this.activeProblemNodeId = null;
+  }
+
   /** Returns true if a node is unlocked (all prerequisites at box >= 2). */
   isUnlocked(nodeId: Id): boolean {
     const node = this.nodes.get(nodeId);

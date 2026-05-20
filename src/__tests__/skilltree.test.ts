@@ -168,6 +168,28 @@ describe("SkillTree Leitner progression", () => {
     expect(() => emptyTree.getNextProblem()).toThrow("No unlocked skill nodes available");
   });
 
+  // Regression for STORY-0204: TitleScene's "New Game" runs
+  // clearSave() -> resetSession(), which `Object.assign(session, fresh)`
+  // replaces session.skillStates with a fresh {} — wiping the entries
+  // register() set up at module load. getNextProblem() would then read
+  // an undefined entry and throw TypeError on .lastSeen. The fix re-seeds
+  // states via skillTree.reseed() inside clearSave(); this test exercises
+  // reseed() directly so the unit-test layer also covers the failure mode.
+  it("reseed() restores state entries after session.skillStates is replaced", () => {
+    // Mimic Object.assign(session, fresh) blowing away skillStates while
+    // the existing SkillTree instance keeps its registered nodes.
+    session.skillStates = {};
+    session.skillEncounter = 42;
+
+    // Without reseed(), getNextProblem() crashes with TypeError on
+    // `s.lastSeen`. We assert it instead succeeds after reseed().
+    tree.reseed();
+
+    expect(session.skillStates["A"]).toEqual({ box: 0, lastSeen: 0 });
+    expect(session.skillEncounter).toBe(0);
+    expect(() => tree.getNextProblem()).not.toThrow();
+  });
+
   it("node with multiple prerequisites only unlocks when all are met", () => {
     const nodeB: SkillNode<TestId> = {
       id: "B",
