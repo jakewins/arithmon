@@ -10,47 +10,57 @@ import { canUseItem } from "../item/validation";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { session } from "../session";
 import { markSeen, markCaught } from "../model/monsterRegistry";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
-const BOX_H = 64;
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
+// Bottom action bar — roughly the lower third of the 144 px viewport,
+// matching the upstream combat layout where the prompt/menu area occupies
+// y ≈ 96..144.
+const BOX_H = 48;
 const BOX_Y = HEIGHT - BOX_H;
-const HP_BAR_W = 60;
-const HP_BAR_H = 4;
-const PLAYER_HP_BAR_W = 74;
-const DP_PIP_SIZE = 6;
-const DP_PIP_GAP = 2;
+const HP_BAR_W = 50;
+const HP_BAR_H = 3;
+const PLAYER_HP_BAR_W = 62;
+const DP_PIP_SIZE = 5;
+const DP_PIP_GAP = 1;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
-// Layout: left panel ~60%, right panel ~40%
-const LEFT_W = 192;
+// Layout: left panel ~60%, right panel ~40% of the 256 px width.
+const LEFT_W = 152;
 const RIGHT_W = WIDTH - LEFT_W;
 
-// --- Battle layout (derived from upstream Tuxemon combat_layouts.yaml) ---
-const SPRITE_SCALE = 1.5;
-const PLAYER_ISLAND_SCALE = 1.5;
-const ENEMY_ISLAND_SCALE = 1.1; // smaller for perspective (back island)
+// --- Battle layout (derived from upstream Tuxemon combat_layouts.yaml,
+// which uses the same 256×144 NATIVE_RESOLUTION). The yaml puts the player's
+// monster at home=[0, 62, 96, 70] and the enemy at home=[140, 18, 96, 70]
+// (origin = top-left of an island rect). Our sprites are 1:1 scale; we keep
+// the island/sprite anchors at the centre-bottom of those rects.
+const SPRITE_SCALE = 1.0;
+const PLAYER_ISLAND_SCALE = 1.0;
+const ENEMY_ISLAND_SCALE = 0.8; // smaller for perspective (back island)
 
-// Enemy (upper-right, maps to RIGHT_COMBAT in upstream)
-const ENEMY_ISLAND_X = 244;
-const ENEMY_ISLAND_BOTTOM = 110;
-const ENEMY_SPRITE_X = 244;
-// feet on island surface (~45% up from island bottom)
+// Enemy (upper-right, maps to RIGHT_COMBAT in upstream — home [140, 18, 96, 70]).
+// Island feet at y = 18+70 = 88; centre-x at 140+48 = 188.
+const ENEMY_ISLAND_X = 188;
+const ENEMY_ISLAND_BOTTOM = 78;
+const ENEMY_SPRITE_X = 188;
+// Feet on island surface (~45% up from island bottom)
 const ENEMY_SPRITE_Y = ENEMY_ISLAND_BOTTOM - Math.round(57 * ENEMY_ISLAND_SCALE * 0.45);
-const ENEMY_HUD_X = 5;
-const ENEMY_HUD_Y = 5;
+const ENEMY_HUD_X = 4;
+const ENEMY_HUD_Y = 2;
 
-// Player (lower-left, maps to LEFT_COMBAT in upstream)
-const PLAYER_ISLAND_X = 68;
+// Player (lower-left, maps to LEFT_COMBAT — home [0, 62, 96, 70]).
+// Centre-x at 48; feet just above the action bar.
+const PLAYER_ISLAND_X = 48;
 const PLAYER_ISLAND_BOTTOM = BOX_Y;
-const PLAYER_SPRITE_X = 68;
+const PLAYER_SPRITE_X = 48;
 const PLAYER_SPRITE_Y = PLAYER_ISLAND_BOTTOM - Math.round(57 * PLAYER_ISLAND_SCALE * 0.45);
-const PLAYER_HUD_X = 210;
-const PLAYER_HUD_Y = 117;
-const PAD_X = 8;
-const PAD_Y = 6;
-const OPTION_H = 14;
+const PLAYER_HUD_X = 145;
+const PLAYER_HUD_Y = 45;
+const PAD_X = 4;
+const PAD_Y = 3;
+const OPTION_H = 10;
 const TEXT_COLOR = "#1a1a1a";
 const DISABLED_COLOR = "#999999";
 const CURSOR_CHAR = "\u25b6";
@@ -529,7 +539,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
     // Message text in left panel
     this.messageText = this.add.text(PAD_X, BOX_Y + PAD_Y, "", {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
       wordWrap: { width: LEFT_W - PAD_X * 2 },
     });
@@ -541,35 +551,35 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     const infoX = PAD_X;
     const infoY = BOX_Y + PAD_Y;
     this.infoCardName = this.add.text(infoX, infoY, "", {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.infoCardName.setDepth(101);
-    this.infoCardAccuracy = this.add.text(infoX, infoY + OPTION_H + 2, "", {
-      fontSize: "9px",
+    this.infoCardAccuracy = this.add.text(infoX, infoY + OPTION_H + 1, "", {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.infoCardAccuracy.setDepth(101);
     // Range pill: 34x9 upstream art. Sits where the plain "RANGED" text used
     // to live (left column, middle row), origin top-left to align with text.
-    this.infoCardRangeIcon = this.add.image(infoX, infoY + OPTION_H + 2 + 10, "");
+    this.infoCardRangeIcon = this.add.image(infoX, infoY + OPTION_H + 1 + 9, "");
     this.infoCardRangeIcon.setOrigin(0, 0);
     this.infoCardRangeIcon.setDepth(101);
     // Power line is now to the right of the range pill (matches upstream
     // screenshot: "RANGED  Power 15").
-    this.infoCardPower = this.add.text(infoX + 40, infoY + OPTION_H + 2 + 10, "", {
-      fontSize: "9px",
+    this.infoCardPower = this.add.text(infoX + 38, infoY + OPTION_H + 1 + 9, "", {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.infoCardPower.setDepth(101);
-    this.infoCardCost = this.add.text(infoX, infoY + OPTION_H + 2 + 22, "", {
-      fontSize: "9px",
+    this.infoCardCost = this.add.text(infoX, infoY + OPTION_H + 1 + 19, "", {
+      fontSize: "8px",
       color: "#7733aa",
     });
     this.infoCardCost.setDepth(101);
     // Element badge: 12x12 leaf/flame/etc. Right edge of the info-card panel,
     // vertically aligned with the Cost/Recharge line per upstream screenshot.
-    this.infoCardElementIcon = this.add.image(LEFT_W - PAD_X - 12, infoY + OPTION_H + 2 + 20, "");
+    this.infoCardElementIcon = this.add.image(LEFT_W - PAD_X - 12, infoY + OPTION_H + 1 + 17, "");
     this.infoCardElementIcon.setOrigin(0, 0);
     this.infoCardElementIcon.setDepth(101);
     for (const t of [
@@ -588,10 +598,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     const colW = (RIGHT_W - PAD_X * 2) / MAIN_COLS;
     for (let r = 0; r < MAIN_ROWS; r++) {
       for (let c = 0; c < MAIN_COLS; c++) {
-        const x = LEFT_W + PAD_X + 12 + c * colW;
-        const y = BOX_Y + PAD_Y + r * (OPTION_H + 6);
+        const x = LEFT_W + PAD_X + 8 + c * colW;
+        const y = BOX_Y + PAD_Y + r * (OPTION_H + 2);
         const label = this.add.text(x, y, MAIN_MENU_ITEMS[r][c], {
-          fontSize: "11px",
+          fontSize: "8px",
           color: TEXT_COLOR,
         });
         label.setDepth(101);
@@ -599,7 +609,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       }
     }
     this.mainCursor = this.add.text(0, 0, CURSOR_CHAR, {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.mainCursor.setDepth(101);
@@ -607,35 +617,35 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // --- Technique submenu labels (vertical list in right panel) ---
     // Created dynamically, but we pre-create the cursor
     this.techCursor = this.add.text(0, 0, CURSOR_CHAR, {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.techCursor.setDepth(101);
 
     // Recharge label (shown at bottom of technique list)
     this.techRechargeLabel = this.add.text(0, 0, "", {
-      fontSize: "11px",
+      fontSize: "8px",
       color: "#bb66ff",
     });
     this.techRechargeLabel.setDepth(101);
 
     // Party cursor
     this.partyCursor = this.add.text(0, 0, CURSOR_CHAR, {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.partyCursor.setDepth(101);
 
     // Item cursor
     this.itemCursor = this.add.text(0, 0, CURSOR_CHAR, {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.itemCursor.setDepth(101);
 
     // Item target cursor
     this.itemTargetCursor = this.add.text(0, 0, CURSOR_CHAR, {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.itemTargetCursor.setDepth(101);
@@ -989,8 +999,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       if (len > widestChars) widestChars = len;
     }
     if (showRecharge) widestChars = Math.max(widestChars, "\u26a1 RECHARGE".length);
-    // ~6.5px per glyph at 11px monospace, plus cursor gutter + padding.
-    const contentW = Math.ceil(widestChars * 6.5) + 12 + PAD_X * 2;
+    // ~4.5 px per glyph at 8 px monospace, plus cursor gutter + padding.
+    const contentW = Math.ceil(widestChars * 4.5) + 10 + PAD_X * 2;
     const popupW = Math.max(RIGHT_W, Math.min(contentW, WIDTH - 4));
     const popupH = lineCount * OPTION_H + PAD_Y * 2;
     const popupRight = WIDTH;
@@ -1001,7 +1011,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.techPopupBorder.setPosition(popupX + popupW / 2, popupY + popupH / 2);
 
     // Origin for technique row content (after popup's left padding + cursor gutter)
-    this.techPopupOriginX = popupX + PAD_X + 12;
+    this.techPopupOriginX = popupX + PAD_X + 8;
     this.techPopupOriginY = popupY + PAD_Y;
 
     for (let i = 0; i < techniques.length; i++) {
@@ -1012,7 +1022,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.techPopupOriginY + i * OPTION_H,
         `${tech.name} ${tech.dpCost}DP`,
         {
-          fontSize: "11px",
+          fontSize: "8px",
           color: canAfford ? TEXT_COLOR : DISABLED_COLOR,
         },
       );
@@ -1088,7 +1098,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private updateTechCursorPosition() {
     // Cursor sits in the popup's left gutter, aligned to the selected row.
     this.techCursor.setPosition(
-      this.techPopupOriginX - 12,
+      this.techPopupOriginX - 8,
       this.techPopupOriginY + this.techSelected * OPTION_H,
     );
   }
@@ -1178,9 +1188,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private buildPartyLabels() {
     this.clearPartyLabels();
     const party = this.machine.party;
-    const baseX = LEFT_W + PAD_X + 12;
+    const baseX = LEFT_W + PAD_X + 8;
     const baseY = BOX_Y + PAD_Y;
-    const PARTY_ROW_H = 10;
+    const PARTY_ROW_H = 8;
 
     for (let i = 0; i < party.length; i++) {
       const mon = party[i];
@@ -1192,7 +1202,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
       const color = isFainted || isActive ? DISABLED_COLOR : TEXT_COLOR;
       const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, {
-        fontSize: "9px",
+        fontSize: "8px",
         color,
       });
       label.setDepth(101);
@@ -1233,7 +1243,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private updatePartyCursorPosition() {
     const baseX = LEFT_W + PAD_X;
     const baseY = BOX_Y + PAD_Y;
-    const PARTY_ROW_H = 10;
+    const PARTY_ROW_H = 8;
     this.partyCursor.setPosition(baseX, baseY + this.partySelected * PARTY_ROW_H);
   }
 
@@ -1263,7 +1273,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
   private buildItemLabels() {
     this.clearItemLabels();
-    const baseX = LEFT_W + PAD_X + 12;
+    const baseX = LEFT_W + PAD_X + 8;
     const baseY = BOX_Y + PAD_Y;
 
     for (let i = 0; i < this.combatItems.length; i++) {
@@ -1272,7 +1282,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         baseX,
         baseY + i * OPTION_H,
         `${entry.item.name} x${entry.count}`,
-        { fontSize: "11px", color: TEXT_COLOR },
+        { fontSize: "8px", color: TEXT_COLOR },
       );
       label.setDepth(101);
       this.itemLabels.push(label);
@@ -1346,9 +1356,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private buildItemTargetLabels() {
     this.clearItemTargetLabels();
     const party = this.machine.party;
-    const baseX = LEFT_W + PAD_X + 12;
+    const baseX = LEFT_W + PAD_X + 8;
     const baseY = BOX_Y + PAD_Y;
-    const PARTY_ROW_H = 10;
+    const PARTY_ROW_H = 8;
 
     for (let i = 0; i < party.length; i++) {
       const mon = party[i];
@@ -1358,7 +1368,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
       const color = valid ? TEXT_COLOR : DISABLED_COLOR;
       const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, {
-        fontSize: "9px",
+        fontSize: "8px",
         color,
       });
       label.setDepth(101);
@@ -1400,7 +1410,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private updateItemTargetCursorPosition() {
     const baseX = LEFT_W + PAD_X;
     const baseY = BOX_Y + PAD_Y;
-    const PARTY_ROW_H = 10;
+    const PARTY_ROW_H = 8;
     this.itemTargetCursor.setPosition(baseX, baseY + this.itemTargetSelected * PARTY_ROW_H);
   }
 

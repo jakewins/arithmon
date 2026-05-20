@@ -1,8 +1,9 @@
 import type { Scene } from "phaser";
 import type { Monster } from "../model/Monster";
 
-const HP_BAR_W = 60;
-const HP_BAR_H = 4;
+// Slot widget sized for the 256×144 viewport: ~70 px wide total (bar + label).
+const HP_BAR_W = 50;
+const HP_BAR_H = 3;
 const TEXT_COLOR = "#1a1a1a";
 const DISABLED_COLOR = "#999999";
 
@@ -42,23 +43,23 @@ export function createMonsterSlot(
     : `${monster.name} Lv${monster.level}`;
 
   const nameLabel = scene.add.text(0, 0, nameText, {
-    fontSize: "10px",
+    fontSize: "8px",
     color,
   });
   container.add(nameLabel);
 
   // HP bar background
-  const hpBarBg = scene.add.rectangle(HP_BAR_W / 2, 14, HP_BAR_W, HP_BAR_H, 0x333333);
+  const hpBarBg = scene.add.rectangle(HP_BAR_W / 2, 11, HP_BAR_W, HP_BAR_H, 0x333333);
   container.add(hpBarBg);
 
   // HP bar foreground
   const ratio = monster.currentHp / monster.maxHp;
-  const hpBarFg = scene.add.rectangle(HP_BAR_W / 2, 14, HP_BAR_W, HP_BAR_H, hpColor(ratio));
+  const hpBarFg = scene.add.rectangle(HP_BAR_W / 2, 11, HP_BAR_W, HP_BAR_H, hpColor(ratio));
   hpBarFg.setScale(Math.max(0, ratio), 1);
   container.add(hpBarFg);
 
   // HP text
-  const hpLabel = scene.add.text(HP_BAR_W + 4, 10, `${monster.currentHp}/${monster.maxHp}`, {
+  const hpLabel = scene.add.text(HP_BAR_W + 3, 8, `${monster.currentHp}/${monster.maxHp}`, {
     fontSize: "8px",
     color,
   });
@@ -78,7 +79,7 @@ export function createEmptySlot(
   container.setDepth(depth);
 
   const label = scene.add.text(0, 4, "- - - - -", {
-    fontSize: "10px",
+    fontSize: "8px",
     color: DISABLED_COLOR,
   });
   container.add(label);

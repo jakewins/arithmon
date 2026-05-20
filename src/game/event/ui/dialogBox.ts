@@ -1,12 +1,16 @@
-const WIDTH = 320;
-const HEIGHT = 240;
-const BOX_H = 64;
+import { SCREEN_W, SCREEN_H } from "../../screen";
+
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
+// Bottom dialog box: ~⅓ of the 144 px viewport. Sized to fit four lines of
+// 8 px text (plus 2 px line spacing) — same MAX_LINES_PER_PAGE as upstream.
+const BOX_H = 48;
 const BOX_Y = HEIGHT - BOX_H;
-const PAD_X = 12;
-const PAD_Y = 6;
+const PAD_X = 8;
+const PAD_Y = 4;
 const TEXT_WIDTH = WIDTH - PAD_X * 2;
 const CHARS_PER_SEC = 30;
-const FONT_SIZE = 11;
+const FONT_SIZE = 8;
 const LINE_SPACING = 2;
 const LINE_H = FONT_SIZE + LINE_SPACING;
 const MAX_LINES_PER_PAGE = Math.floor((BOX_H - PAD_Y * 2) / LINE_H);
@@ -95,9 +99,9 @@ export class DialogBox {
     this.pages = paginate(wrappedText, MAX_LINES_PER_PAGE);
     this.pageIndex = 0;
 
-    // Prompt indicator
-    this.prompt = scene.add.text(WIDTH - 20, BOX_Y + BOX_H - 16, "\u25bc", {
-      fontSize: "11px",
+    // Prompt indicator (down-arrow in bottom-right of the box)
+    this.prompt = scene.add.text(WIDTH - 12, BOX_Y + BOX_H - 10, "\u25bc", {
+      fontSize: "8px",
       color: this.promptColor,
     });
     this.prompt.setDepth(101).setScrollFactor(0);

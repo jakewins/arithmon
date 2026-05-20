@@ -1,17 +1,19 @@
 import { Scene } from "phaser";
 import { debugBridge } from "../debug";
 import { session } from "../session";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
-const PANEL_W = 100;
+// Narrow side panel anchored to the right edge — five options of ~12 px each.
+const PANEL_W = 70;
 const PANEL_X = WIDTH - PANEL_W;
-const PAD_X = 12;
-const PAD_Y = 10;
-const OPTION_H = 16;
+const PAD_X = 6;
+const PAD_Y = 6;
+const OPTION_H = 12;
 const TEXT_COLOR = "#1a1a1a";
 const CURSOR_CHAR = "\u25b6";
 
@@ -110,11 +112,11 @@ export class PauseMenuScene extends Scene {
     // Option labels
     for (let i = 0; i < this.visibleOptions.length; i++) {
       const label = this.add.text(
-        PANEL_X + PAD_X + 14,
+        PANEL_X + PAD_X + 8,
         PAD_Y + PAD_Y + i * OPTION_H,
         this.visibleOptions[i].label,
         {
-          fontSize: "11px",
+          fontSize: "8px",
           color: TEXT_COLOR,
         },
       );
@@ -124,7 +126,7 @@ export class PauseMenuScene extends Scene {
 
     // Cursor
     this.cursor = this.add.text(PANEL_X + PAD_X, PAD_Y + PAD_Y, CURSOR_CHAR, {
-      fontSize: "11px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.cursor.setDepth(202);
@@ -187,11 +189,11 @@ export class PauseMenuScene extends Scene {
       this.stubTimer = null;
     }
 
-    this.stubMessage = this.add.text(PANEL_X + PAD_X, HEIGHT - 30, message, {
-      fontSize: "11px",
+    this.stubMessage = this.add.text(4, HEIGHT - 18, message, {
+      fontSize: "8px",
       color: TEXT_COLOR,
       backgroundColor: "#ffffff",
-      padding: { x: 4, y: 2 },
+      padding: { x: 3, y: 2 },
     });
     this.stubMessage.setDepth(203);
 

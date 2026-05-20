@@ -1,4 +1,5 @@
-import { AUTO, Game } from "phaser";
+import { AUTO, Core, Game, Scale } from "phaser";
+import { SCREEN_W, SCREEN_H } from "./screen";
 import { TitleScene } from "./scenes/TitleScene";
 import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
@@ -19,13 +20,17 @@ loadGame();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
-  width: 320,
-  height: 240,
+  width: SCREEN_W,
+  height: SCREEN_H,
   parent: "game-container",
   backgroundColor: "#1a1a2e",
   pixelArt: true,
   scale: {
-    zoom: 3,
+    // We size the canvas ourselves on every parent resize (see
+    // snapToIntegerZoom below) so pixel art lands on whole pixels.
+    // FIT would otherwise pick a fractional zoom (e.g. 7.5× at 1920×1080).
+    mode: Scale.NONE,
+    autoCenter: Scale.CENTER_BOTH,
   },
   physics: {
     default: "arcade",
@@ -49,8 +54,36 @@ const config: Phaser.Types.Core.GameConfig = {
   ],
 };
 
+/**
+ * Snap the canvas to the largest integer zoom that still fits the viewport.
+ * Phaser's FIT mode would pick a fractional scale (e.g. 7.5× at 1920×1080),
+ * which causes shimmering on tile-edge pixels and inconsistent text rendering
+ * for pixel-art games. We compute floor(min(W/256, H/144)) and call setZoom
+ * directly; a small letterbox at the edges is the acceptable cost.
+ */
+function snapToIntegerZoom(game: Game) {
+  const baseW = game.scale.gameSize.width;
+  const baseH = game.scale.gameSize.height;
+  // Use the actual window — Phaser's parent measurements lag behind window
+  // resize on some browsers, and a "parent" element only exists if the host
+  // page provided one.
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+  const fitZoom = Math.min(winW / baseW, winH / baseH);
+  const intZoom = Math.max(1, Math.floor(fitZoom));
+  if (game.scale.zoom !== intZoom) {
+    game.scale.setZoom(intZoom);
+  }
+}
+
 const StartGame = (parent: string) => {
   const game = new Game({ ...config, parent });
+
+  const apply = () => snapToIntegerZoom(game);
+  game.events.once(Core.Events.READY, () => {
+    apply();
+    window.addEventListener("resize", apply);
+  });
 
   if (import.meta.env.DEV) {
     window.A = debugBridge;

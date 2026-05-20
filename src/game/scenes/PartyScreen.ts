@@ -10,9 +10,10 @@ import {
   type PortraitObjects,
   type StatsObjects,
 } from "../ui/monsterPortrait";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
@@ -31,17 +32,17 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
-// Layout
-const LEFT_W = 140;
+// Layout — left panel = monster detail, right panel = party slots.
+const LEFT_W = 112;
 const RIGHT_W = WIDTH - LEFT_W;
-const SLOT_H = 28;
-const SLOT_START_Y = 16;
-const SLOT_X = LEFT_W + 12;
-const PAD_X = 8;
+const SLOT_H = 22;
+const SLOT_START_Y = 8;
+const SLOT_X = LEFT_W + 10;
+const PAD_X = 4;
 
 // Context menu
-const CTX_MENU_W = 70;
-const CTX_OPTION_H = 14;
+const CTX_MENU_W = 56;
+const CTX_OPTION_H = 10;
 
 type ScreenMode = "browse" | "context" | "move_target" | "summary";
 
@@ -134,7 +135,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     this.slotHighlight = this.add.rectangle(
       LEFT_W + RIGHT_W / 2,
       0,
-      RIGHT_W - 8,
+      RIGHT_W - 4,
       SLOT_H,
       HIGHLIGHT_COLOR,
       HIGHLIGHT_ALPHA,
@@ -142,8 +143,8 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     this.slotHighlight.setDepth(2);
 
     // Slot cursor
-    this.slotCursor = this.add.text(LEFT_W + 4, 0, CURSOR_CHAR, {
-      fontSize: "10px",
+    this.slotCursor = this.add.text(LEFT_W + 2, 0, CURSOR_CHAR, {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.slotCursor.setDepth(10);
@@ -264,7 +265,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
   }
 
   private updateSlotCursor() {
-    const y = SLOT_START_Y + this.slotIndex * SLOT_H + 4;
+    const y = SLOT_START_Y + this.slotIndex * SLOT_H + 2;
     this.slotCursor.setY(y);
     this.slotHighlight.setY(SLOT_START_Y + this.slotIndex * SLOT_H + SLOT_H / 2);
   }
@@ -295,14 +296,15 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
 
     const monster = party[this.slotIndex];
 
-    // Portrait centered in top part of left panel
-    this.portrait = createMonsterPortrait(this, LEFT_W / 2, 50, monster, 5);
+    // Portrait — 64×64 sprite centred in the upper half of the left panel.
+    this.portrait = createMonsterPortrait(this, LEFT_W / 2, 36, monster, 5);
 
-    // Stats below portrait
-    this.statsDisplay = createStatsDisplay(this, PAD_X + 4, 100, monster, 5);
+    // Stats column under the portrait.
+    this.statsDisplay = createStatsDisplay(this, PAD_X + 2, 72, monster, 5);
 
-    // Techniques below stats
-    this.techList = createTechniqueList(this, PAD_X + 4, 175, monster, 5);
+    // Techniques on the right side of the left panel so both columns fit
+    // in the 144 px height.
+    this.techList = createTechniqueList(this, LEFT_W / 2 + 8, 72, monster, 5);
   }
 
   // --- Browse mode ---
@@ -346,7 +348,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     this.ctxContainer.removeAll(true);
 
     // Position context menu next to the selected slot
-    const menuX = LEFT_W + RIGHT_W - CTX_MENU_W - 4;
+    const menuX = LEFT_W + RIGHT_W - CTX_MENU_W - 2;
     const menuY = SLOT_START_Y + this.slotIndex * SLOT_H;
 
     // Background
@@ -366,16 +368,16 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
 
     // Options
     for (let i = 0; i < CONTEXT_OPTIONS.length; i++) {
-      const label = this.add.text(14, 4 + i * CTX_OPTION_H, CONTEXT_OPTIONS[i], {
-        fontSize: "10px",
+      const label = this.add.text(10, 3 + i * CTX_OPTION_H, CONTEXT_OPTIONS[i], {
+        fontSize: "8px",
         color: TEXT_COLOR,
       });
       this.ctxContainer.add(label);
     }
 
     // Cursor
-    const cursor = this.add.text(4, 4, CURSOR_CHAR, {
-      fontSize: "10px",
+    const cursor = this.add.text(3, 3, CURSOR_CHAR, {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     cursor.setName("ctxCursor");
@@ -408,7 +410,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
   private updateCtxCursor() {
     const cursor = this.ctxContainer.getByName("ctxCursor") as Phaser.GameObjects.Text;
     if (cursor) {
-      cursor.setY(4 + this.ctxIndex * CTX_OPTION_H);
+      cursor.setY(3 + this.ctxIndex * CTX_OPTION_H);
     }
   }
 
@@ -454,8 +456,8 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     }
     const party = session.player.monsters;
     const sourceName = party[this.moveSourceIndex]?.name ?? "?";
-    this.moveIndicator = this.add.text(PAD_X, HEIGHT - 14, `Move ${sourceName} where?`, {
-      fontSize: "9px",
+    this.moveIndicator = this.add.text(PAD_X, HEIGHT - 10, `Move ${sourceName} where?`, {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.moveIndicator.setDepth(10);

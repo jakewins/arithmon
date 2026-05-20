@@ -4,9 +4,10 @@ import { ITEMS } from "../data/items";
 import { session } from "../session";
 import { addItem, removeItem, getInventoryItems } from "../item/inventory";
 import { debugBridge, type DebugStateProvider } from "../debug";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 const TEXT_COLOR = "#1a1a1a";
@@ -73,8 +74,8 @@ export class ShopScene extends Scene implements DebugStateProvider {
       HEIGHT / 2,
       BORDER_TEXTURE,
       undefined,
-      WIDTH - 16,
-      HEIGHT - 16,
+      WIDTH - 8,
+      HEIGHT - 8,
       BORDER_SLICE,
       BORDER_SLICE,
       BORDER_SLICE,
@@ -83,33 +84,33 @@ export class ShopScene extends Scene implements DebugStateProvider {
     this.panel.setDepth(1);
 
     // Tab labels
-    const buyTab = this.add.text(24, 16, "BUY", { fontSize: "11px", color: TEXT_COLOR });
+    const buyTab = this.add.text(12, 8, "BUY", { fontSize: "8px", color: TEXT_COLOR });
     buyTab.setDepth(2);
-    const sellTab = this.add.text(70, 16, "SELL", { fontSize: "11px", color: GRAY_COLOR });
+    const sellTab = this.add.text(40, 8, "SELL", { fontSize: "8px", color: GRAY_COLOR });
     sellTab.setDepth(2);
     this.tabLabels = [buyTab, sellTab];
 
     // Gold display
-    this.goldLabel = this.add.text(WIDTH - 24, 16, "", {
-      fontSize: "10px",
+    this.goldLabel = this.add.text(WIDTH - 12, 8, "", {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.goldLabel.setOrigin(1, 0);
     this.goldLabel.setDepth(2);
 
     // Cursor
-    this.cursor = this.add.text(16, 36, CURSOR_CHAR, { fontSize: "10px", color: TEXT_COLOR });
+    this.cursor = this.add.text(8, 22, CURSOR_CHAR, { fontSize: "8px", color: TEXT_COLOR });
     this.cursor.setDepth(2);
 
     // Message area at bottom
-    this.messageLabel = this.add.text(24, HEIGHT - 28, "", {
-      fontSize: "9px",
+    this.messageLabel = this.add.text(12, HEIGHT - 22, "", {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.messageLabel.setDepth(2);
 
     // Hint
-    const hint = this.add.text(WIDTH - 24, HEIGHT - 28, "ESC: Close", {
+    const hint = this.add.text(WIDTH - 12, HEIGHT - 22, "ESC: Close", {
       fontSize: "8px",
       color: GRAY_COLOR,
     });
@@ -195,8 +196,8 @@ export class ShopScene extends Scene implements DebugStateProvider {
     for (const label of this.itemLabels) label.destroy();
     this.itemLabels = [];
 
-    const startY = 36;
-    const lineH = 14;
+    const startY = 22;
+    const lineH = 10;
 
     if (this.tab === "buy") {
       for (let i = 0; i < this.shop.items.length; i++) {
@@ -204,8 +205,8 @@ export class ShopScene extends Scene implements DebugStateProvider {
         const def = ITEMS[entry.slug];
         if (!def) continue;
         const canAfford = session.player.money >= entry.price;
-        const label = this.add.text(28, startY + i * lineH, `${def.name}  ${entry.price}G`, {
-          fontSize: "10px",
+        const label = this.add.text(18, startY + i * lineH, `${def.name}  ${entry.price}G`, {
+          fontSize: "8px",
           color: canAfford ? TEXT_COLOR : GRAY_COLOR,
         });
         label.setDepth(2);
@@ -217,10 +218,10 @@ export class ShopScene extends Scene implements DebugStateProvider {
         const { item, count } = playerItems[i];
         const sellPrice = Math.floor(item.buyPrice * this.shop.sellMultiplier);
         const label = this.add.text(
-          28,
+          18,
           startY + i * lineH,
           `${item.name} x${count}  ${sellPrice}G`,
-          { fontSize: "10px", color: TEXT_COLOR },
+          { fontSize: "8px", color: TEXT_COLOR },
         );
         label.setDepth(2);
         this.itemLabels.push(label);

@@ -4,9 +4,10 @@ import { session } from "../session";
 import { getInventoryItems, removeItem } from "../item/inventory";
 import type { ItemDef, ItemEffect } from "../item/item";
 import type { Monster } from "../model/Monster";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
@@ -24,12 +25,12 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
-// Layout
-const LEFT_W = 170;
+// Layout — split the 256-wide canvas: items list on the left, description on the right.
+const LEFT_W = 136;
 const RIGHT_W = WIDTH - LEFT_W;
-const ITEM_START_Y = 24;
-const ITEM_H = 14;
-const MAX_VISIBLE_ITEMS = 12;
+const ITEM_START_Y = 18;
+const ITEM_H = 10;
+const MAX_VISIBLE_ITEMS = Math.floor((HEIGHT - ITEM_START_Y - 6) / ITEM_H);
 
 type BagMode = "browse" | "target";
 
@@ -113,32 +114,32 @@ export class BagScene extends Scene implements DebugStateProvider {
       .setDepth(1);
 
     // Title
-    this.add.text(8, 6, "BAG", { fontSize: "11px", color: TEXT_COLOR }).setDepth(2);
+    this.add.text(6, 4, "BAG", { fontSize: "8px", color: TEXT_COLOR }).setDepth(2);
 
     // Cursor
-    this.cursor = this.add.text(6, ITEM_START_Y, CURSOR_CHAR, {
-      fontSize: "10px",
+    this.cursor = this.add.text(4, ITEM_START_Y, CURSOR_CHAR, {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.cursor.setDepth(3);
 
     // Description area (right panel)
-    this.descLabel = this.add.text(LEFT_W + 8, 10, "", {
-      fontSize: "9px",
+    this.descLabel = this.add.text(LEFT_W + 6, 6, "", {
+      fontSize: "8px",
       color: TEXT_COLOR,
-      wordWrap: { width: RIGHT_W - 16 },
+      wordWrap: { width: RIGHT_W - 12 },
     });
     this.descLabel.setDepth(2);
 
     // Message area at bottom of right panel
-    this.messageLabel = this.add.text(LEFT_W + 8, HEIGHT - 28, "", {
-      fontSize: "9px",
+    this.messageLabel = this.add.text(LEFT_W + 6, HEIGHT - 22, "", {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     this.messageLabel.setDepth(2);
 
     // Hint
-    this.hintLabel = this.add.text(LEFT_W + 8, HEIGHT - 14, "ESC: Back", {
+    this.hintLabel = this.add.text(LEFT_W + 6, HEIGHT - 12, "ESC: Back", {
       fontSize: "8px",
       color: GRAY_COLOR,
     });
@@ -249,10 +250,10 @@ export class BagScene extends Scene implements DebugStateProvider {
     this.targetContainer.removeAll(true);
 
     const party = session.player.monsters;
-    const menuW = RIGHT_W - 8;
-    const menuH = party.length * 16 + 12;
-    const menuX = LEFT_W + 4;
-    const menuY = 40;
+    const menuW = RIGHT_W - 6;
+    const menuH = party.length * 12 + 10;
+    const menuX = LEFT_W + 3;
+    const menuY = 28;
 
     const bg = this.add.nineslice(
       menuW / 2,
@@ -269,20 +270,20 @@ export class BagScene extends Scene implements DebugStateProvider {
     this.targetContainer.add(bg);
 
     // Title
-    const title = this.add.text(8, 2, "Use on:", { fontSize: "9px", color: TEXT_COLOR });
+    const title = this.add.text(6, 2, "Use on:", { fontSize: "8px", color: TEXT_COLOR });
     this.targetContainer.add(title);
 
     for (let i = 0; i < party.length; i++) {
       const m = party[i];
-      const y = 14 + i * 16;
-      const label = this.add.text(18, y, `${m.name} ${m.currentHp}/${m.maxHp}`, {
-        fontSize: "9px",
+      const y = 12 + i * 12;
+      const label = this.add.text(14, y, `${m.name} ${m.currentHp}/${m.maxHp}`, {
+        fontSize: "8px",
         color: this.isValidTarget(m) ? TEXT_COLOR : GRAY_COLOR,
       });
       this.targetContainer.add(label);
     }
 
-    const cursor = this.add.text(8, 14, CURSOR_CHAR, { fontSize: "9px", color: TEXT_COLOR });
+    const cursor = this.add.text(6, 12, CURSOR_CHAR, { fontSize: "8px", color: TEXT_COLOR });
     cursor.setName("targetCursor");
     this.targetContainer.add(cursor);
 
@@ -321,7 +322,7 @@ export class BagScene extends Scene implements DebugStateProvider {
 
   private updateTargetCursor() {
     const cursor = this.targetContainer.getByName("targetCursor") as Phaser.GameObjects.Text;
-    if (cursor) cursor.setY(14 + this.targetIndex * 16);
+    if (cursor) cursor.setY(12 + this.targetIndex * 12);
   }
 
   private confirmTarget() {
@@ -399,8 +400,8 @@ export class BagScene extends Scene implements DebugStateProvider {
     }
 
     if (this.itemList.length === 0) {
-      this.emptyLabel = this.add.text(20, ITEM_START_Y + 10, "No items.", {
-        fontSize: "10px",
+      this.emptyLabel = this.add.text(14, ITEM_START_Y + 4, "No items.", {
+        fontSize: "8px",
         color: GRAY_COLOR,
       });
       this.emptyLabel.setDepth(2);
@@ -436,8 +437,8 @@ export class BagScene extends Scene implements DebugStateProvider {
       const displayIdx = i - this.scrollOffset;
       const y = ITEM_START_Y + displayIdx * ITEM_H;
       const usable = item.usableIn.includes("overworld");
-      const label = this.add.text(18, y, `${item.name} x${count}`, {
-        fontSize: "10px",
+      const label = this.add.text(14, y, `${item.name} x${count}`, {
+        fontSize: "8px",
         color: usable ? TEXT_COLOR : GRAY_COLOR,
       });
       label.setDepth(2);

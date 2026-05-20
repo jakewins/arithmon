@@ -6,9 +6,10 @@
  * paper-town bin events. Closes on B / ESC / BACKSPACE.
  *
  * The cream background + striped sprite frame + blue border all come from the
- * upstream `tux_info.png` (256×144). We blit it centred on our 320×240 canvas
- * and overlay text/icons at positions ported from upstream's `add_menu_items`
- * fractional coordinates, then nudged to match the reference screenshot.
+ * upstream `tux_info.png` (256×144). At our native viewport it now fills the
+ * canvas exactly — no centering offset needed. Text/icon positions are ported
+ * from upstream's `add_menu_items` fractional coordinates, then nudged to
+ * match the reference screenshot.
  */
 
 import { Scene } from "phaser";
@@ -16,16 +17,15 @@ import { debugBridge, type DebugStateProvider } from "../debug";
 import { MONSTERS } from "../data/monsters";
 import { t } from "../i18n";
 import { formatText } from "../textFormatter";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const SCREEN_W = 320;
-const SCREEN_H = 240;
-
-// Upstream `tux_info.png` dimensions. Drawn centred → its top-left lands at
-// (SCREEN_W - BG_W) / 2 = 32, (SCREEN_H - BG_H) / 2 = 48.
-const BG_W = 256;
-const BG_H = 144;
-const BG_X = (SCREEN_W - BG_W) / 2;
-const BG_Y = (SCREEN_H - BG_H) / 2;
+// Upstream `tux_info.png` is 256×144 — same as our native viewport, so it
+// blits 1:1 from the top-left. BG_W is reused for the bottom panel width;
+// BG_X/BG_Y are kept (=0) so the upstream-derived offset math below stays
+// self-explanatory.
+const BG_W = SCREEN_W;
+const BG_X = 0;
+const BG_Y = 0;
 
 const TEXT_COLOR = "#1a1a1a";
 const FONT_SMALL = "8px";

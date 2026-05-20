@@ -102,8 +102,12 @@ const GAME_URL = `http://localhost:${process.env.ARITHMON_PORT || "8080"}`;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCREENSHOT_DIR = path.join(__dirname, "screenshots");
 
-// Game renders at 320x240 with 3x zoom = 960x720
-const VIEWPORT = { width: 960, height: 720 };
+// Default headed-browser viewport. The game itself renders at the upstream
+// 256×144 native resolution and Phaser's scale manager snaps to the largest
+// integer multiple that fits the canvas parent — see src/game/main.ts.
+// 1024×600 picks zoom=4 (1024×576 → 24px letterbox vertically), giving us
+// a roomy 1024×600 chrome window with the canvas at 256·4 × 144·4 = 1024×576.
+const VIEWPORT = { width: 1024, height: 600 };
 
 /** Resolve the chromium executable: env var > `which chromium` > Playwright default. */
 function findChromium(): string | undefined {

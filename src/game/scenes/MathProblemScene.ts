@@ -2,9 +2,10 @@ import { Scene } from "phaser";
 import { skillTree } from "../skilltree";
 import type { PerseusProblem, ProblemWidget, GradeResult } from "../data/problems";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
+import { SCREEN_W, SCREEN_H } from "../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
 
 export class MathProblemScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   private problem!: PerseusProblem;
@@ -90,10 +91,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     this.cameras.main.setBackgroundColor("#1a1a2e");
 
-    // --- Outer frame ---
-    const panelY = 16;
-    const panelW = WIDTH - 40;
-    const panelH = HEIGHT - 32;
+    // --- Outer frame --- nearly fills the 256×144 viewport with a small bezel
+    // so the dark backdrop still shows through at the edges.
+    const panelY = 6;
+    const panelW = WIDTH - 16;
+    const panelH = HEIGHT - 12;
 
     // Panel background
     this.add
@@ -102,31 +104,31 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Title
     this.add
-      .text(WIDTH / 2, panelY + 14, "MATH CHALLENGE", {
-        fontSize: "12px",
+      .text(WIDTH / 2, panelY + 6, "MATH CHALLENGE", {
+        fontSize: "8px",
         color: "#4488cc",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
     // Separator line
-    this.add.rectangle(WIDTH / 2, panelY + 28, panelW - 24, 1, 0x4488cc, 0.5);
+    this.add.rectangle(WIDTH / 2, panelY + 16, panelW - 12, 1, 0x4488cc, 0.5);
 
     // Question text — use smaller font + word wrap for longer text (e.g. word problems)
     const isLongQuestion = displayQuestion.length > 40;
-    const questionFontSize = isLongQuestion ? "10px" : "14px";
+    const questionFontSize = isLongQuestion ? "8px" : "10px";
     const questionObj = this.add
-      .text(WIDTH / 2, panelY + 38, displayQuestion, {
+      .text(WIDTH / 2, panelY + 22, displayQuestion, {
         fontSize: questionFontSize,
         color: "#ffffff",
         fontStyle: "bold",
-        wordWrap: { width: panelW - 24 },
+        wordWrap: { width: panelW - 12 },
         align: "center",
       })
       .setOrigin(0.5, 0);
 
     // Position UI elements below the question text
-    const contentY = questionObj.y + questionObj.height + 8;
+    const contentY = questionObj.y + questionObj.height + 6;
 
     if (widget.type === "radio") {
       this.createRadioUI(widget, contentY, panelW);
@@ -144,8 +146,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Feedback text (correct/incorrect)
     this.feedbackText = this.add
-      .text(WIDTH / 2, HEIGHT - panelY - 24, "", {
-        fontSize: "12px",
+      .text(WIDTH / 2, HEIGHT - panelY - 10, "", {
+        fontSize: "8px",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
@@ -232,23 +234,23 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   private createNumericInputUI(contentY: number, panelW: number) {
     // Answer input area
     const inputY = contentY;
-    this.add.rectangle(WIDTH / 2, inputY, 80, 22, 0x222244).setStrokeStyle(1, 0x6666aa);
+    this.add.rectangle(WIDTH / 2, inputY, 56, 14, 0x222244).setStrokeStyle(1, 0x6666aa);
 
     this.answerText = this.add
       .text(WIDTH / 2, inputY, "_", {
-        fontSize: "14px",
+        fontSize: "10px",
         color: "#ffcc00",
       })
       .setOrigin(0.5);
 
     // Submit button
-    const submitY = inputY + 30;
+    const submitY = inputY + 18;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "11px",
+        fontSize: "8px",
         color: "#ffcc00",
         backgroundColor: "#333333",
-        padding: { x: 8, y: 4 },
+        padding: { x: 5, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -256,11 +258,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint button
     this.add
-      .text(WIDTH / 2, submitY + 24, "? HINT", {
-        fontSize: "10px",
+      .text(WIDTH / 2, submitY + 14, "? HINT", {
+        fontSize: "8px",
         color: "#88aacc",
         backgroundColor: "#222233",
-        padding: { x: 6, y: 3 },
+        padding: { x: 4, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -268,10 +270,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint display area
     this.hintText = this.add
-      .text(WIDTH / 2, submitY + 52, "", {
-        fontSize: "9px",
+      .text(WIDTH / 2, submitY + 28, "", {
+        fontSize: "8px",
         color: "#88aacc",
-        wordWrap: { width: panelW - 40 },
+        wordWrap: { width: panelW - 20 },
         align: "center",
       })
       .setOrigin(0.5, 0);
@@ -302,35 +304,35 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Dummy answerText so updateAnswerDisplay() doesn't crash if called
     this.answerText = this.add.text(0, 0, "").setVisible(false);
 
-    const inputY = contentY;
-    const boxW = 56;
-    const gap = 24;
+    const inputY = contentY + 6;
+    const boxW = 40;
+    const gap = 12;
     const leftX = WIDTH / 2 - gap - boxW / 2;
     const rightX = WIDTH / 2 + gap + boxW / 2;
 
     // Labels
     const labels = widget.options.labels;
     this.add
-      .text(leftX, inputY - 16, labels[0], { fontSize: "9px", color: "#88aacc" })
+      .text(leftX, inputY - 10, labels[0], { fontSize: "8px", color: "#88aacc" })
       .setOrigin(0.5);
     this.add
-      .text(rightX, inputY - 16, labels[1], { fontSize: "9px", color: "#88aacc" })
+      .text(rightX, inputY - 10, labels[1], { fontSize: "8px", color: "#88aacc" })
       .setOrigin(0.5);
 
     // Input boxes
     this.dualBoxes[0] = this.add
-      .rectangle(leftX, inputY, boxW, 22, 0x222244)
+      .rectangle(leftX, inputY, boxW, 14, 0x222244)
       .setStrokeStyle(2, 0xffcc00);
     this.dualBoxes[1] = this.add
-      .rectangle(rightX, inputY, boxW, 22, 0x222244)
+      .rectangle(rightX, inputY, boxW, 14, 0x222244)
       .setStrokeStyle(1, 0x6666aa);
 
     // Answer texts
     this.dualTexts[0] = this.add
-      .text(leftX, inputY, "_", { fontSize: "14px", color: "#ffcc00" })
+      .text(leftX, inputY, "_", { fontSize: "10px", color: "#ffcc00" })
       .setOrigin(0.5);
     this.dualTexts[1] = this.add
-      .text(rightX, inputY, "_", { fontSize: "14px", color: "#ffcc00" })
+      .text(rightX, inputY, "_", { fontSize: "10px", color: "#ffcc00" })
       .setOrigin(0.5);
 
     // Click to focus
@@ -344,13 +346,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     });
 
     // Submit button
-    const submitY = inputY + 30;
+    const submitY = inputY + 18;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "11px",
+        fontSize: "8px",
         color: "#ffcc00",
         backgroundColor: "#333333",
-        padding: { x: 8, y: 4 },
+        padding: { x: 5, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -358,11 +360,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint button
     this.add
-      .text(WIDTH / 2, submitY + 24, "? HINT", {
-        fontSize: "10px",
+      .text(WIDTH / 2, submitY + 14, "? HINT", {
+        fontSize: "8px",
         color: "#88aacc",
         backgroundColor: "#222233",
-        padding: { x: 6, y: 3 },
+        padding: { x: 4, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -370,10 +372,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint display
     this.hintText = this.add
-      .text(WIDTH / 2, submitY + 52, "", {
-        fontSize: "9px",
+      .text(WIDTH / 2, submitY + 28, "", {
+        fontSize: "8px",
         color: "#88aacc",
-        wordWrap: { width: _panelW - 40 },
+        wordWrap: { width: _panelW - 20 },
         align: "center",
       })
       .setOrigin(0.5, 0);
@@ -453,17 +455,17 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   ) {
     const choices = widget.options.choices;
     const startY = contentY;
-    const spacing = 24;
+    const spacing = 14;
 
     for (let i = 0; i < choices.length; i++) {
       const y = startY + i * spacing;
       const btn = this.add
         .text(WIDTH / 2, y, choices[i].content, {
-          fontSize: "13px",
+          fontSize: "9px",
           color: "#ffffff",
           backgroundColor: "#333355",
-          padding: { x: 12, y: 5 },
-          fixedWidth: panelW - 80,
+          padding: { x: 6, y: 2 },
+          fixedWidth: panelW - 32,
           align: "center",
         })
         .setOrigin(0.5)
@@ -505,13 +507,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.answerText = this.add.text(0, 0, "").setVisible(false);
     this.hintText = this.add.text(0, 0, "").setVisible(false);
 
-    const rowY = contentY;
+    const rowY = contentY + 12;
     const { left, right } = widget.options;
 
     // Left value
     this.add
-      .text(WIDTH / 2 - 80, rowY, left, {
-        fontSize: "18px",
+      .text(WIDTH / 2 - 60, rowY, left, {
+        fontSize: "14px",
         color: "#ffffff",
         fontStyle: "bold",
       })
@@ -519,8 +521,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Right value
     this.add
-      .text(WIDTH / 2 + 80, rowY, right, {
-        fontSize: "18px",
+      .text(WIDTH / 2 + 60, rowY, right, {
+        fontSize: "14px",
         color: "#ffffff",
         fontStyle: "bold",
       })
@@ -528,17 +530,17 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Three comparison buttons in the middle
     const symbols: Array<">" | "=" | "<"> = [">", "=", "<"];
-    const btnSpacing = 36;
+    const btnSpacing = 22;
     const startX = WIDTH / 2 - btnSpacing;
 
     for (let i = 0; i < symbols.length; i++) {
       const x = startX + i * btnSpacing;
       const btn = this.add
         .text(x, rowY, symbols[i], {
-          fontSize: "16px",
+          fontSize: "12px",
           color: "#ffffff",
           backgroundColor: "#333355",
-          padding: { x: 8, y: 6 },
+          padding: { x: 4, y: 3 },
           align: "center",
         })
         .setOrigin(0.5)
@@ -592,8 +594,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.nlRange = range;
     this.nlValue = range[0];
 
-    const lineY = contentY + 24;
-    const margin = 28;
+    const lineY = contentY + 16;
+    const margin = 12;
     const lineX = (WIDTH - panelW) / 2 + margin;
     const lineW = panelW - margin * 2;
     this.nlLineX = lineX;
@@ -625,13 +627,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Marker (visual only — interaction is handled by the hit zone below)
     const markerX = lineX; // starts at range[0]
     this.nlMarker = this.add
-      .rectangle(markerX, lineY - 1, 8, 14, 0xffcc00)
+      .rectangle(markerX, lineY - 1, 5, 10, 0xffcc00)
       .setStrokeStyle(1, 0xffaa00);
 
     // Value label above marker
     this.nlValueText = this.add
-      .text(markerX, lineY - 16, String(range[0]), {
-        fontSize: "10px",
+      .text(markerX, lineY - 10, String(range[0]), {
+        fontSize: "8px",
         color: "#ffcc00",
         fontStyle: "bold",
       })
@@ -665,13 +667,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     });
 
     // Submit button
-    const submitY = lineY + 32;
+    const submitY = lineY + 20;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "11px",
+        fontSize: "8px",
         color: "#ffcc00",
         backgroundColor: "#333333",
-        padding: { x: 8, y: 4 },
+        padding: { x: 5, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -679,11 +681,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint button
     this.add
-      .text(WIDTH / 2, submitY + 24, "? HINT", {
-        fontSize: "10px",
+      .text(WIDTH / 2, submitY + 14, "? HINT", {
+        fontSize: "8px",
         color: "#88aacc",
         backgroundColor: "#222233",
-        padding: { x: 6, y: 3 },
+        padding: { x: 4, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -738,7 +740,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const frac = (expected - this.nlRange[0]) / (this.nlRange[1] - this.nlRange[0]);
       const correctX = this.nlLineX + frac * this.nlLineW;
       this.add
-        .rectangle(correctX, this.nlMarker!.y, 8, 14, 0x44cc44, 0.6)
+        .rectangle(correctX, this.nlMarker!.y, 5, 10, 0x44cc44, 0.6)
         .setStrokeStyle(1, 0x44cc44);
     }
 
@@ -841,16 +843,16 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.answerText = this.add.text(0, 0, "").setVisible(false);
     this.hintText = this.add.text(0, 0, "").setVisible(false);
 
-    const dropY = contentY + 12;
+    const dropY = contentY + 8;
 
     // Tappable placeholder box
     const placeholderBg = this.add
-      .rectangle(WIDTH / 2, dropY, 120, 24, 0x222244)
+      .rectangle(WIDTH / 2, dropY, 88, 16, 0x222244)
       .setStrokeStyle(2, 0x4488cc);
 
     this.dropdownPlaceholder = this.add
       .text(WIDTH / 2, dropY, widget.options.placeholder, {
-        fontSize: "13px",
+        fontSize: "9px",
         color: "#88aacc",
         fontStyle: "bold",
       })
@@ -866,13 +868,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     });
 
     // Submit button below
-    const submitY = dropY + 36;
+    const submitY = dropY + 22;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "11px",
+        fontSize: "8px",
         color: "#ffcc00",
         backgroundColor: "#333333",
-        padding: { x: 8, y: 4 },
+        padding: { x: 5, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -880,11 +882,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint button
     this.add
-      .text(WIDTH / 2, submitY + 24, "? HINT", {
-        fontSize: "10px",
+      .text(WIDTH / 2, submitY + 14, "? HINT", {
+        fontSize: "8px",
         color: "#88aacc",
         backgroundColor: "#222233",
-        padding: { x: 6, y: 3 },
+        padding: { x: 4, y: 2 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -892,10 +894,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Hint display
     this.hintText = this.add
-      .text(WIDTH / 2, submitY + 52, "", {
-        fontSize: "9px",
+      .text(WIDTH / 2, submitY + 26, "", {
+        fontSize: "8px",
         color: "#88aacc",
-        wordWrap: { width: panelW - 40 },
+        wordWrap: { width: panelW - 20 },
         align: "center",
       })
       .setOrigin(0.5, 0);
@@ -921,13 +923,13 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.dropdownOpen = true;
 
     const choices = widget.options.choices;
-    const itemH = 22;
+    const itemH = 14;
     const listH = choices.length * itemH + 4;
-    const listY = anchorY + 18;
+    const listY = anchorY + 12;
 
     // Background panel
     const bg = this.add
-      .rectangle(WIDTH / 2, listY + listH / 2, 130, listH, 0x111133, 0.96)
+      .rectangle(WIDTH / 2, listY + listH / 2, 96, listH, 0x111133, 0.96)
       .setStrokeStyle(1, 0x4488cc)
       .setDepth(10);
     this.dropdownOverlay.push(bg);
@@ -936,11 +938,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const y = listY + 2 + i * itemH + itemH / 2;
       const btn = this.add
         .text(WIDTH / 2, y, choices[i].content, {
-          fontSize: "12px",
+          fontSize: "9px",
           color: "#ffffff",
           backgroundColor: "#333355",
-          padding: { x: 10, y: 3 },
-          fixedWidth: 110,
+          padding: { x: 6, y: 2 },
+          fixedWidth: 80,
           align: "center",
         })
         .setOrigin(0.5)

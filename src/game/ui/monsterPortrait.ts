@@ -24,8 +24,9 @@ export function createMonsterPortrait(
   container.setDepth(depth);
 
   const texture = `${monster.slug}-battle`;
+  // 64×64 battle sprite at 1× scale fills ~half the 144 px viewport height —
+  // big enough to read at 256×144 without crowding the stats panel.
   const sprite = scene.add.image(0, 0, texture, 0);
-  sprite.setScale(2);
   container.add(sprite);
 
   const bobTween = scene.tweens.add({
@@ -59,7 +60,7 @@ export function createStatsDisplay(
   container.setDepth(depth);
 
   const labels: Phaser.GameObjects.Text[] = [];
-  const lineH = 13;
+  const lineH = 9;
 
   const lines = [
     `Lv ${monster.level}`,
@@ -73,7 +74,7 @@ export function createStatsDisplay(
 
   for (let i = 0; i < lines.length; i++) {
     const label = scene.add.text(0, i * lineH, lines[i], {
-      fontSize: "9px",
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
     labels.push(label);
@@ -82,17 +83,17 @@ export function createStatsDisplay(
 
   // XP progress bar
   const xpY = lines.length * lineH + 2;
-  const XP_BAR_W = 80;
-  const XP_BAR_H = 4;
+  const XP_BAR_W = 64;
+  const XP_BAR_H = 3;
 
   const xpLabel = scene.add.text(0, xpY, "XP", { fontSize: "8px", color: "#4488ff" });
   labels.push(xpLabel);
   container.add(xpLabel);
 
-  const xpBg = scene.add.rectangle(16 + XP_BAR_W / 2, xpY + 5, XP_BAR_W, XP_BAR_H, 0x222244);
+  const xpBg = scene.add.rectangle(14 + XP_BAR_W / 2, xpY + 4, XP_BAR_W, XP_BAR_H, 0x222244);
   container.add(xpBg);
 
-  const xpFg = scene.add.rectangle(16 + XP_BAR_W / 2, xpY + 5, XP_BAR_W, XP_BAR_H, 0x4488ff);
+  const xpFg = scene.add.rectangle(14 + XP_BAR_W / 2, xpY + 4, XP_BAR_W, XP_BAR_H, 0x4488ff);
   xpFg.setScale(Math.max(0.01, monster.xpProgress), 1);
   container.add(xpFg);
 
@@ -113,14 +114,14 @@ export function createTechniqueList(
   container.setDepth(depth);
 
   const header = scene.add.text(0, 0, "Moves:", {
-    fontSize: "9px",
+    fontSize: "8px",
     color: TEXT_COLOR,
   });
   container.add(header);
 
   for (let i = 0; i < monster.techniques.length; i++) {
     const tech = monster.techniques[i];
-    const label = scene.add.text(0, 12 + i * 11, `${tech.name} (${tech.dpCost}DP)`, {
+    const label = scene.add.text(0, 10 + i * 9, `${tech.name} (${tech.dpCost}DP)`, {
       fontSize: "8px",
       color: TEXT_COLOR,
     });
@@ -128,7 +129,7 @@ export function createTechniqueList(
   }
 
   if (monster.techniques.length === 0) {
-    const none = scene.add.text(0, 12, "None", { fontSize: "8px", color: "#999999" });
+    const none = scene.add.text(0, 10, "None", { fontSize: "8px", color: "#999999" });
     container.add(none);
   }
 

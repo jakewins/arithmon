@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { clearSave, hasSave } from "../save";
 import { PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
+import { SCREEN_W } from "../screen";
 
 // Mirrors upstream Tuxemon's StartState — the first thing the player sees on
 // boot. Shows the title plus "New Game" and (when a save exists) "Load Game".
@@ -11,7 +12,7 @@ import { PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 // asks the player for campaign/gender/race and then transition_teleports
 // into spyder_bedroom — matching upstream's flow byte-for-byte.
 
-const WIDTH = 320;
+const WIDTH = SCREEN_W;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
@@ -30,9 +31,9 @@ const KEY_SPACE = 32;
 const KEY_Z = 90;
 const KEY_ENTER = 13;
 
-const PANEL_W = 120;
-const PANEL_H_PER_OPT = 16;
-const PANEL_PAD_Y = 10;
+const PANEL_W = 88;
+const PANEL_H_PER_OPT = 12;
+const PANEL_PAD_Y = 6;
 
 interface MenuOption {
   id: "new_game" | "load_game";
@@ -79,18 +80,18 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
 
     this.cameras.main.setBackgroundColor(BG_COLOR);
 
-    // Title text
+    // Title text — sized to fit the 256×144 viewport without dominating it.
     this.add
-      .text(WIDTH / 2, 50, "Arithmon", {
-        fontSize: "32px",
+      .text(WIDTH / 2, 20, "Arithmon", {
+        fontSize: "20px",
         color: TITLE_COLOR,
         fontStyle: "bold",
       })
       .setOrigin(0.5, 0);
 
     this.add
-      .text(WIDTH / 2, 90, "A Tuxemon clone with math", {
-        fontSize: "10px",
+      .text(WIDTH / 2, 48, "A Tuxemon clone with math", {
+        fontSize: "8px",
         color: TITLE_COLOR,
       })
       .setOrigin(0.5, 0);
@@ -112,7 +113,7 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
 
     const panelH = this.options.length * PANEL_H_PER_OPT + PANEL_PAD_Y * 2;
     const panelX = WIDTH / 2;
-    const panelY = 150 + panelH / 2;
+    const panelY = 80 + panelH / 2;
 
     this.add.nineslice(
       panelX,
@@ -129,22 +130,22 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
 
     // Labels
     const optionsStartY = panelY - panelH / 2 + PANEL_PAD_Y;
-    const labelX = panelX - PANEL_W / 2 + 24;
+    const labelX = panelX - PANEL_W / 2 + 16;
     for (let i = 0; i < this.options.length; i++) {
       const label = this.add.text(
         labelX,
         optionsStartY + i * PANEL_H_PER_OPT,
         this.options[i].label,
         {
-          fontSize: "11px",
+          fontSize: "8px",
           color: TEXT_COLOR,
         },
       );
       this.labels.push(label);
     }
 
-    this.cursor = this.add.text(labelX - 12, optionsStartY, CURSOR_CHAR, {
-      fontSize: "11px",
+    this.cursor = this.add.text(labelX - 8, optionsStartY, CURSOR_CHAR, {
+      fontSize: "8px",
       color: TEXT_COLOR,
     });
 
