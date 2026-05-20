@@ -102,3 +102,31 @@ workarounds — they're upstream's content. Left untouched.
   intro cutscene (uses `pathfind player,...`) also still passes.
 - `npm run format:check && npm run lint && npx tsc --noEmit && npm test`
   all green (465 tests).
+
+## 2026-05-20 — Reviewer findings (Approved)
+
+- Verified `OverworldScene.ts:880` does `this.playerFacing = ctx.player.facing`
+  after every event-engine update — story's facing-propagation hypothesis was
+  indeed wrong, real cause is the A* doormat block as the implementor
+  identified.
+- Cross-checked `upstream/tuxemon/movement.py:158-212` (`Pathfinder.pathfind`
+  + direction-aware `get_exits()`); our opt-in `directionalGrid` + post-filter
+  is functionally equivalent for the directional-tile case without rewriting
+  the whole pathfinder.
+- Confirmed `upstream/mods/tuxemon/maps/spyder_omnichannel1.tmx` object id=21
+  "Teleport to Cotton Town" has `cond1=is char_at player` only — YAML delta
+  is upstream-faithful. Remaining YAML diff is pure Prettier-style whitespace.
+- Re-ran all four pre-commit gates fresh from a clean worktree:
+  format:check / lint / tsc / npm test — 465 tests pass across 42 files.
+- Ran `qa/cotton-omnichannel-kickout.ts` against `ARITHMON_PORT=8082`
+  end-to-end: player lands at `spyder_cotton_town (17,10)`; screenshot
+  `qa/screenshots/cotton-omnichannel-kickout.png` shows the dirt patch south
+  of HQ entrance with the player facing down (not a black flash, not HQ
+  interior).
+- Regression smoke: ran `qa/paper-scoop-intro-test.ts` (scoop intro pathfind
+  sequences) and `qa/paper-town-buildings-test.ts` (door teleports) — both
+  green.
+- `src/__tests__/pathfinding.test.ts` has the three table-style cases the
+  journal mentions; directional-grid wiring through ctx + walkTo is
+  consistent.
+- Approved and moved to `board/done/`.
