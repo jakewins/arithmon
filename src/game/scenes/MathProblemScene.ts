@@ -16,8 +16,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   private resolved = false;
   private returnScene = "OverworldScene";
   private choiceButtons: Phaser.GameObjects.Text[] = [];
+  private radioSelected = 0;
   // Comparison state
   private comparisonButtons: Phaser.GameObjects.Text[] = [];
+  private comparisonSelected = 0;
   // Dual-input state
   private dualAnswers: [string, string] = ["", ""];
   private dualTexts: [Phaser.GameObjects.Text | null, Phaser.GameObjects.Text | null] = [
@@ -58,7 +60,9 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.hintIndex = 0;
     this.resolved = false;
     this.choiceButtons = [];
+    this.radioSelected = 0;
     this.comparisonButtons = [];
+    this.comparisonSelected = 0;
     this.dualAnswers = ["", ""];
     this.dualTexts = [null, null];
     this.dualBoxes = [null, null];
@@ -469,9 +473,31 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.choiceButtons.push(btn);
     }
 
+    this.updateRadioHighlight();
+
+    this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (this.resolved) return;
+      const n = this.choiceButtons.length;
+      if (event.key === "ArrowDown") {
+        this.radioSelected = (this.radioSelected + 1) % n;
+        this.updateRadioHighlight();
+      } else if (event.key === "ArrowUp") {
+        this.radioSelected = (this.radioSelected - 1 + n) % n;
+        this.updateRadioHighlight();
+      } else if (event.key === "Enter" || event.key === " " || event.key === "z") {
+        this.selectChoice(this.radioSelected);
+      }
+    });
+
     // No hint button for radio — the choices themselves are scaffolding.
     // Create a dummy hintText so showNextHint() doesn't crash if called.
     this.hintText = this.add.text(0, 0, "").setVisible(false);
+  }
+
+  private updateRadioHighlight() {
+    for (let i = 0; i < this.choiceButtons.length; i++) {
+      this.choiceButtons[i].setBackgroundColor(i === this.radioSelected ? "#555599" : "#333355");
+    }
   }
 
   private createComparisonUI(widget: ProblemWidget & { type: "comparison" }, contentY: number) {
@@ -520,6 +546,36 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
         .on("pointerdown", () => this.selectComparison(i));
 
       this.comparisonButtons.push(btn);
+    }
+
+    this.updateComparisonHighlight();
+
+    this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (this.resolved) return;
+      const n = this.comparisonButtons.length;
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+        this.comparisonSelected = (this.comparisonSelected + 1) % n;
+        this.updateComparisonHighlight();
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+        this.comparisonSelected = (this.comparisonSelected - 1 + n) % n;
+        this.updateComparisonHighlight();
+      } else if (event.key === ">") {
+        this.selectComparison(0);
+      } else if (event.key === "=") {
+        this.selectComparison(1);
+      } else if (event.key === "<") {
+        this.selectComparison(2);
+      } else if (event.key === "Enter" || event.key === " " || event.key === "z") {
+        this.selectComparison(this.comparisonSelected);
+      }
+    });
+  }
+
+  private updateComparisonHighlight() {
+    for (let i = 0; i < this.comparisonButtons.length; i++) {
+      this.comparisonButtons[i].setBackgroundColor(
+        i === this.comparisonSelected ? "#555599" : "#333355",
+      );
     }
   }
 
@@ -843,6 +899,21 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
         align: "center",
       })
       .setOrigin(0.5, 0);
+
+    let cycleIndex = -1;
+    this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (this.resolved) return;
+      const choices = widget.options.choices;
+      if (event.key === "ArrowDown") {
+        cycleIndex = (cycleIndex + 1) % choices.length;
+        this.selectDropdownChoice(cycleIndex);
+      } else if (event.key === "ArrowUp") {
+        cycleIndex = (cycleIndex - 1 + choices.length) % choices.length;
+        this.selectDropdownChoice(cycleIndex);
+      } else if (event.key === "Enter" || event.key === " " || event.key === "z") {
+        if (this.dropdownSelected !== null) this.submitDropdownAnswer();
+      }
+    });
   }
 
   private openDropdown(widget: ProblemWidget & { type: "dropdown" }, anchorY: number) {

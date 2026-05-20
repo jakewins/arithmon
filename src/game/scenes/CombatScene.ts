@@ -861,6 +861,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         color: canAfford ? TEXT_COLOR : DISABLED_COLOR,
       });
       label.setDepth(101);
+      label.setInteractive({ useHandCursor: true });
+      label.on("pointerdown", () => {
+        this.techSelected = i;
+        this.updateTechCursorPosition();
+        this.confirmTechMenu();
+      });
       this.techLabels.push(label);
     }
 
@@ -870,6 +876,17 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.techRechargeLabel.setPosition(baseX, rechargeY);
     this.techRechargeLabel.setText("\u26a1 RECHARGE");
     this.techRechargeLabel.setVisible(showRecharge);
+    if (showRecharge) {
+      this.techRechargeLabel.setInteractive({ useHandCursor: true });
+      this.techRechargeLabel.off("pointerdown");
+      this.techRechargeLabel.on("pointerdown", () => {
+        this.techSelected = techniques.length;
+        this.updateTechCursorPosition();
+        this.confirmTechMenu();
+      });
+    } else {
+      this.techRechargeLabel.disableInteractive();
+    }
 
     // Update message to show technique prompt
     this.messageText.setText("Choose a technique:");
