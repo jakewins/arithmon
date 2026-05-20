@@ -66,3 +66,34 @@ combines with those trigger tiles. This is brittle-feeling but follows
 straight from how the engine's event system works — the alternative
 (disabling the events at QA time) would mask the trigger from being
 exercised at all.
+
+## 2026-05-20 — Reviewer findings (Approved)
+
+- Code change: `OverworldScene.create()` camera block reduced from 8 lines
+  with an if/else to 2 unconditional lines (`startFollow` + `setBounds`).
+  Stale comment removed. Clean, minimal, matches upstream
+  `camera.py:208-217` intent exactly.
+- `getDebugState()` camera extension is cheap and correctly scoped —
+  four plain numbers added to the existing state blob; no Phaser internals
+  leak out.
+- Pre-commit gates re-run: `format:check / lint / tsc --noEmit / npm test`
+  all pass (42 test files, 465 tests).
+- Ran `qa/indoor-camera-follow.ts` against port 8082; all assertions passed:
+  - Cafe (192×192, narrower+taller): player on-screen at entry (8,10), NW
+    (0,6), NE (11,4). Camera scroll confirmed correct.
+  - Bedroom (144×112, both-smaller): player on-screen at all four corners
+    (NW/NE/SW/SE). Map fills ~56 % of viewport; black padding right+bottom.
+  - House1 (160×128, both-smaller): all four corners reached without
+    triggering the south-door teleport; player on-screen throughout.
+  - Scoop (208×176, narrower+taller): all four corners, player on-screen.
+  - Artshop (352×176, wider+taller): all four corners including the tricky
+    SW approach past the west-wall corridor; player on-screen.
+  - Paper town edge regression: `scrollX=384.0` (exactly `640-256`) —
+    camera clamped, no void past east map boundary.
+- Visual review of `indoor-cam-cafe-entry.png` vs upstream reference
+  `~/Pictures/Screenshots/20260520_221427.png`: framing matches — player
+  sprite visible on the entry rug at the bottom, cafe interior (tables,
+  chairs, NPCs) filling the upper portion; black bar on the right is
+  expected (our 256 px viewport is narrower than upstream's wider one).
+- `qa/indoor-camera-follow.ts` is 281 lines, checked in, covers all five
+  map categories from the story table plus the outdoor regression case.
