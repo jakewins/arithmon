@@ -1,6 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
-import { destroyOverlay, setOverlay, NAMED_COLORS, WIDTH, HEIGHT } from "./changeBgShared";
+import { destroyOverlay, setOverlay, NAMED_COLORS } from "./changeBgShared";
+import { SCREEN_W, SCREEN_H } from "../../screen";
 
 class ChangeBgAction implements EventAction {
   type = "change_bg";
@@ -47,7 +48,7 @@ class ChangeBgAction implements EventAction {
     destroyOverlay(ctx.scene);
 
     if (this.imageKey && ctx.scene.textures?.exists(this.imageKey)) {
-      const img = ctx.scene.add.image(WIDTH / 2, HEIGHT / 2, this.imageKey);
+      const img = ctx.scene.add.image(SCREEN_W / 2, SCREEN_H / 2, this.imageKey);
       img.setDepth(50).setScrollFactor(0);
       setOverlay(ctx.scene, null, img);
     }

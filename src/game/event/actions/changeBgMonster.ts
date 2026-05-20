@@ -1,13 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
-import {
-  destroyOverlay,
-  setOverlay,
-  NAMED_COLORS,
-  WIDTH,
-  HEIGHT,
-  SPRITE_Y,
-} from "./changeBgShared";
+import { destroyOverlay, setOverlay, NAMED_COLORS, SPRITE_Y } from "./changeBgShared";
+import { SCREEN_W, SCREEN_H } from "../../screen";
 
 /**
  * Sets the background colour and overlays a monster battle sprite.
@@ -37,13 +31,21 @@ class ChangeBgMonsterAction implements EventAction {
     destroyOverlay(ctx.scene);
 
     // Full-screen backdrop to cover the room
-    const backdrop = ctx.scene.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, this.color);
+    const backdrop = ctx.scene.add.rectangle(
+      SCREEN_W / 2,
+      SCREEN_H / 2,
+      SCREEN_W,
+      SCREEN_H,
+      this.color,
+    );
     backdrop.setDepth(49).setScrollFactor(0);
 
     let sprite: Phaser.GameObjects.Sprite | null = null;
     if (this.textureKey && ctx.scene.textures?.exists(this.textureKey)) {
-      sprite = ctx.scene.add.sprite(WIDTH / 2, SPRITE_Y, this.textureKey, 0);
-      sprite.setDepth(50).setScrollFactor(0).setScale(3);
+      // setScale(1) — battle sprites are ~64-px frames; scale 3 was sized for
+      // the old 320×240 canvas and would overflow the new 256×144.
+      sprite = ctx.scene.add.sprite(SCREEN_W / 2, SPRITE_Y, this.textureKey, 0);
+      sprite.setDepth(50).setScrollFactor(0).setScale(1);
     }
 
     setOverlay(ctx.scene, backdrop, sprite);

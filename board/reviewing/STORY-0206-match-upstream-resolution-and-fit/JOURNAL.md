@@ -78,3 +78,51 @@ npm test              →  462 passed (1 dialog-pagination test had to be re-sta
 - Existing QA hides this because none of `setupGame`'s defaults trigger a `translated_dialog_choice` or `rename_player`, and `qa/viewport-and-scaling.ts` only exercises the standard `DialogBox`. Recommend the bounce todo add a focused screenshot of at least one of these overlays so the regression can't slip through again.
 
 - Single todo added in `todos/open/01-port-event-action-overlays-to-256x144.md` with affected files, suggested fix (import `SCREEN_W`/`SCREEN_H` from `screen.ts`, retune box heights to fit 144 px), and required QA coverage.
+
+## 2026-05-20 — Re-implementor notes
+
+Cleared the bounce todo. Each of the four event-action overlays now imports
+`SCREEN_W` / `SCREEN_H` from `src/game/screen.ts` and matches the conventions
+already in `event/ui/dialogBox.ts` (BOX_H=48, font 8 px, PAD_X=8, PAD_Y=4):
+
+- `src/game/event/actions/translatedDialogChoice.ts` — replaced hardcoded
+  `WIDTH=320 / HEIGHT=240 / BOX_H=64` with screen-derived constants; option
+  rows now use 10 px (8-px font + 2-px line spacing) and the cursor column
+  reserves 8 px on the left. A 5-entry list (river-captain with all unlocks)
+  still fits inside the standard 48-px box; the existing
+  `Math.max(BOX_H, options.length * OPTION_H + PAD_Y * 2)` growth rule keeps
+  longer lists clipped to the top of the box rather than off-screen.
+- `src/game/event/actions/renamePlayer.ts` — same conversion; the prompt /
+  editable name / hint now stack as three 10-px lines inside BOX_H=48 with
+  the shortened hint text ("Type, then press Enter") fitting at 8 px.
+- `src/game/event/actions/choiceMonster.ts` — identical retune for parity
+  with `translatedDialogChoice`; no current map uses it but keeping the
+  three overlays in lockstep avoids future drift.
+- `src/game/event/actions/changeBgShared.ts` — dropped the `WIDTH`/`HEIGHT`
+  re-exports entirely; `changeBg`, `changeBgChar`, and `changeBgMonster` now
+  import `SCREEN_W` / `SCREEN_H` from `screen.ts` directly. `SPRITE_Y` is
+  computed as `(SCREEN_H - 48) / 2 = 48` — the middle of the area above the
+  standard dialog box — and the showcase sprite scales were halved (char
+  4→2, monster 3→1) so they don't overflow the narrower canvas.
+
+QA: extended `qa/viewport-and-scaling.ts` with a fifth check
+(`checkChoiceOverlay`) that triggers the paper_town Rockitten signpost (uses
+`monsters: []` to satisfy the `party_size < 1` gate), advances through the
+two preceding dialogs + the MonsterInfo journal pop-up, and screenshots the
+rendered choice box. New screenshot lives at
+`qa/screenshots/ui-choice-overlay.png` and shows the "Yes / No" entries with
+the cursor sitting cleanly inside the 256×144 canvas.
+
+`grep -rnE '\b(320|240)\b' src/game/event/` now only matches the two
+explanatory comments in `changeBgChar.ts` / `changeBgMonster.ts` describing
+the old scale values.
+
+Pre-commit gates:
+
+```
+npm run format:check  →  ok
+npm run lint          →  ok
+npx tsc --noEmit      →  ok
+npm test              →  462 passed
+qa/viewport-and-scaling.ts (ARITHMON_PORT=8081)  →  all 5 checks OK
+```

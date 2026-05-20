@@ -1,6 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { debugBridge } from "../../debug";
+import { SCREEN_W, SCREEN_H } from "../../screen";
 
 const RANDOM_NAMES = [
   "Ash",
@@ -24,12 +25,18 @@ const RANDOM_NAMES = [
 ];
 
 const NAME_LIMIT = 12;
-const WIDTH = 320;
-const HEIGHT = 240;
-const BOX_H = 64;
+// Match `event/ui/dialogBox.ts`: BOX_H=48 anchored to the bottom of the
+// 256×144 logical canvas, font 8 px, padding 4/8 px. The rename overlay
+// stacks three short labels — prompt + editable name + hint — inside the
+// same footprint as a standard 4-line dialog page.
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
+const BOX_H = 48;
 const BOX_Y = HEIGHT - BOX_H;
 const PAD_X = 8;
-const PAD_Y = 6;
+const PAD_Y = 4;
+const FONT_SIZE = 8;
+const LINE_H = FONT_SIZE + 2;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
@@ -92,26 +99,31 @@ class RenamePlayerAction implements EventAction {
     );
     this.border.setDepth(100).setScrollFactor(0);
 
-    // Prompt label
+    // Prompt label (line 1)
     this.promptText = scene.add.text(PAD_X, BOX_Y + PAD_Y, "Enter your name:", {
-      fontSize: "11px",
+      fontSize: `${FONT_SIZE}px`,
       color: "#1a1a1a",
     });
     this.promptText.setDepth(101).setScrollFactor(0);
 
-    // Editable name display
-    this.inputText = scene.add.text(PAD_X, BOX_Y + PAD_Y + 18, "", {
-      fontSize: "14px",
+    // Editable name display (line 2)
+    this.inputText = scene.add.text(PAD_X, BOX_Y + PAD_Y + LINE_H, "", {
+      fontSize: `${FONT_SIZE}px`,
       color: "#1a1a1a",
     });
     this.inputText.setDepth(101).setScrollFactor(0);
     this.updateInputDisplay();
 
-    // Hint text
-    this.hintText = scene.add.text(PAD_X, BOX_Y + BOX_H - 16, "Type a name, then press Enter", {
-      fontSize: "8px",
-      color: "#666666",
-    });
+    // Hint text (last line of the box)
+    this.hintText = scene.add.text(
+      PAD_X,
+      BOX_Y + BOX_H - PAD_Y - FONT_SIZE,
+      "Type, then press Enter",
+      {
+        fontSize: `${FONT_SIZE}px`,
+        color: "#666666",
+      },
+    );
     this.hintText.setDepth(101).setScrollFactor(0);
 
     // Blinking cursor

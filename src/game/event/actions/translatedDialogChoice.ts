@@ -3,13 +3,22 @@ import { registerAction } from "../registry";
 import { t } from "../../i18n";
 import { formatText } from "../../textFormatter";
 import { debugBridge } from "../../debug";
+import { SCREEN_W, SCREEN_H } from "../../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
-const BOX_H = 64;
-const OPTION_H = 13;
-const PAD_X = 12;
-const PAD_Y = 6;
+// Choice overlay sizing — mirrors the conventions in `event/ui/dialogBox.ts`
+// so the choice box visually matches the dialog box that almost always
+// precedes it.  At 8-px font + 2-px line spacing each option occupies 10 px;
+// padding + the cursor column reserve 8 px on the left.
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
+const FONT_SIZE = 8;
+const LINE_SPACING = 2;
+const OPTION_H = FONT_SIZE + LINE_SPACING;
+const PAD_X = 8;
+const PAD_Y = 4;
+// Default box height matches the standard DialogBox (4 lines fit comfortably);
+// grows when an option list exceeds that.
+const BOX_H = 48;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
@@ -64,11 +73,11 @@ class TranslatedDialogChoiceAction implements EventAction {
 
     for (let i = 0; i < this.options.length; i++) {
       const label = scene.add.text(
-        PAD_X + 16,
+        PAD_X + 8,
         boxY + PAD_Y + i * OPTION_H,
         formatText(t(this.options[i])),
         {
-          fontSize: "11px",
+          fontSize: `${FONT_SIZE}px`,
           color: "#1a1a1a",
         },
       );
@@ -77,7 +86,7 @@ class TranslatedDialogChoiceAction implements EventAction {
     }
 
     this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", {
-      fontSize: "11px",
+      fontSize: `${FONT_SIZE}px`,
       color: "#1a1a1a",
     });
     this.cursor.setDepth(101).setScrollFactor(0);

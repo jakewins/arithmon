@@ -2,13 +2,18 @@ import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { MONSTERS } from "../../data/monsters";
 import { debugBridge } from "../../debug";
+import { SCREEN_W, SCREEN_H } from "../../screen";
 
-const WIDTH = 320;
-const HEIGHT = 240;
-const BOX_H = 64;
-const OPTION_H = 13;
-const PAD_X = 12;
-const PAD_Y = 6;
+// Sized to match `event/ui/dialogBox.ts` + `translatedDialogChoice.ts` so the
+// three overlays render at the same scale on the 256×144 logical canvas.
+const WIDTH = SCREEN_W;
+const HEIGHT = SCREEN_H;
+const FONT_SIZE = 8;
+const LINE_SPACING = 2;
+const OPTION_H = FONT_SIZE + LINE_SPACING;
+const PAD_X = 8;
+const PAD_Y = 4;
+const BOX_H = 48;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
@@ -59,8 +64,8 @@ class ChoiceMonsterAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     for (let i = 0; i < names.length; i++) {
-      const label = scene.add.text(PAD_X + 16, boxY + PAD_Y + i * OPTION_H, names[i], {
-        fontSize: "11px",
+      const label = scene.add.text(PAD_X + 8, boxY + PAD_Y + i * OPTION_H, names[i], {
+        fontSize: `${FONT_SIZE}px`,
         color: "#1a1a1a",
       });
       label.setDepth(101).setScrollFactor(0);
@@ -68,7 +73,7 @@ class ChoiceMonsterAction implements EventAction {
     }
 
     this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", {
-      fontSize: "11px",
+      fontSize: `${FONT_SIZE}px`,
       color: "#1a1a1a",
     });
     this.cursor.setDepth(101).setScrollFactor(0);

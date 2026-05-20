@@ -5,6 +5,8 @@
  * can destroy the previous overlay before creating a new one.
  */
 
+import { SCREEN_H } from "../../screen";
+
 export const NAMED_COLORS: Record<string, number> = {
   black: 0x000000,
   white: 0xffffff,
@@ -14,10 +16,18 @@ export const NAMED_COLORS: Record<string, number> = {
   gradient_blue: 0x2244aa,
 };
 
-export const WIDTH = 320;
-export const HEIGHT = 240;
-/** Y position for showcase sprites — top third, above the dialog box. */
-export const SPRITE_Y = 70;
+/**
+ * Y position for showcase sprites. Upstream Tuxemon centres the sprite on
+ * the 256×144 backdrop, but in our context an event-action sprite is almost
+ * always followed by a dialog (`translated_dialog`) at the bottom of the
+ * screen — so we anchor the sprite roughly in the middle of the *upper*
+ * area, above the standard 48-px dialog box, so the two never overlap.
+ *
+ * Numerically: dialog box occupies the bottom 48 px → free area is the top
+ * 96 px → middle of that is y=48. We allow the sprite scale (set per-action)
+ * to extend symmetrically above and below this anchor.
+ */
+export const SPRITE_Y = (SCREEN_H - 48) / 2;
 
 const BACKDROP_KEY = "__changeBgBackdrop";
 const OVERLAY_KEY = "__changeBgOverlay";

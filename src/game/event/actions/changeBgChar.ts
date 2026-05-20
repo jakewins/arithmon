@@ -1,14 +1,8 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { getNpcSprite, hasNpcSprite } from "../../data/npcs";
-import {
-  destroyOverlay,
-  setOverlay,
-  NAMED_COLORS,
-  WIDTH,
-  HEIGHT,
-  SPRITE_Y,
-} from "./changeBgShared";
+import { destroyOverlay, setOverlay, NAMED_COLORS, SPRITE_Y } from "./changeBgShared";
+import { SCREEN_W, SCREEN_H } from "../../screen";
 
 /**
  * Sets the background colour and overlays a character spritesheet frame.
@@ -43,7 +37,13 @@ class ChangeBgCharAction implements EventAction {
     destroyOverlay(ctx.scene);
 
     // Full-screen backdrop to cover the room
-    const backdrop = ctx.scene.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, this.color);
+    const backdrop = ctx.scene.add.rectangle(
+      SCREEN_W / 2,
+      SCREEN_H / 2,
+      SCREEN_W,
+      SCREEN_H,
+      this.color,
+    );
     backdrop.setDepth(49).setScrollFactor(0);
 
     // Prefer the NPC-registry spritesheet; fall back to raw key.
@@ -51,8 +51,10 @@ class ChangeBgCharAction implements EventAction {
 
     let sprite: Phaser.GameObjects.Sprite | null = null;
     if (resolvedKey && ctx.scene.textures?.exists(resolvedKey)) {
-      sprite = ctx.scene.add.sprite(WIDTH / 2, SPRITE_Y, resolvedKey, 0);
-      sprite.setDepth(50).setScrollFactor(0).setScale(4);
+      // setScale(2) — NPC walking spritesheets are 16-px frames; scale 4 was
+      // sized for the old 320×240 canvas and would overflow the new 256×144.
+      sprite = ctx.scene.add.sprite(SCREEN_W / 2, SPRITE_Y, resolvedKey, 0);
+      sprite.setDepth(50).setScrollFactor(0).setScale(2);
     }
 
     setOverlay(ctx.scene, backdrop, sprite);
