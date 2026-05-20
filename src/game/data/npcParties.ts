@@ -16,6 +16,17 @@ export interface NpcPartyDef {
 }
 
 const NPC_PARTIES: Record<string, NpcPartyDef> = {
+  // Billie is the My-First-Mon rival; the canonical fight populates her
+  // party dynamically via `add_monster billie_choice,...` (the player's
+  // un-picked starter). We still want a static entry so the display-name
+  // lookup is deterministic; the fallback `monsters` list mirrors a sensible
+  // default (the first of the three scoop options) so this entry never crashes
+  // if the dynamic seeding fails to run.
+  spyder_billie: {
+    name: "Billie",
+    monsters: [{ slug: "budaye", level: 5 }],
+    goldReward: 0,
+  },
   spyder_papertown_silver: {
     name: "Silver",
     monsters: [

@@ -1,6 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { t } from "../../i18n";
+import { formatText } from "../../textFormatter";
 import { debugBridge } from "../../debug";
 import { DialogBox } from "../ui/dialogBox";
 
@@ -17,7 +18,7 @@ class TranslatedDialogAction implements EventAction {
   }
 
   start(ctx: EventContext): void {
-    this.text = t(this.key);
+    this.text = formatText(t(this.key));
     this.box = new DialogBox(ctx.scene, this.text);
     this.box.start();
     debugBridge.emit("dialog_opened", { text: this.text });

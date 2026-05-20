@@ -15,6 +15,7 @@ import { Scene } from "phaser";
 import { debugBridge, type DebugStateProvider } from "../debug";
 import { MONSTERS } from "../data/monsters";
 import { t } from "../i18n";
+import { formatText } from "../textFormatter";
 
 const SCREEN_W = 320;
 const SCREEN_H = 240;
@@ -183,9 +184,9 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
       })
       .setDepth(5);
 
-    // Species ("<Species> Species")
+    // Species ("<Species> Species"). Category strings can carry placeholders.
     const speciesText = def.species
-      ? `${t(`cat_${def.species}`)} ${t("monster_menu_species")}`
+      ? formatText(`${t(`cat_${def.species}`)} ${t("monster_menu_species")}`)
       : "—";
     this.add
       .text(RIGHT_COL_X, BG_Y + 30, speciesText, { fontSize: FONT_SMALL, color: TEXT_COLOR })
@@ -211,8 +212,10 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
       .text(RIGHT_COL_X, BG_Y + 68, shapeText, { fontSize: FONT_SMALL, color: TEXT_COLOR })
       .setDepth(5);
 
-    // Description (bottom panel, wordwrapped).
-    const descText = def.descriptionKey ? t(def.descriptionKey) : "—";
+    // Description (bottom panel, wordwrapped). Run through formatText so any
+    // `${{...}}` in the description resolves (most are parameter-free today,
+    // but upstream descriptions reference player + monster vars).
+    const descText = def.descriptionKey ? formatText(t(def.descriptionKey)) : "—";
     this.add
       .text(BOTTOM_PANEL_X, DESC_Y, descText, {
         fontSize: FONT_SMALL,

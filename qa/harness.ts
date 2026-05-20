@@ -73,6 +73,7 @@ interface DebugBridgeAPI {
   waitForEvent(type: string): Promise<DebugEvent>;
   teleport(mapKey: string, tileX: number, tileY: number): Promise<void>;
   setVariable(key: string, value: string): void;
+  setPlayerName(name: string): void;
   setLayer(rgba?: string): void;
   openJournal(): void;
   openMonsterInfo(slug: string): void;

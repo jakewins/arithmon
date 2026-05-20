@@ -6,6 +6,7 @@ import { session } from "../../session";
 import { getLeadMonster } from "../../model/Monster";
 import { debugBridge } from "../../debug";
 import { getMapDef } from "../../data/maps";
+import { t } from "../../i18n";
 
 /**
  * Tuxemon syntax:
@@ -48,22 +49,25 @@ class StartBattleAction implements EventAction {
     const partyDef = getNpcParty(this.npcSlug);
 
     let enemyParty: Monster[];
-    let trainerName: string;
     let goldReward: number;
 
     if (dynamicParty && dynamicParty.length > 0) {
       enemyParty = dynamicParty;
-      trainerName = partyDef?.name ?? this.npcSlug;
       goldReward = partyDef?.goldReward ?? 0;
     } else if (partyDef) {
       enemyParty = partyDef.monsters.map((e) => Monster.spawn(e.slug, e.level));
-      trainerName = partyDef.name;
       goldReward = partyDef.goldReward;
     } else {
       console.warn(`start_battle: no party for NPC "${this.npcSlug}"`);
       this.done = true;
       return;
     }
+
+    // Display name resolution mirrors upstream: prefer the static
+    // `NPC_PARTIES` entry (hand-written), fall back to the .po (`spyder_billie`
+    // -> "Billie"), and only show the raw slug if neither has a translation —
+    // in which case `t()` already title-cases as a last-ditch fallback.
+    const trainerName = partyDef?.name ?? t(this.npcSlug);
 
     const lead = getLeadMonster(session.player.monsters);
     if (!lead) {

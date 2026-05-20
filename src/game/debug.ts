@@ -537,6 +537,11 @@ export class DebugBridge {
     session.player.gameVariables.set(key, value);
   }
 
+  /** Set the player's display name. Mirrors set_char_attribute name. */
+  setPlayerName(name: string): void {
+    session.player.name = name;
+  }
+
   /** Apply a screen overlay (set_layer action). Pass empty string to clear. */
   setLayer(rgba?: string): void {
     if (!this.activeScene) return;

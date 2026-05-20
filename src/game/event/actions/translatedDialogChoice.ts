@@ -1,6 +1,7 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { t } from "../../i18n";
+import { formatText } from "../../textFormatter";
 import { debugBridge } from "../../debug";
 
 const WIDTH = 320;
@@ -62,10 +63,15 @@ class TranslatedDialogChoiceAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     for (let i = 0; i < this.options.length; i++) {
-      const label = scene.add.text(PAD_X + 16, boxY + PAD_Y + i * OPTION_H, t(this.options[i]), {
-        fontSize: "11px",
-        color: "#1a1a1a",
-      });
+      const label = scene.add.text(
+        PAD_X + 16,
+        boxY + PAD_Y + i * OPTION_H,
+        formatText(t(this.options[i])),
+        {
+          fontSize: "11px",
+          color: "#1a1a1a",
+        },
+      );
       label.setDepth(101).setScrollFactor(0);
       this.labels.push(label);
     }
@@ -79,7 +85,9 @@ class TranslatedDialogChoiceAction implements EventAction {
     this.upKey = scene.input.keyboard!.addKey(KEY_UP);
     this.downKey = scene.input.keyboard!.addKey(KEY_DOWN);
 
-    debugBridge.emit("choice_presented", { options: this.options.map((o) => t(o)) });
+    debugBridge.emit("choice_presented", {
+      options: this.options.map((o) => formatText(t(o))),
+    });
   }
 
   update(ctx: EventContext): void {
@@ -109,7 +117,7 @@ class TranslatedDialogChoiceAction implements EventAction {
         ctx.variables.set(this.variable, this.options[this.selected]);
         debugBridge.emit("choice_selected", {
           index: this.selected,
-          text: t(this.options[this.selected]),
+          text: formatText(t(this.options[this.selected])),
         });
         this.done = true;
       }
