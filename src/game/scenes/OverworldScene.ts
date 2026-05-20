@@ -466,15 +466,14 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       }
     }
 
-    // Camera
+    // Camera: always follow the player, matching upstream Tuxemon's behaviour
+    // (upstream/tuxemon/camera/camera.py). `setBounds` clamps scroll at map
+    // edges; for maps smaller than the viewport in some dimension Phaser
+    // anchors the map flush against the clamped edge and fills the rest of
+    // the viewport with the camera background colour (black, set below).
     const cam = this.cameras.main;
-    if (map.widthInPixels >= cam.width && map.heightInPixels >= cam.height) {
-      cam.startFollow(this.player, true);
-      cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    } else {
-      // Small map — lock camera to map centre so the room stays fixed on screen
-      cam.centerOn(map.widthInPixels / 2, map.heightInPixels / 2);
-    }
+    cam.startFollow(this.player, true);
+    cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.player.setCollideWorldBounds(true);
 
@@ -548,6 +547,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
 
   getDebugState(): Record<string, unknown> {
     const { tileX, tileY } = this.playerTile();
+    const cam = this.cameras.main;
     return {
       mapKey: this.mapKey,
       player: {
@@ -557,6 +557,14 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
         pixelX: this.player.x,
         pixelY: this.player.y,
         texture: this.player.texture.key,
+      },
+      // Exposed for the indoor-camera-follow QA harness (STORY-0209) to assert
+      // the player tile is inside the visible viewport. Cheap to include.
+      camera: {
+        scrollX: cam.scrollX,
+        scrollY: cam.scrollY,
+        width: cam.width,
+        height: cam.height,
       },
       npcs: [...this.npcs.values()].map((npc) => ({
         slug: npc.slug,
