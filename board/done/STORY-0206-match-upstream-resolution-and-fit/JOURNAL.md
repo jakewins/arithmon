@@ -126,3 +126,35 @@ npx tsc --noEmit      →  ok
 npm test              →  462 passed
 qa/viewport-and-scaling.ts (ARITHMON_PORT=8081)  →  all 5 checks OK
 ```
+
+## 2026-05-20 — Reviewer findings (re-review, approve)
+
+- Re-reviewed bounce-fix commit `8827c6f` against the single open todo
+  (`01-port-event-action-overlays-to-256x144.md`). All four files
+  (`translatedDialogChoice`, `renamePlayer`, `choiceMonster`, the three
+  `changeBg*` callers) now import `SCREEN_W`/`SCREEN_H` from `screen.ts` and
+  size their boxes against `BOX_H=48` / `FONT_SIZE=8` / `PAD_X=8` / `PAD_Y=4`
+  to match `event/ui/dialogBox.ts`. `changeBgShared.ts` dropped its
+  `WIDTH`/`HEIGHT` re-exports as the todo required.
+- `grep -rnE '\b(320|240)\b' src/game/event/` returns only the two
+  explanatory comments in `changeBgChar.ts` / `changeBgMonster.ts` describing
+  the old sprite scales. No live code path uses the old dimensions.
+- Pre-commit gates fresh on `review-wip`: `format:check` ✓, `lint` ✓,
+  `tsc --noEmit` ✓, `npm test` ✓ (462/462).
+- Ran `qa/viewport-and-scaling.ts` end-to-end against `ARITHMON_PORT=8082`;
+  all five checks pass including the new `checkChoiceOverlay`. Visually
+  inspected `qa/screenshots/ui-choice-overlay.png` — the Rockitten "Yes / No"
+  choice box renders cleanly inside the 256×144 canvas with the cursor
+  caret on the selected entry.
+- Spot-checked previously-passing per-story QA: `qa/smoke.ts`,
+  `qa/combat-recharge-math.ts`, and `qa/campaign-intro-playthrough.ts`
+  (all 9 phases of the intro). None regressed.
+- `change_bg*` sprite scaling reduction (char 4→2, monster 3→1) is
+  arithmetically sound: `SPRITE_Y = (144-48)/2 = 48`; char sprite at 16×2=32
+  px extends y=32–64; monster sprite at ~64×1=64 px extends y=16–80. Both
+  comfortably above the 48-px dialog box (y=96–144) and inside the canvas.
+  No QA exercises this overlay live, but no map in the curated set fires
+  `change_bg_char` or `change_bg_monster` either; can revisit if/when one
+  gets wired up.
+
+Approving and moving to `board/done/`.
