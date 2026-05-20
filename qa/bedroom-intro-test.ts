@@ -27,8 +27,10 @@ function assert(cond: boolean, msg: string): void {
 }
 
 /**
- * Drive a fresh boot from the title screen into the bedroom intro state.
- * Returns the page with the "Intro Question" dialog open.
+ * Drive a fresh boot from the title screen → start_tuxemon cutscene →
+ * spyder_bedroom intro state. Returns the page with the "Intro Question"
+ * dialog open. Uses A.selectChoice to walk through the three character-
+ * creation choices (covered standalone by character-creation-test.ts).
  */
 async function bootIntoBedroom(): Promise<{ page: Page; close: () => Promise<void> }> {
   const session = await launchGame();
@@ -39,7 +41,28 @@ async function bootIntoBedroom(): Promise<{ page: Page; close: () => Promise<voi
   await page.reload();
   await page.waitForFunction(() => window.A?.ready, null, { timeout: 30_000 });
 
-  await pressKey(page, KEY_ENTER); // confirm "New Game"
+  await pressKey(page, KEY_ENTER); // confirm "New Game" → CutsceneScene
+  await page.waitForFunction(
+    () => window.A?.getState().scene === "CutsceneScene",
+    null,
+    { timeout: 10_000 },
+  );
+
+  // Walk the three start_tuxemon choices: campaign → gender → race. The
+  // cutscene transitions to OverworldScene on the final choice via
+  // transition_teleport, landing the player at spyder_bedroom (4,4).
+  let seenChoices = 0;
+  for (const choice of [0 /* spyder_campaign */, 0 /* gender_male */, 1 /* white_male */]) {
+    seenChoices += 1;
+    await page.waitForFunction(
+      (need) => window.A!.events.filter((e) => e.type === "choice_presented").length >= need,
+      seenChoices,
+      { timeout: 5_000 },
+    );
+    await page.evaluate((i) => window.A!.selectChoice(i), choice);
+    await page.waitForTimeout(150);
+  }
+
   await page.waitForFunction(
     () => window.A?.getState().scene === "OverworldScene",
     null,
@@ -63,15 +86,21 @@ async function bootIntoBedroom(): Promise<{ page: Page; close: () => Promise<voi
  * the page render — keep pressing until the choice opens.
  */
 async function advanceToChoice(page: Page): Promise<void> {
-  for (let i = 0; i < 5; i++) {
+  // The rolling event buffer already contains the three choice_presented
+  // events from the preceding start_tuxemon character-creation flow, so we
+  // wait for a new one to appear by counting against the baseline.
+  const baseline: number = await page.evaluate(
+    () => window.A!.events.filter((e) => e.type === "choice_presented").length,
+  );
+  for (let i = 0; i < 8; i++) {
     await page.evaluate(() => window.A!.interact());
     await page.waitForTimeout(150);
-    const hasChoice = await page.evaluate(() =>
-      window.A!.events.some((e) => e.type === "choice_presented"),
+    const count: number = await page.evaluate(
+      () => window.A!.events.filter((e) => e.type === "choice_presented").length,
     );
-    if (hasChoice) return;
+    if (count > baseline) return;
   }
-  throw new Error("Intro Question choice never appeared after 5 interact presses");
+  throw new Error("Intro Question choice never appeared after 8 interact presses");
 }
 
 /** Press interact until we leave the bedroom (mapKey changes). */

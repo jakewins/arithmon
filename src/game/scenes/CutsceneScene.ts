@@ -5,6 +5,7 @@ import type { EventContext, NpcState, PendingTeleport } from "../event/types";
 import { session } from "../session";
 import type { OverworldInitData } from "./OverworldScene";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
+import { loadPO } from "../i18n";
 
 export class CutsceneScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   private eventEngine!: EventEngine;
@@ -22,8 +23,14 @@ export class CutsceneScene extends Scene implements DebugStateProvider, DebugCom
     super("CutsceneScene");
   }
 
-  init(data: { yamlKey: string; callerScene: string }) {
-    this.callerScene = data.callerScene;
+  /**
+   * `callerScene` is the scene to resume when the cutscene's end_cutscene
+   * action fires (used by mid-game cutscenes that overlay the overworld).
+   * Omit it for map-less entry-point cutscenes like start_tuxemon that have
+   * no scene to return to — those should always exit via transition_teleport.
+   */
+  init(data: { yamlKey: string; callerScene?: string }) {
+    this.callerScene = data.callerScene ?? "";
     const yamlText = this.cache.text.get(data.yamlKey) as string;
     const events = loadEventsFromYaml(yamlText);
     this.eventEngine = new EventEngine(events);
@@ -34,6 +41,11 @@ export class CutsceneScene extends Scene implements DebugStateProvider, DebugCom
 
   create() {
     this.cameras.main.setBackgroundColor(0x000000);
+    // i18n is normally initialized by OverworldScene, but in map-less entry
+    // cutscenes (e.g. start_tuxemon from the title screen) we may run first.
+    // Load it from cache if present; subsequent loads are idempotent.
+    const poText = this.cache.text.get("i18n-en") as string | undefined;
+    if (poText) loadPO(poText);
 
     this.input.keyboard!.on("keydown-SPACE", () => {
       this.interactPressed = true;
@@ -105,7 +117,17 @@ export class CutsceneScene extends Scene implements DebugStateProvider, DebugCom
 
     if (this.controlsState.cutsceneDone) {
       this.scene.stop();
-      this.scene.resume(this.callerScene);
+      // No caller means we entered the cutscene as the boot scene (no
+      // overworld behind us). Map-less cutscenes are expected to exit via
+      // transition_teleport; an end_cutscene without a teleport leaves the
+      // game without an active scene, so warn rather than silently hang.
+      if (this.callerScene) {
+        this.scene.resume(this.callerScene);
+      } else {
+        console.warn(
+          "CutsceneScene: end_cutscene fired with no caller scene and no pending teleport",
+        );
+      }
     }
   }
 

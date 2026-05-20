@@ -20,6 +20,7 @@ const KEY_ENTER = 13;
 interface TitleState {
   scene: string;
   title?: { selected: number; selectedOption: string | null; options: string[] };
+  cutscene?: { callerScene: string; blocking: boolean };
   player?: { tileX: number; tileY: number; facing: string };
   session?: {
     template: string;
@@ -53,60 +54,28 @@ async function main() {
   );
   await screenshot(page, "title-screen-no-save");
 
-  // Press Enter on "New Game" — STORY-0194: boot straight to spyder_bedroom,
-  // skipping the campaign/gender/race chooser cutscene.
+  // Press Enter on "New Game" — STORY-0199: hands off to start_tuxemon.yaml
+  // running in CutsceneScene (campaign/gender/race chooser). The full
+  // walkthrough is covered by character-creation-test.ts; here we just verify
+  // the title screen routes into the cutscene rather than the overworld.
   await pressKey(page, KEY_ENTER);
 
   await page.waitForFunction(
-    () => window.A?.getState().scene === "OverworldScene",
+    () => window.A?.getState().scene === "CutsceneScene",
     null,
     { timeout: 10_000 },
   );
   state = (await getState(page)) as unknown as TitleState;
   await expect(
-    state.scene === "OverworldScene",
-    `expected OverworldScene after New Game, got ${state.scene}`,
+    state.scene === "CutsceneScene",
+    `expected CutsceneScene after New Game, got ${state.scene}`,
   );
   await expect(
-    state.player?.tileX === 4 && state.player?.tileY === 4,
-    `expected spawn at (4,4), got (${state.player?.tileX},${state.player?.tileY})`,
+    state.session?.variables.scenario_choice === undefined,
+    `expected scenario_choice unset before any choice, got ${state.session?.variables.scenario_choice}`,
   );
-  await expect(
-    state.player?.facing === "down",
-    `expected facing down, got ${state.player?.facing}`,
-  );
-  await expect(
-    state.session?.variables.scenario_choice === "spyder_campaign",
-    `expected scenario_choice=spyder_campaign, got ${state.session?.variables.scenario_choice}`,
-  );
-  await expect(
-    state.session?.variables.gender_choice === "gender_male",
-    `expected gender_choice=gender_male, got ${state.session?.variables.gender_choice}`,
-  );
-  await expect(
-    state.session?.variables.race_choice === "white_male",
-    `expected race_choice=white_male, got ${state.session?.variables.race_choice}`,
-  );
-  await expect(
-    state.session?.variables.got_starter === undefined,
-    `expected got_starter unset, got ${state.session?.variables.got_starter}`,
-  );
-  await expect(
-    state.session?.monsters.length === 0,
-    `expected empty party, got ${state.session?.monsters.length}`,
-  );
-  await expect(
-    state.session?.template === "adventurer",
-    `expected template=adventurer (white_male), got ${state.session?.template}`,
-  );
-  // Wait for the fade-in to finish so the screenshot reflects the final
-  // bedroom render rather than a black frame. The spyder_bedroom map fires
-  // its "Intro Question" dialog event on the first update tick, so the
-  // captured frame includes that overlay — that's expected upstream
-  // behaviour, not a regression. Acceptance criterion is the room layout
-  // and player position on the rug.
-  await page.waitForTimeout(600);
-  await screenshot(page, "title-screen-new-game-confirmed");
+  await page.waitForTimeout(400);
+  await screenshot(page, "title-screen-new-game-cutscene");
   await session1.close();
 
   // --- Pass 2: With a save in place. Title shows Load Game first, and
