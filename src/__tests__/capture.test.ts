@@ -30,15 +30,16 @@ describe("capture formula", () => {
     const monster = Monster.spawn("rockitten", 5);
     monster.currentHp = 1;
     const sv = shakeCheck(monster, 1.0);
-    // With catch_rate 255 and nearly 0 HP, should be close to 255
-    expect(sv).toBeGreaterThan(200);
+    // rockitten catchRate=100; at 1 HP the ratio approaches 1, so sv ≈ catchRate.
+    expect(sv).toBeGreaterThan(90);
   });
 
   it("shakeCheck at full HP yields lower value", () => {
     const monster = Monster.spawn("rockitten", 5);
     const sv = shakeCheck(monster, 1.0);
-    // At full HP: (3*max - 2*max) * 255 / (3*max) = 255/3 = 85
-    expect(sv).toBeLessThanOrEqual(86);
+    // At full HP: (3*max - 2*max) * catchRate / (3*max) = catchRate/3.
+    // With rockitten catchRate=100, that's ~33.
+    expect(sv).toBeLessThanOrEqual(34);
   });
 
   it("attemptCapture succeeds when all rolls pass", () => {

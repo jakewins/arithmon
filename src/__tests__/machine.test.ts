@@ -103,24 +103,24 @@ describe("CombatMachine", () => {
 
   it("canAfford returns false when DP is insufficient", () => {
     machine.intro();
-    machine.darkPower = 1;
-    const scratch = player.techniques.find((t) => t.slug === "scratch")!;
     const ram = player.techniques.find((t) => t.slug === "ram")!;
-    expect(machine.canAfford(scratch)).toBe(true);
+    // ram costs 2 DP
+    machine.darkPower = 1;
     expect(machine.canAfford(ram)).toBe(false);
+    machine.darkPower = 2;
+    expect(machine.canAfford(ram)).toBe(true);
   });
 
   it("canFight is true when any technique is affordable", () => {
     machine.intro();
-    machine.darkPower = 1;
-    // scratch costs 1, ram costs 2 — scratch is still affordable
+    // rockitten's cheapest L5 moves (ram, boulder) cost 2 DP each
+    machine.darkPower = 2;
     expect(machine.canFight()).toBe(true);
-    machine.darkPower = 0;
+    machine.darkPower = 1;
     expect(machine.canFight()).toBe(false);
   });
 
-  it("player at level 5 has scratch and ram techniques", () => {
-    expect(player.techniques).toHaveLength(2);
-    expect(player.techniques.map((t) => t.slug)).toEqual(["scratch", "ram"]);
+  it("player at level 5 has the rockitten L1-L4 moveset", () => {
+    expect(player.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide"]);
   });
 });

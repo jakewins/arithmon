@@ -81,14 +81,14 @@ describe("Monster XP system", () => {
   });
 
   it("learns new moves at the appropriate level", () => {
-    // Rockitten learns pounce at level 6
-    const m = Monster.spawn("rockitten", 5);
-    expect(m.techniques.map((t) => t.slug)).toEqual(["scratch", "ram"]);
-    const xpNeeded = xpForLevel(6) - xpForLevel(5);
+    // Rockitten learns assault at level 7
+    const m = Monster.spawn("rockitten", 6);
+    expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide"]);
+    const xpNeeded = xpForLevel(7) - xpForLevel(6);
     const results = m.addXp(xpNeeded);
-    expect(m.techniques.map((t) => t.slug)).toEqual(["scratch", "ram", "pounce"]);
+    expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide", "assault"]);
     expect(results[0].newMoves).toHaveLength(1);
-    expect(results[0].newMoves[0].slug).toBe("pounce");
+    expect(results[0].newMoves[0].slug).toBe("assault");
   });
 
   it("handles multiple level-ups at once", () => {
@@ -99,12 +99,12 @@ describe("Monster XP system", () => {
     expect(results).toHaveLength(4); // levels 2, 3, 4, 5
   });
 
-  it("learns ram at level 3 during multi-level jump", () => {
+  it("learns mudslide at level 4 during multi-level jump", () => {
     const m = Monster.spawn("rockitten", 1);
-    expect(m.techniques).toHaveLength(1);
+    expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder"]);
     const xpNeeded = xpForLevel(5) - xpForLevel(1);
     m.addXp(xpNeeded);
-    expect(m.techniques.map((t) => t.slug)).toEqual(["scratch", "ram"]);
+    expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide"]);
   });
 
   it("xpToNextLevel returns xp for next level", () => {
@@ -134,7 +134,7 @@ describe("CombatMachine XP award", () => {
     const startXp = player.totalXp;
 
     while (machine.state === "DECISION") {
-      machine.submitAction({ type: "fight", technique: "scratch" });
+      machine.submitAction({ type: "fight", technique: "ram" });
     }
 
     expect(machine.outcome).toBe("win");
@@ -146,7 +146,7 @@ describe("CombatMachine XP award", () => {
 
     let events: ReturnType<typeof machine.submitAction> = [];
     while (machine.state === "DECISION") {
-      events = machine.submitAction({ type: "fight", technique: "scratch" });
+      events = machine.submitAction({ type: "fight", technique: "ram" });
     }
 
     expect(events.some((e) => e.type === "xp_gain")).toBe(true);

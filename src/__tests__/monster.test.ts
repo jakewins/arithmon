@@ -21,14 +21,12 @@ describe("Monster.spawn", () => {
 
   it("includes techniques learned at or below the monster's level", () => {
     const m = Monster.spawn("rockitten", 1);
-    expect(m.techniques).toHaveLength(1);
-    expect(m.techniques[0].slug).toBe("scratch");
+    expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder"]);
   });
 
-  it("includes multiple techniques at higher levels", () => {
+  it("includes additional techniques unlocked by level 5", () => {
     const m = Monster.spawn("rockitten", 5);
-    expect(m.techniques).toHaveLength(2);
-    expect(m.techniques.map((t) => t.slug)).toEqual(["scratch", "ram"]);
+    expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide"]);
   });
 
   it("starts with full HP", () => {
