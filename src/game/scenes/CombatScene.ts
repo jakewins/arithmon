@@ -162,6 +162,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   // Menu panels
   private leftBorder!: Phaser.GameObjects.NineSlice;
   private rightBorder!: Phaser.GameObjects.NineSlice;
+  // Floating techniques popup that sits above the main menu when picking a move.
+  // Mirrors upstream Tuxemon's MainCombatMenuState.open_technique_menu which
+  // pushes a separate shrink-to-fit Menu state anchored above the main 2x2.
+  private techPopupBorder!: Phaser.GameObjects.NineSlice;
 
   // Main menu (2x2 grid)
   private mainMenuLabels: Phaser.GameObjects.Text[] = [];
@@ -174,6 +178,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private techCursor!: Phaser.GameObjects.Text;
   private techSelected = 0;
   private techRechargeLabel!: Phaser.GameObjects.Text;
+  // Origin of the technique-popup interior (top-left of first label / cursor row).
+  // Recomputed each time buildTechLabels runs since the popup resizes to fit.
+  private techPopupOriginX = 0;
+  private techPopupOriginY = 0;
+
+  // Attack info card (bottom-left panel during technique selection).
+  // Upstream renders these as transient sprites via the `show()` closure
+  // hooked to on_menu_selection_change_callback in combat_menus.py.
+  private infoCardName!: Phaser.GameObjects.Text;
+  private infoCardAccuracy!: Phaser.GameObjects.Text;
+  private infoCardPower!: Phaser.GameObjects.Text;
+  private infoCardCost!: Phaser.GameObjects.Text;
+  private infoCardRange!: Phaser.GameObjects.Text;
 
   // Party submenu
   private partyLabels: Phaser.GameObjects.Text[] = [];
@@ -467,6 +484,24 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     );
     this.rightBorder.setDepth(100);
 
+    // Floating techniques popup — initial geometry is just a placeholder;
+    // buildTechLabels resizes it to fit the current monster's move list.
+    // Hidden by default; only visible while menuMode === "techniques".
+    this.techPopupBorder = this.add.nineslice(
+      WIDTH - RIGHT_W / 2,
+      BOX_Y - (OPTION_H * 3 + PAD_Y * 2) / 2,
+      BORDER_TEXTURE,
+      undefined,
+      RIGHT_W,
+      OPTION_H * 3 + PAD_Y * 2,
+      BORDER_SLICE,
+      BORDER_SLICE,
+      BORDER_SLICE,
+      BORDER_SLICE,
+    );
+    this.techPopupBorder.setDepth(100);
+    this.techPopupBorder.setVisible(false);
+
     // Message text in left panel
     this.messageText = this.add.text(PAD_X, BOX_Y + PAD_Y, "", {
       fontSize: "11px",
@@ -474,6 +509,47 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       wordWrap: { width: LEFT_W - PAD_X * 2 },
     });
     this.messageText.setDepth(101);
+
+    // --- Attack info card (bottom-left panel during technique selection) ---
+    // Layout: name on top, then a 2x2 grid of {accuracy,range},{power,cost}.
+    // Created hidden; renderInfoCard toggles visibility.
+    const infoX = PAD_X;
+    const infoY = BOX_Y + PAD_Y;
+    const infoCol2X = LEFT_W / 2;
+    this.infoCardName = this.add.text(infoX, infoY, "", {
+      fontSize: "11px",
+      color: TEXT_COLOR,
+    });
+    this.infoCardName.setDepth(101);
+    this.infoCardAccuracy = this.add.text(infoX, infoY + OPTION_H + 2, "", {
+      fontSize: "9px",
+      color: TEXT_COLOR,
+    });
+    this.infoCardAccuracy.setDepth(101);
+    this.infoCardRange = this.add.text(infoCol2X, infoY + OPTION_H + 2, "", {
+      fontSize: "9px",
+      color: TEXT_COLOR,
+    });
+    this.infoCardRange.setDepth(101);
+    this.infoCardPower = this.add.text(infoX, infoY + OPTION_H + 2 + 10, "", {
+      fontSize: "9px",
+      color: TEXT_COLOR,
+    });
+    this.infoCardPower.setDepth(101);
+    this.infoCardCost = this.add.text(infoCol2X, infoY + OPTION_H + 2 + 10, "", {
+      fontSize: "9px",
+      color: "#7733aa",
+    });
+    this.infoCardCost.setDepth(101);
+    for (const t of [
+      this.infoCardName,
+      this.infoCardAccuracy,
+      this.infoCardRange,
+      this.infoCardPower,
+      this.infoCardCost,
+    ]) {
+      t.setVisible(false);
+    }
 
     // --- Main menu labels (2x2 grid in right panel) ---
     this.mainMenuLabels = [];
@@ -724,6 +800,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.clearTechLabels();
     this.techCursor.setVisible(false);
     this.techRechargeLabel.setVisible(false);
+    this.techPopupBorder.setVisible(false);
     this.clearPartyLabels();
     this.partyCursor.setVisible(false);
     this.clearItemLabels();
@@ -731,21 +808,28 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.clearItemTargetLabels();
     this.itemTargetCursor.setVisible(false);
 
+    // Info card is technique-specific; clear when leaving techniques mode.
+    if (mode !== "techniques") {
+      this.renderInfoCard(null);
+    }
+
     if (mode === "main") {
       this.messageText.setText(`What will ${this.machine.player.name} do?`);
       for (const label of this.mainMenuLabels) label.setVisible(true);
-      // Grey out RUN label in trainer battles
-      const runIdx = MAIN_ROWS * MAIN_COLS - 1; // bottom-right = RUN
-      if (!this.machine.isWild) {
-        this.mainMenuLabels[runIdx].setColor(DISABLED_COLOR);
-      } else {
-        this.mainMenuLabels[runIdx].setColor(TEXT_COLOR);
-      }
+      this.refreshMainMenuColors();
       this.mainCursor.setVisible(true);
       this.updateMainCursorPosition();
       debugBridge.emit("combat_menu", { mode: "main" });
     } else if (mode === "techniques") {
+      // Keep the 2x2 main menu visible but dimmed underneath the popup,
+      // matching upstream's layout where FIGHT row stays drawn while the
+      // techniques popup floats above.
+      for (const label of this.mainMenuLabels) {
+        label.setVisible(true);
+        label.setColor(DISABLED_COLOR);
+      }
       this.buildTechLabels();
+      this.techPopupBorder.setVisible(true);
       this.techCursor.setVisible(true);
       this.updateTechCursorPosition();
       debugBridge.emit("combat_menu", { mode: "techniques" });
@@ -764,6 +848,18 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.itemTargetCursor.setVisible(true);
       this.updateItemTargetCursorPosition();
       debugBridge.emit("combat_menu", { mode: "item_target", item: this.pendingItem?.slug });
+    }
+  }
+
+  /**
+   * Apply normal vs disabled colors to each main-menu label. Trainer battles
+   * grey out RUN regardless of menu mode; this is the one place that lives.
+   */
+  private refreshMainMenuColors() {
+    for (const label of this.mainMenuLabels) label.setColor(TEXT_COLOR);
+    const runIdx = MAIN_ROWS * MAIN_COLS - 1; // bottom-right = RUN
+    if (!this.machine.isWild) {
+      this.mainMenuLabels[runIdx].setColor(DISABLED_COLOR);
     }
   }
 
@@ -850,30 +946,58 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private buildTechLabels() {
     this.clearTechLabels();
     const techniques = this.getVisibleTechniques();
-    const baseX = LEFT_W + PAD_X + 12;
-    const baseY = BOX_Y + PAD_Y;
+    const showRecharge = this.machine.darkPower < this.machine.maxDarkPower;
+    const lineCount = techniques.length + (showRecharge ? 1 : 0);
+
+    // Size the popup to fit the longest move name plus the cursor + DP suffix.
+    // Lower-bound at RIGHT_W so it visually anchors with the main-menu panel.
+    let widestChars = 0;
+    for (const t of techniques) {
+      const len = `${t.name} ${t.dpCost}DP`.length;
+      if (len > widestChars) widestChars = len;
+    }
+    if (showRecharge) widestChars = Math.max(widestChars, "\u26a1 RECHARGE".length);
+    // ~6.5px per glyph at 11px monospace, plus cursor gutter + padding.
+    const contentW = Math.ceil(widestChars * 6.5) + 12 + PAD_X * 2;
+    const popupW = Math.max(RIGHT_W, Math.min(contentW, WIDTH - 4));
+    const popupH = lineCount * OPTION_H + PAD_Y * 2;
+    const popupRight = WIDTH;
+    const popupX = popupRight - popupW;
+    const popupY = BOX_Y - popupH;
+
+    this.techPopupBorder.setSize(popupW, popupH);
+    this.techPopupBorder.setPosition(popupX + popupW / 2, popupY + popupH / 2);
+
+    // Origin for technique row content (after popup's left padding + cursor gutter)
+    this.techPopupOriginX = popupX + PAD_X + 12;
+    this.techPopupOriginY = popupY + PAD_Y;
 
     for (let i = 0; i < techniques.length; i++) {
       const tech = techniques[i];
       const canAfford = this.machine.canAfford(tech);
-      const label = this.add.text(baseX, baseY + i * OPTION_H, `${tech.name} ${tech.dpCost}DP`, {
-        fontSize: "11px",
-        color: canAfford ? TEXT_COLOR : DISABLED_COLOR,
-      });
+      const label = this.add.text(
+        this.techPopupOriginX,
+        this.techPopupOriginY + i * OPTION_H,
+        `${tech.name} ${tech.dpCost}DP`,
+        {
+          fontSize: "11px",
+          color: canAfford ? TEXT_COLOR : DISABLED_COLOR,
+        },
+      );
       label.setDepth(101);
       label.setInteractive({ useHandCursor: true });
       label.on("pointerdown", () => {
         this.techSelected = i;
         this.updateTechCursorPosition();
+        this.refreshInfoCardForTechCursor();
         this.confirmTechMenu();
       });
       this.techLabels.push(label);
     }
 
-    // Recharge option at bottom
-    const rechargeY = baseY + techniques.length * OPTION_H;
-    const showRecharge = this.machine.darkPower < this.machine.maxDarkPower;
-    this.techRechargeLabel.setPosition(baseX, rechargeY);
+    // Recharge option at bottom of popup
+    const rechargeY = this.techPopupOriginY + techniques.length * OPTION_H;
+    this.techRechargeLabel.setPosition(this.techPopupOriginX, rechargeY);
     this.techRechargeLabel.setText("\u26a1 RECHARGE");
     this.techRechargeLabel.setVisible(showRecharge);
     if (showRecharge) {
@@ -882,14 +1006,15 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.techRechargeLabel.on("pointerdown", () => {
         this.techSelected = techniques.length;
         this.updateTechCursorPosition();
+        this.refreshInfoCardForTechCursor();
         this.confirmTechMenu();
       });
     } else {
       this.techRechargeLabel.disableInteractive();
     }
 
-    // Update message to show technique prompt
-    this.messageText.setText("Choose a technique:");
+    // Populate the info card with the currently-selected technique's details.
+    this.refreshInfoCardForTechCursor();
   }
 
   private clearTechLabels() {
@@ -909,10 +1034,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     if (this.justPressed("up")) {
       this.techSelected = (this.techSelected - 1 + optionCount) % optionCount;
       this.updateTechCursorPosition();
+      this.refreshInfoCardForTechCursor();
     }
     if (this.justPressed("down")) {
       this.techSelected = (this.techSelected + 1) % optionCount;
       this.updateTechCursorPosition();
+      this.refreshInfoCardForTechCursor();
     }
 
     if (this.isBackPressed()) {
@@ -927,9 +1054,67 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   }
 
   private updateTechCursorPosition() {
-    const baseX = LEFT_W + PAD_X;
-    const baseY = BOX_Y + PAD_Y;
-    this.techCursor.setPosition(baseX, baseY + this.techSelected * OPTION_H);
+    // Cursor sits in the popup's left gutter, aligned to the selected row.
+    this.techCursor.setPosition(
+      this.techPopupOriginX - 12,
+      this.techPopupOriginY + this.techSelected * OPTION_H,
+    );
+  }
+
+  /**
+   * Sync the bottom-left info card to whatever the technique cursor is on.
+   * Upstream binds the equivalent overlay to `on_menu_selection_change_callback`
+   * (combat_menus.py:561) — keep them in lockstep or the card looks stale.
+   */
+  private refreshInfoCardForTechCursor() {
+    const techniques = this.getVisibleTechniques();
+    if (this.techSelected < techniques.length) {
+      this.renderInfoCard(techniques[this.techSelected]);
+    } else {
+      // Recharge row — the info card doesn't apply to the recharge action.
+      this.renderInfoCard(null);
+      this.messageText.setText("Solve a math problem to recharge Dark Power.");
+    }
+  }
+
+  /**
+   * Populate or hide the attack info card in the bottom-left panel.
+   * Passing null restores the regular messageText prompt.
+   */
+  private renderInfoCard(tech: TechniqueDef | null) {
+    if (tech === null) {
+      this.infoCardName.setVisible(false);
+      this.infoCardAccuracy.setVisible(false);
+      this.infoCardPower.setVisible(false);
+      this.infoCardCost.setVisible(false);
+      this.infoCardRange.setVisible(false);
+      this.messageText.setVisible(true);
+      return;
+    }
+
+    this.messageText.setVisible(false);
+    this.infoCardName.setText(tech.name);
+    this.infoCardName.setVisible(true);
+
+    this.infoCardAccuracy.setText(`Accuracy ${Math.round(tech.accuracy * 100)}%`);
+    this.infoCardAccuracy.setVisible(true);
+
+    // Power line is derived from the first damage effect; non-damage moves
+    // (Growl, Harden, etc.) hide the line entirely rather than showing "Power 0".
+    const damageEffect = tech.effects.find((e) => e.kind === "damage");
+    if (damageEffect && damageEffect.kind === "damage") {
+      this.infoCardPower.setText(`Power ${damageEffect.power}`);
+      this.infoCardPower.setVisible(true);
+    } else {
+      this.infoCardPower.setVisible(false);
+    }
+
+    this.infoCardCost.setText(`Cost ${tech.dpCost} DP`);
+    this.infoCardCost.setVisible(true);
+
+    // Plain text for now; STORY-0203 swaps in the proper RANGED/MELEE badge art.
+    this.infoCardRange.setText(tech.range.toUpperCase());
+    this.infoCardRange.setVisible(true);
   }
 
   private confirmTechMenu() {
@@ -938,6 +1123,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     if (this.techSelected < techniques.length) {
       const tech = techniques[this.techSelected];
       if (!this.machine.canAfford(tech)) {
+        // Surface the error in the bottom-left panel; hide the info card so
+        // the message isn't covered by the technique-details overlay.
+        this.renderInfoCard(null);
         this.messageText.setText("Not enough Dark Power!");
         return;
       }
