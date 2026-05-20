@@ -1,78 +1,84 @@
-# STORY-0197: Port spyder_paper_scoop map + bin starter-pick cutscene from upstream
+# STORY-0197: Port spyder_paper_scoop verbatim — CEO cutscene + "not Gold member" rejection
 
 ## Description
 
-Port the `spyder_paper_scoop` map (the outdoor back-of-store yard with bins, per `/home/jake/Pictures/Screenshots/20260520_110852.png`) and its bin-cutscene event script verbatim from current upstream Tuxemon. This is the **heart of the intro**: NPCs spawn, `spyder_dante` walks down to the bins, the player gets prompted for their name (`rename_player`), then picks one of five starter monsters from a `choice_monster` menu (`budaye:dollfin:grintot:ignibus:memnomnom`), confirms, NPCs exit choreographically, and the player teleports back to `spyder_bedroom.tmx`.
+Port the `spyder_paper_scoop` map and its event YAML verbatim from upstream Tuxemon. This is the **first scoop visit** the player makes after the bedroom cinematic: the storekeeper greets them, the form-filling dialog runs (Dante walks down to the bins and back, name prompt fires), the player picks one monster from a `choice_monster` menu, NPCs choreograph an exit, and finally the storekeeper says "sorry, you're not a Gold member, go home" — then teleports the player back to `spyder_bedroom.tmx,3,4`.
 
-This is the largest story in the intro series. Sizing rationale: it's a single coherent cutscene with one map port — splitting further would risk breaking the choreography mid-flow.
+**Important correction from the earlier draft of this story**: the prior planner asserted that the player's scoop-menu choice gets added to their party (acceptance criterion: "Chosen starter ends up in the player's party"). **That is wrong.** Upstream never adds the scoop choice to the player. The `myintrochoice` variable is recorded narratively — and used later when paper_town's `First Fight - Start` builds Billie's team via `add_monster billie_choice,5,spyder_billie,...`. The player's actual starter comes from the bins in paper_town (STORY-0196), not from the scoop menu.
 
-**Depends on**: STORY-0195 (bedroom intro teleports the player here) and STORY-0196 (`spyder_dante` sprite registered).
+The scoop also has post-intro NPCs (Dante wandering, shopkeeper at the counter) and a `Talk Dante No Party` event that sets `dantefirst:yes` — that flag is what gates STORY-0196's bin sequence. So the scoop is visited twice: once for the cutscene, once for the "talk to Dante to be told to look in the bins" beat.
+
+**Depends on**: STORY-0195 (bedroom intro teleports the player to scoop at 4,8) and STORY-0201 (MonsterInfoScene for the CapDev bin journal-inspect events — though scoop's CapDev events only call `open_journal`, no choice prompt, so 0201 is a soft dep).
 
 ### Upstream reference
 
-- `upstream/mods/tuxemon/maps/spyder_paper_scoop.tmx` (13×11 tiles — small map, outdoor back-of-store yard with bins). Map dimensions and collisions are what makes the shopkeeper unreachable behind the bins.
-- `upstream/mods/tuxemon/maps/spyder_paper_scoop.yaml` — the **verbatim event script** to port.
-- `upstream/mods/tuxemon/l18n/en_US/LC_MESSAGES/base.po` — dialogue strings:
-  - `spyder_intro_shopkeeper1` — "What a great presentation from our CEO! All Gold members are being offered a free tuxemon."
-  - `spyder_intro_shopkeeper2` — "Just fill in this form."
-  - `spyder_intro_shopkeeper3` — "Please, now return the form to the Shop Assistant, so we can give you the tuxemon."
-  - `spyder_intro_shopkeeper4` — "I'm sorry, you are not a Gold member. This offer is for Gold members only.\nPlease go home now."
-  - `spyder_intro_question_name` — "What is your name?"
-  - `areyousure` — the yes/no confirmation prompt
-  - `potions_in_shop`, `spyder_papertown_danteresting`, `spyder_papertown_danteworking`, `spyder_papertown_dante1`/2/3 (post-intro Dante dialogues)
+- `upstream/mods/tuxemon/maps/spyder_paper_scoop.tmx` — 13×11 outdoor back-of-store yard with bins. Collisions near the top (y=32-128) make the shopkeeper unreachable during the cutscene.
+- `upstream/mods/tuxemon/maps/spyder_paper_scoop.yaml` — **the verbatim event script to port**. Our loader's YAML schema is compatible — `cp` should work.
+- `upstream/mods/tuxemon/l18n/en_US/LC_MESSAGES/base.po` — dialog msgids:
+  - `spyder_intro_shopkeeper1` / `2` / `3` / `4`
+  - `spyder_intro_question_name`
+  - `areyousure`
+  - `potions_in_shop`
+  - `spyder_papertown_danteresting`, `_danteworking`, `_dante1`, `_dante2`, `_dante3`
+
+### Full event inventory (20 events in upstream)
+
+Read `upstream/mods/tuxemon/maps/spyder_paper_scoop.yaml` directly — it's already structured as YAML in upstream, so this is closer to a literal copy than STORY-0196 (paper_town, where events live inside the TMX). Events:
+
+- **Create NPCs** — spawns 7 NPCs in formation. Gated on `not intro_scoop:done` + all 7 `not char_exists` checks.
+- **Create Shopkeeper** — post-intro, spawns shopkeeper at (0,4). Gated on `not char_exists spyder_shopkeeper` + `is variable_set intro_scoop:done`.
+- **Create Dante** — post-intro, spawns Dante at (11,6) with `wander` behavior. Gated on `not char_exists spyder_dante` + `is variable_set intro_scoop:done`. Note: 4th arg `wander` — upstream `create_npc` accepts a behavior keyword in slot 4; our action treats slot 4 as a Direction (fix described below).
+- **Route Music** — `play_music music_cathedral_theme`.
+- **Intro Storekeeper** — the long opening choreography. Locks controls, dialog `_shopkeeper1`, Dante walks (7,7)→(5,3)→(5,4)→(5,5)→(5,6)→(5,7)→(5,8) facing left, dialog `_shopkeeper2` twice (once mid-walk, once at the bins), Dante walks back to (7,7), dialog `_question_name`, `rename_player player,random`, set `choice_phase:yes`, unlock. Gated on `not intro_scoop:done` + `not choice_phase`.
+- **Choice** — `choice_monster budaye:dollfin:grintot:ignibus:memnomnom,myintrochoice` + `set_variable choice_phase:next`. Gated on `choice_phase:yes`.
+- **Confirm Monster** — `translated_dialog_choice yes:no,areyousure`. Gated on `choice_phase:next`.
+- **Confirm Monster No** — set `choice_phase:yes` + `areyousure:none` (re-opens the menu). Gated on `areyousure:no`.
+- **Confirm Monster Yes** — set `choice_phase:progress`. Gated on `areyousure:yes`.
+- **Billie Budaye / Dollfin / Grintot / Ignibus / Memnomnom** — five sibling events, each setting `billie_choice:<slug>` based on which `myintrochoice` was picked. These persist for paper_town's `First Fight - Start` event to read.
+- **Continue Storekeeper** — the long exit choreography (40+ lines). Locks controls, dialog `_shopkeeper3`, each of the 5 background NPCs walks `(5,7)→(6,7)→(6,10)` and despawns, then player pathfinds to (6,7), Dante faces up, shopkeeper walks down to (6,6) and faces player, dialog `_shopkeeper4` ("not a Gold member, go home"), player pathfinds to (6,10), `transition_teleport player,spyder_bedroom.tmx,3,4,0.3`, remove shopkeeper + Dante, set `intro_scoop:done`, unlock. Gated on `not intro_scoop:done` + `choice_phase:progress`.
+- **5 CapDev events** at (8,8) through (12,8), each `open_journal <slug>` on INTERACT — `dollfin`, `memnomnom`, `budaye`, `grintot`, `ignibus` (note ordering: (8,8)=dollfin, (9,8)=memnomnom, (10,8)=budaye, (11,8)=grintot, (12,8)=ignibus). **Always interactable**, including during the cutscene's gaps — these are flavor and never gate anything.
+- **Potions** at (8,5) width 5 — sign showing `potions_in_shop` dialog on INTERACT.
+- **Go Outside** at (6,10) — `transition_teleport player,spyder_paper_town.tmx,19,13,0.3`. Gated on `is char_at player` + `is char_facing player,down` + `is variable_set intro_scoop:done`. Note: **only works after the cutscene completes** — during the cutscene there's no way to leave the scoop on foot.
+- **Talk Dante No Party** — `translated_dialog spyder_papertown_danteresting` + `set_variable dantefirst:yes`. `behav: talk spyder_dante`. Gated on `intro_scoop:done` + `not party_size > 0`. **Critical**: this event sets the flag that lets paper_town's bin-cutscene fire. The player has to physically come back to the scoop and talk to Dante to get past the Stop! blocker via the alternate route.
+- **Talk Dante Party / Daycare / Omnichannel / Player Returns** — post-intro Dante dialogs gated on later campaign state. Port verbatim even though they don't fire during the intro.
 
 ### What to build
 
 1. **Port the TMX map**
-   - Export `upstream/mods/tuxemon/maps/spyder_paper_scoop.tmx` to our Tiled-JSON format (same procedure as STORY-0196).
-   - The collision objects at the top of the map (y=32-128, x=0-208 area per `<object id="11">..`) are what makes the shopkeeper unreachable. Preserve them exactly.
-   - Register in `src/game/data/maps.ts`.
+   - Export `upstream/mods/tuxemon/maps/spyder_paper_scoop.tmx` to our Tiled-JSON format (same procedure as STORY-0196). Preserve the upper-area collisions that make the shopkeeper unreachable during the cutscene. Register in `src/game/data/maps.ts`.
+   - Copy any tileset PNGs not already in `public/assets/maps/`.
 
-2. **Drop in the upstream event YAML**
-   - **Literal copy:** `cp upstream/mods/tuxemon/maps/spyder_paper_scoop.yaml public/assets/events/spyder_paper_scoop.yaml`. Our loader's schema matches upstream's exactly (including `behav: talk <npc>` auto-expansion). No hand-translation.
-   - Our current `spyder_paper_scoop.yaml` has only "Create NPCs" and "Create Shopkeeper"; the upstream file has all of these (which will all come along with the copy):
-     - `Billie Budaye`, `Billie Dollfin`, `Billie Grintot`, `Billie Ignibus`, `Billie Memnomnom` (each sets `billie_choice` based on `myintrochoice`)
-     - `CapDev 1st` through `CapDev 5th` (display cases at y=8 that open the journal for each starter)
-     - `Choice` (the `choice_monster budaye:dollfin:grintot:ignibus:memnomnom,myintrochoice` action)
-     - `Confirm Monster`, `Confirm Monster No`, `Confirm Monster Yes`
-     - `Continue Storekeeper` (the long NPC-exit choreography + final dialog + teleport back to bedroom + `set_variable intro_scoop:done`)
-     - `Create Dante`, `Create NPCs`, `Create Shopkeeper`
-     - `Go Outside` (at tile 6,10 → teleports to `spyder_paper_town.tmx,19,13`)
-     - `Intro Storekeeper` (the main cutscene — Dante walks to bins, prompts name, sets `choice_phase:yes`)
-     - `Potions` (display sign — already in our copy if at all)
-     - `Route Music`
-     - `Talk Dante Daycare`, `Talk Dante No Party`, `Talk Dante Omnichannel`, `Talk Dante Party`, `Talk Dante Player Returns` (post-intro Dante dialogues)
+2. **Literal copy of the event YAML**
+   - `cp upstream/mods/tuxemon/maps/spyder_paper_scoop.yaml public/assets/events/spyder_paper_scoop.yaml`. Do not hand-translate.
+   - Our current `public/assets/events/spyder_paper_scoop.yaml` is divergent — **replace it entirely**.
 
-3. **Register the NPC sprites**
-   - 7 NPCs spawn in the intro: `spyder_shopkeeper`, `spyder_dante` (already registered in STORY-0196), `spyder_papermart_miles`, `spyder_papermart_shirley`, `spyder_route2_roddick`, `spyder_papermart_harith`, `spyder_billie`.
-   - Source PNGs from `upstream/mods/tuxemon/sprites/<slug>.png`. Apply `[[feedback_npc_registry_audit]]` — verify each `spritesheet:` against upstream `sprite_name`. Apply `[[feedback_npc_qa_dimension_check]]` — 48×128 dimensions, diff against upstream.
+3. **Register the 7 cutscene NPC sprites**
+   - `spyder_shopkeeper`, `spyder_dante`, `spyder_papermart_miles`, `spyder_papermart_shirley`, `spyder_route2_roddick`, `spyder_papermart_harith`, `spyder_billie`.
+   - Source PNGs: `upstream/mods/tuxemon/sprites/<slug>.png`. Apply `[[feedback_npc_registry_audit]]` (verify `sprite_name` vs upstream) and `[[feedback_npc_qa_dimension_check]]` (48×128 layout, byte-cmp vs upstream).
+   - `spyder_billie` and `spyder_dante` may already be registered from STORY-0196 prep work — coordinate.
 
-4. **Port dialogue strings**
-   - Append all listed msgids/msgstrs from `upstream/mods/tuxemon/l18n/en_US/LC_MESSAGES/base.po` to `public/assets/l10n/en_US.po`.
+4. **Port required dialog msgids**
+   - Append to `public/assets/l10n/en_US.po`: `spyder_intro_shopkeeper1` through `4`, `spyder_intro_question_name`, `areyousure`, `potions_in_shop`, all `spyder_papertown_dante*` strings referenced by post-intro Talk Dante events.
 
-5. **Verify the 5 starter monsters are registered**
-   - Confirm `budaye`, `dollfin`, `grintot`, `ignibus`, `memnomnom` are all in `src/game/data/monsters.ts` with correct stats, types, movesets, and battle sprites. (Spot check confirms all 5 are registered as of writing — verify still true.)
+5. **Engine fix: `create_npc … ,wander`**
+   - `Create Dante` calls `create_npc spyder_dante,11,6,wander`. Our `src/game/event/actions/createNpc.ts` parses arg[3] as a `Direction`. `"wander"` is a behavior keyword, not a direction.
+   - Fix: if arg[3] is a known behavior keyword (`wander`, `path`, `none`), treat it as a behavior (acceptable initial: wandering is a no-op stub — Dante just stands there) and default facing to `down`. Don't crash on unknown args.
 
-6. **Engine fix: `create_npc … ,wander`**
-   - Upstream uses `create_npc spyder_dante,11,6,wander` in the post-intro `Create Dante` event.
-   - Our `src/game/event/actions/createNpc.ts` parses `args[3]` as a `Direction` — `"wander"` is not a valid direction and will mis-frame the sprite.
-   - Fix: if `args[3]` is a known behavior keyword (`wander`, `path`, etc.), treat it as a behavior (no-op for now is fine — wandering can be a stub), and default facing to `down`. Don't crash on unknown args.
-
-7. **Verify `choice_monster`, `rename_player`, `translated_dialog_choice` work in OverworldScene**
-   - `rename_player` was previously used in `CutsceneScene` context. The bin cutscene runs inside `OverworldScene`. Confirm the rename UI overlay renders correctly when launched from OverworldScene; if not, fix the action so it works in both contexts.
+6. **Verify `choice_monster`, `rename_player`, `translated_dialog_choice` work in OverworldScene**
+   - `rename_player` was previously used in cutscene contexts. The scoop cutscene runs inside `OverworldScene`. Confirm the rename UI overlay renders correctly here; if not, fix the action to work in both contexts.
 
 ### Engine notes
 
-- All other actions (`change_bg`, `lock_controls`, `unlock_controls`, `translated_dialog`, `translated_dialog_choice`, `pathfind`, `char_face`, `wait`, `transition_teleport`, `remove_npc`, `set_variable`, `open_journal`, `play_music`, `create_npc`, `char_stop`, `pathfind_to_char`) — all already registered.
-- All conditions (`variable_set`, `char_exists`, `music_playing`, `char_at`, `char_facing`, `char_facing_tile`, `char_facing_char`, `button_pressed`, `party_size`, `battle_outcome`) — all already registered.
+- All other actions used (`change_bg`, `lock_controls`/`unlock_controls`, `translated_dialog`, `pathfind`, `char_face`, `wait`, `transition_teleport`, `remove_npc`, `set_variable`, `open_journal`, `play_music`, `char_stop`) are registered.
+- All conditions used (`variable_set`, `char_exists`, `music_playing`, `char_at`, `char_facing`, `char_facing_tile`, `char_facing_char`, `button_pressed`, `party_size`, `battle_outcome`) are registered.
 
 ### Keep `setupGame()` working
 
-`setupGame()` (in `src/game/debug.ts`) currently sets `intro_scoop=done` so QA teleporting to `spyder_paper_scoop` doesn't trigger the bin cutscene. After your YAML port:
-- Verify the gating conditions in `Intro Storekeeper`, `Create NPCs`, `Choice`, `Continue Storekeeper`, etc. actually read `intro_scoop:done` (and `choice_phase` for the choice-related events). If upstream uses a different variable name or value, update `setupGame()` to match.
-- The post-intro state needs `Create Dante` (and `Create Shopkeeper`) to fire correctly so the map isn't empty after `setupGame`. Verify both events trigger when `intro_scoop:done` is set.
-- After this story, `setupGame()` should also be able to seed `billie_choice` and `myintrochoice` (matching the monster it adds to the party), so post-intro QA scripts can teleport to scoop without the choice/confirm events misfiring. Update `setupGame` accordingly.
-- Run **every** existing QA script after your changes — many of them call `setupGame()` with various map targets. None of them should start hitting the scoop cutscene unexpectedly.
+`setupGame()` currently sets `intro_scoop:done` so QA teleporting to scoop skips the cutscene. After this story:
+- Verify the gating conditions in `Intro Storekeeper`, `Create NPCs`, `Choice`, `Continue Storekeeper`, etc. actually read `intro_scoop:done` and `choice_phase` per the verbatim YAML.
+- Once `intro_scoop:done`, `setupGame` should also set `choice_phase:progress`, `billie_choice:<slug>`, `myintrochoice:<slug>` matching the monster it gives the player (so post-intro scoop QA doesn't trip Confirm Monster events).
+- `Create Dante` (post-intro) must fire successfully — verify Dante actually spawns when `setupGame` lands on scoop with `intro_scoop:done`.
+- All existing QA scripts must still pass.
 
 ### QA Validation
 
@@ -80,24 +86,31 @@ Use `/puppeteer`. Add `qa/paper-scoop-intro-test.ts`:
 
 1. `launchGame()` + `setupGame({ map: "spyder_paper_scoop", tileX: 4, tileY: 8, monsters: [] })` with intro variables cleared (`intro_scoop` unset, `choice_phase` unset, no party).
 2. Verify all 7 NPCs spawn at their upstream positions.
-3. Step into / wait for `Intro Storekeeper` to fire. Advance through the dialog. Verify the rename UI appears; type a name (or accept the random); press Enter.
-4. Verify `choice_phase=yes`. The `Choice` event fires `choice_monster` — verify the menu shows all 5 starters.
-5. Pick `budaye`. Verify `myintrochoice=budaye`, then confirm "yes" — verify `billie_choice=budaye`, `choice_phase=progress`.
-6. Watch the `Continue Storekeeper` choreography. Verify NPCs exit one by one, final dialog plays, player teleports back to `spyder_bedroom.tmx,3,4`. Verify `intro_scoop=done`.
-7. **Critical:** verify the chosen starter is in the player's party at the end. (Note: in upstream this happens implicitly via the `billie_choice` variable and a downstream event; if our flow doesn't actually add the monster to the party, fix it — likely add an `add_monster <billie_choice>,5` step to the `Continue Storekeeper` event near the end.)
-8. **Screenshot during the `Choice` step** — should look like `/home/jake/Pictures/Screenshots/20260520_110852.png` (outdoor scoop yard, bins visible, choice menu with 5 monster names).
-9. Test "No" on confirm — verify it loops back to `choice_phase=yes`.
+3. Watch `Intro Storekeeper` choreography. Advance through dialogs. Verify rename UI appears; accept the random name.
+4. Verify `choice_phase=yes`. `Choice` event fires `choice_monster` — verify menu shows all 5 starter slugs (budaye/dollfin/grintot/ignibus/memnomnom).
+5. Pick `budaye`. Verify `myintrochoice=budaye`, `billie_choice=budaye` (set by the `Billie Budaye` sibling event), `choice_phase=next`.
+6. Confirm "yes". Verify `choice_phase=progress`.
+7. Watch `Continue Storekeeper` choreography. Verify NPCs exit one by one, dialog `_shopkeeper4` plays, **teleport to `spyder_bedroom.tmx,3,4`**, `intro_scoop:done` set.
+8. **Critical:** verify the player's party is still empty. The scoop choice should NOT have added a monster to the player.
+9. Test "No" on confirm: setupGame back to scoop with `choice_phase:next`, pick "no", verify loop back to `choice_phase:yes` and `Choice` re-fires.
+10. Screenshot during the `Choice` step — should match `/home/jake/Pictures/Screenshots/20260520_110852.png`.
+
+**Second-visit QA** — `qa/paper-scoop-talk-dante-test.ts`:
+1. `setupGame({ map: "spyder_paper_scoop", tileX: 5, tileY: 6, monsters: [], variables: { intro_scoop: "done", choice_phase: "progress", billie_choice: "budaye" }})`.
+2. Verify Dante exists at (11,6) (via `Create Dante`).
+3. Walk to Dante, press INTERACT facing him. Verify `Talk Dante No Party` fires: dialog `spyder_papertown_danteresting`, sets `dantefirst:yes`.
+4. Walk to (6,10) facing down. Verify `Go Outside` teleports to `spyder_paper_town.tmx,19,13`.
 
 ## Acceptance Criteria
 
 - [ ] `spyder_paper_scoop.tmx` ported (13×11) and registered in `maps.ts`
-- [ ] `public/assets/events/spyder_paper_scoop.yaml` is a verbatim port of upstream
-- [ ] All 7 NPC sprites registered + verified against upstream `sprite_name`
-- [ ] All required dialogue msgids appended to `public/assets/l10n/en_US.po`
-- [ ] All 5 starter monsters confirmed registered with sprites
-- [ ] `create_npc` action handles `wander` 4th-arg gracefully
-- [ ] `rename_player` action works inside `OverworldScene` context
-- [ ] Chosen starter ends up in the player's party (verify and add `add_monster` if needed)
-- [ ] `qa/paper-scoop-intro-test.ts` passes; screenshot matches reference
-- [ ] `setupGame()` updated with `intro_scoop=done`, `choice_phase=progress`, `billie_choice`, `myintrochoice` so post-intro QA can teleport to scoop without misfiring; all existing QA scripts that call it still pass unchanged
+- [ ] `public/assets/events/spyder_paper_scoop.yaml` is `cp`-verbatim from upstream
+- [ ] All 7 NPC sprites registered + byte-verified against upstream (`cmp` per `[[feedback_sprite_byte_compare]]`)
+- [ ] All required dialog msgids appended to `en_US.po`
+- [ ] `create_npc … ,wander` 4th-arg handled gracefully (no crash, no mis-facing)
+- [ ] `rename_player` works inside `OverworldScene`
+- [ ] **Scoop choice does NOT add the chosen monster to the player's party** (correction from earlier draft) — verify with explicit QA assertion
+- [ ] `Talk Dante No Party` sets `dantefirst:yes` (required by STORY-0196)
+- [ ] `qa/paper-scoop-intro-test.ts` and `qa/paper-scoop-talk-dante-test.ts` pass; intro screenshot matches reference
+- [ ] `setupGame()` updated with `intro_scoop:done`, `choice_phase:progress`, `billie_choice`, `myintrochoice` for post-intro scoop QA; all existing QA scripts pass unchanged
 - [ ] `npm run format:check && npm run lint && npx tsc --noEmit && npm test` all pass
