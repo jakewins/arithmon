@@ -496,6 +496,11 @@ export function getNpcSprite(slug: string): NpcSpriteDef {
   return NPC_REGISTRY[slug] ?? { spritesheet: "player" };
 }
 
+/** True if `slug` has an explicit entry in the NPC registry (no fallback). */
+export function hasNpcSprite(slug: string): boolean {
+  return slug in NPC_REGISTRY;
+}
+
 /**
  * Register an NPC sprite mapping at runtime. Used by the debug bridge so QA
  * scripts can spawn arbitrary slugs without baking them into the registry.

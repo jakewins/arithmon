@@ -227,13 +227,6 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.load.image("spyder_monsters", "assets/ui/background/spyder_monsters.png");
     this.load.image("spyder_morph", "assets/ui/background/spyder_morph.png");
 
-    // Character sprite for change_bg_char overlay (32×32 frames)
-    this.load.spritesheet(
-      "spyder_omnichannel_beaverbrook",
-      "assets/sprites/spyder_omnichannel_beaverbrook.png",
-      { frameWidth: 32, frameHeight: 32 },
-    );
-
     // Monster battle sprites (64×44 frames)
     this.load.spritesheet("rockitten-battle", "assets/sprites/rockitten-sheet.png", {
       frameWidth: 64,
@@ -556,6 +549,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
   getDebugState(): Record<string, unknown> {
     const { tileX, tileY } = this.playerTile();
     return {
+      mapKey: this.mapKey,
       player: {
         tileX,
         tileY,
