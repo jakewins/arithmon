@@ -60,3 +60,21 @@ npm run lint          →  ok
 npx tsc --noEmit      →  ok
 npm test              →  462 passed (1 dialog-pagination test had to be re-stabilised: BOX_H=48 keeps the same MAX_LINES_PER_PAGE=4 as before).
 ```
+
+## 2026-05-20 — Reviewer findings (bounce)
+
+- Confirmed `src/game/screen.ts` matches upstream `NATIVE_RESOLUTION = (256, 144)` and `main.ts` uses `Scale.NONE` + a `window.resize` listener that snaps to `floor(min(W/256, H/144))`. Verified the integer-snap argument: at 1920×1080, FIT would pick 7.5× — the implementor's reasoning is sound, and `qa/viewport-and-scaling.ts` confirms zoom is always integer (7 / 5 / 5 / 4 at the four sizes).
+- Re-ran all four pre-commit gates fresh on `review-wip`: `format:check`, `lint`, `tsc --noEmit`, and 462/462 tests pass.
+- Ran `qa/viewport-and-scaling.ts` end-to-end against `ARITHMON_PORT=8082`; output matches the implementor's log. Screenshots in `qa/screenshots/`: overworld framing (~16×9), all four resolution snaps, every UI scene, and the long-message dialog all render cleanly inside 256×144.
+- Also re-ran existing per-story QA against the changes: `qa/combat-recharge-math.ts`, `qa/smoke.ts`, `qa/shop-purchase-test.ts`, `qa/paper-scoop-talk-dante-test.ts`, and `qa/campaign-intro-playthrough.ts` all still pass.
+- **Bouncing for one defect**: `grep -rnE '\b(320|240)\b' src/game/` shows four files under `src/game/event/actions/` still hardcode `WIDTH=320, HEIGHT=240`:
+  - `translatedDialogChoice.ts` — used **8×** in `spyder_paper_town.json` (player's intro map!) plus three other Cotton maps. Choice box is drawn centred at (160, 208) with size 320×64 → entirely off-canvas; player gets no visible choices.
+  - `renamePlayer.ts` — fires during the bedroom intro; rename input dialog likewise off-canvas.
+  - `choiceMonster.ts` — same math, currently unused by any map but registered.
+  - `changeBgShared.ts` — `WIDTH/HEIGHT` re-exports consumed by `changeBg`, `changeBgChar`, `changeBgMonster`. Backdrops drawn at 320×240 centred at (160, 120), clipping ~64 px right and ~96 px bottom; `change_bg` is used in `water_end_of_desert.json`.
+
+  Acceptance criterion #2 (no hardcoded 320/240; UI scenes re-laid-out) is not fully met — the scene files are clean, but these runtime UI overlays were missed.
+
+- Existing QA hides this because none of `setupGame`'s defaults trigger a `translated_dialog_choice` or `rename_player`, and `qa/viewport-and-scaling.ts` only exercises the standard `DialogBox`. Recommend the bounce todo add a focused screenshot of at least one of these overlays so the regression can't slip through again.
+
+- Single todo added in `todos/open/01-port-event-action-overlays-to-256x144.md` with affected files, suggested fix (import `SCREEN_W`/`SCREEN_H` from `screen.ts`, retune box heights to fit 144 px), and required QA coverage.
