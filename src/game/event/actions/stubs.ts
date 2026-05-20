@@ -31,3 +31,7 @@ stubAction("tune_radio");
 stubAction("change_taste");
 stubAction("add_step_tracker");
 stubAction("remove_step_tracker");
+// NPC bounded wander — upstream syntax: char_wander <npc>,<period>,<x1>,<y1>,<x2>,<y2>.
+// We don't have wander AI yet, so the NPC just stands wherever create_npc put it.
+// The NPC remains interactable; only the pacing is missing.
+stubAction("char_wander");
