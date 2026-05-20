@@ -3,6 +3,7 @@ import { CombatMachine, CombatEvent, MAX_DARK_POWER, PlayerAction } from "../com
 import { Monster, PARTY_LIMIT } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
 import { MONSTERS } from "../data/monsters";
+import { ELEMENT_SLUGS } from "../data/elements";
 import { type ItemDef } from "../item/item";
 import { type Inventory, getInventoryItems } from "../item/inventory";
 import { canUseItem } from "../item/validation";
@@ -126,6 +127,13 @@ const PARTY_ICON_ASSETS: Record<string, string> = {
   "party-empty": "assets/ui/icons/party/party_empty.png",
 };
 
+// Texture keys for the attack info card icons (STORY-0203). Mirrors upstream
+// combat_menus.py's `show()` closure which loads element/{slug}_type_small.png
+// and range/{melee|ranged}.png from gfx/ui/icons/.
+const ELEMENT_ICON_KEY = (slug: string) => `combat-element-${slug}`;
+const RANGE_ICON_KEY = (range: string) => `combat-range-${range}`;
+const RANGE_SLUGS = ["melee", "ranged"] as const;
+
 type MenuMode = "hidden" | "main" | "techniques" | "party" | "items" | "item_target";
 
 // 2x2 main menu layout
@@ -190,7 +198,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private infoCardAccuracy!: Phaser.GameObjects.Text;
   private infoCardPower!: Phaser.GameObjects.Text;
   private infoCardCost!: Phaser.GameObjects.Text;
-  private infoCardRange!: Phaser.GameObjects.Text;
+  // Range pill (melee/ranged) and small element badge — STORY-0203 swapped in
+  // the upstream pixel-art for what were plain text labels in STORY-0202.
+  private infoCardRangeIcon!: Phaser.GameObjects.Image;
+  private infoCardElementIcon!: Phaser.GameObjects.Image;
 
   // Party submenu
   private partyLabels: Phaser.GameObjects.Text[] = [];
@@ -277,6 +288,20 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     for (const [key, path] of Object.entries(PARTY_ICON_ASSETS)) {
       if (!this.textures.exists(key)) {
         this.load.image(key, path);
+      }
+    }
+
+    // Info-card icons: small element badges + melee/ranged pills.
+    for (const slug of ELEMENT_SLUGS) {
+      const key = ELEMENT_ICON_KEY(slug);
+      if (!this.textures.exists(key)) {
+        this.load.image(key, `assets/ui/icons/element/${slug}_type_small.png`);
+      }
+    }
+    for (const range of RANGE_SLUGS) {
+      const key = RANGE_ICON_KEY(range);
+      if (!this.textures.exists(key)) {
+        this.load.image(key, `assets/ui/icons/range/${range}.png`);
       }
     }
   }
@@ -515,7 +540,6 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // Created hidden; renderInfoCard toggles visibility.
     const infoX = PAD_X;
     const infoY = BOX_Y + PAD_Y;
-    const infoCol2X = LEFT_W / 2;
     this.infoCardName = this.add.text(infoX, infoY, "", {
       fontSize: "11px",
       color: TEXT_COLOR,
@@ -526,30 +550,38 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       color: TEXT_COLOR,
     });
     this.infoCardAccuracy.setDepth(101);
-    this.infoCardRange = this.add.text(infoCol2X, infoY + OPTION_H + 2, "", {
-      fontSize: "9px",
-      color: TEXT_COLOR,
-    });
-    this.infoCardRange.setDepth(101);
-    this.infoCardPower = this.add.text(infoX, infoY + OPTION_H + 2 + 10, "", {
+    // Range pill: 34x9 upstream art. Sits where the plain "RANGED" text used
+    // to live (left column, middle row), origin top-left to align with text.
+    this.infoCardRangeIcon = this.add.image(infoX, infoY + OPTION_H + 2 + 10, "");
+    this.infoCardRangeIcon.setOrigin(0, 0);
+    this.infoCardRangeIcon.setDepth(101);
+    // Power line is now to the right of the range pill (matches upstream
+    // screenshot: "RANGED  Power 15").
+    this.infoCardPower = this.add.text(infoX + 40, infoY + OPTION_H + 2 + 10, "", {
       fontSize: "9px",
       color: TEXT_COLOR,
     });
     this.infoCardPower.setDepth(101);
-    this.infoCardCost = this.add.text(infoCol2X, infoY + OPTION_H + 2 + 10, "", {
+    this.infoCardCost = this.add.text(infoX, infoY + OPTION_H + 2 + 22, "", {
       fontSize: "9px",
       color: "#7733aa",
     });
     this.infoCardCost.setDepth(101);
+    // Element badge: 12x12 leaf/flame/etc. Right edge of the info-card panel,
+    // vertically aligned with the Cost/Recharge line per upstream screenshot.
+    this.infoCardElementIcon = this.add.image(LEFT_W - PAD_X - 12, infoY + OPTION_H + 2 + 20, "");
+    this.infoCardElementIcon.setOrigin(0, 0);
+    this.infoCardElementIcon.setDepth(101);
     for (const t of [
       this.infoCardName,
       this.infoCardAccuracy,
-      this.infoCardRange,
       this.infoCardPower,
       this.infoCardCost,
     ]) {
       t.setVisible(false);
     }
+    this.infoCardRangeIcon.setVisible(false);
+    this.infoCardElementIcon.setVisible(false);
 
     // --- Main menu labels (2x2 grid in right panel) ---
     this.mainMenuLabels = [];
@@ -1087,7 +1119,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.infoCardAccuracy.setVisible(false);
       this.infoCardPower.setVisible(false);
       this.infoCardCost.setVisible(false);
-      this.infoCardRange.setVisible(false);
+      this.infoCardRangeIcon.setVisible(false);
+      this.infoCardElementIcon.setVisible(false);
       this.messageText.setVisible(true);
       return;
     }
@@ -1112,9 +1145,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.infoCardCost.setText(`Cost ${tech.dpCost} DP`);
     this.infoCardCost.setVisible(true);
 
-    // Plain text for now; STORY-0203 swaps in the proper RANGED/MELEE badge art.
-    this.infoCardRange.setText(tech.range.toUpperCase());
-    this.infoCardRange.setVisible(true);
+    // Range pill and element badge: upstream pixel-art, same path scheme as
+    // combat_menus.py's show() closure (gfx/ui/icons/{range,element}/...).
+    this.infoCardRangeIcon.setTexture(RANGE_ICON_KEY(tech.range));
+    this.infoCardRangeIcon.setVisible(true);
+    this.infoCardElementIcon.setTexture(ELEMENT_ICON_KEY(tech.element));
+    this.infoCardElementIcon.setVisible(true);
   }
 
   private confirmTechMenu() {
