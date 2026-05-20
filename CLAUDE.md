@@ -27,6 +27,8 @@ await setupGame(page, { map: "spyder_paper_town", tileX: 10, tileY: 12 });
 // Game is now ready — player has a starter monster, is on the target map.
 ```
 
+Throwaway QA scripts (one-off exploration during a story, debugging aids, etc.) go in `qa/local/`, which is gitignored. Only the small curated suite at the top of `qa/` is checked in; do not add new files there unless you intend them to live forever.
+
 ## Before Committing
 
 Run `npm run format:check && npm run lint && npx tsc --noEmit && npm test` and fix any issues before committing.
