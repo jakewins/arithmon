@@ -18,6 +18,7 @@ import {
   registerNpcSprite,
 } from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
+import { MONSTERS } from "../data/monsters";
 import { getEncounterTable, rollEncounter } from "../data/encounters";
 import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
@@ -238,52 +239,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       frameWidth: 64,
       frameHeight: 64,
     });
-    for (const slug of [
-      "dollfin",
-      "ignibus",
-      "memnomnom",
-      "budaye",
-      "grintot",
-      "pairagrin",
-      "aardorn",
-      "cataspike",
-      "cardiling",
-      "eyenemy",
-      "axolightl",
-      "elofly",
-      "squabbit",
-      "shybulb",
-      "cairfrey",
-      "polyrock",
-      "djinnbo",
-      "sapsnap",
-      "katapill",
-      "anoleaf",
-      "foofle",
-      "vamporm",
-      "dracune",
-      "dandicub",
-      "dandylion",
-      "capiti",
-      "dinoflop",
-      "furnursus",
-      "boltnu",
-      "metesaur",
-      "agnite",
-      "agnidon",
-      "embra",
-      "coleorus",
-      "tourbidi",
-      "pythwire",
-      "ouroboutlet",
-      "sockeserp",
-      "toufigel",
-      "pipis",
-      "strella",
-      "elowind",
-      "cardiwing",
-      "rabbitosaur",
-    ]) {
+    for (const slug of Object.keys(MONSTERS)) {
       this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
         frameWidth: 64,
         frameHeight: 64,

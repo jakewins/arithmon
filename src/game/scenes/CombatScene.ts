@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import { CombatMachine, CombatEvent, MAX_DARK_POWER, PlayerAction } from "../combat/machine";
 import { Monster, PARTY_LIMIT } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
+import { MONSTERS } from "../data/monsters";
 import { type ItemDef } from "../item/item";
 import { type Inventory, getInventoryItems } from "../item/inventory";
 import { canUseItem } from "../item/validation";
@@ -216,18 +217,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         frameHeight: 64,
       });
     }
-    for (const slug of [
-      "dollfin",
-      "ignibus",
-      "memnomnom",
-      "budaye",
-      "grintot",
-      "pairagrin",
-      "aardorn",
-      "cataspike",
-      "cardiling",
-      "eyenemy",
-    ]) {
+    for (const slug of Object.keys(MONSTERS)) {
       if (!this.textures.exists(`${slug}-battle`)) {
         this.load.spritesheet(`${slug}-battle`, `assets/sprites/battle/${slug}-sheet.png`, {
           frameWidth: 64,

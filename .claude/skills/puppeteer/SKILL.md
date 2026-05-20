@@ -22,7 +22,7 @@ async function main() {
 
   // IMPORTANT: Always call setupGame() right after launchGame() to skip the
   // character creation intro and teleport to a playable state.
-  await setupGame(page, { map: "cotton_town", tileX: 20, tileY: 19 });
+  await setupGame(page, { map: "spyder_paper_town", tileX: 20, tileY: 19 });
 
   await walkTo(page, 8, 12);
   await interact(page);
@@ -66,7 +66,7 @@ All imported from `./harness`:
 
 ```ts
 await setupGame(page, {
-  map: "cotton_town",         // default: "cotton_town"
+  map: "spyder_paper_town",         // default: "spyder_cotton_town"
   tileX: 20, tileY: 19,      // default: (20, 19)
   scenario: "spyder_campaign", // default
   gender: "gender_male",       // default
