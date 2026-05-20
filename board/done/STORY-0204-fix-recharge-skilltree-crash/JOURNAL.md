@@ -99,3 +99,35 @@ The story noted both options. I went sourced because:
   around this by going through Phaser's scene manager directly
   (`active.scene.get("CombatScene")`). Fixing the active-scene
   pointer on scene resume is a real gap, but out of scope here.
+
+## 2026-05-20 — Reviewer findings (approve)
+
+- Root cause analysis verified: confirmed `resetSession()` in
+  `src/game/session.ts:142-145` does `Object.assign(session, fresh)`,
+  which rebinds `session.skillStates` to a new `{}` from
+  `createSession()`. The module-level `skillTree = createSkillTree(session)`
+  has already populated the original `skillStates` object via
+  `register()`, so the new object is empty and `getNextProblem()`
+  blows up on the first Recharge — exactly as described.
+- Approach is reasonable: a named `reseed()` API documents the
+  invariant explicitly and only fires from `clearSave()` (the one
+  documented "wipe to fresh" seam). An alternative would have been
+  to mutate `session.skillStates` in place inside `resetSession()`,
+  but that adds maintenance cost per-field and doesn't help the
+  same class of bug for any future singleton holding a session
+  sub-object reference. Sourced fix > defensive guard agreed.
+- Verified `save.ts` -> `skilltree.ts` import direction: no
+  circular dependency.
+- QA verified end-to-end (`ARITHMON_PORT=8082 npx tsx
+  qa/combat-recharge-math.ts`): script drives the Title -> New Game
+  path (the load-bearing trigger — `setupGame` alone wouldn't fire
+  `clearSave`/`resetSession`), reaches MathProblemScene, screenshot
+  shows a real numeric-input question (`What is 4 - 3?`), correct
+  answer refills DP to 5, wrong answer leaves DP at 0, returns to
+  CombatScene main menu both times.
+- Pre-commit gates clean: `npm run format:check && npm run lint &&
+  npx tsc --noEmit && npm test` all pass (448 tests).
+- Follow-up flagged in journal note (d) about the stale
+  debug-bridge active-scene pointer on scene resume is a real but
+  unrelated harness gap. Not blocking — the QA worked around it
+  cleanly. Worth its own small story if/when it bites again.
