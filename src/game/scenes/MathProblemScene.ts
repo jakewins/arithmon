@@ -3,6 +3,13 @@ import { skillTree } from "../skilltree";
 import type { PerseusProblem, ProblemWidget, GradeResult } from "../data/problems";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { SCREEN_W, SCREEN_H } from "../screen";
+import { BIG_LIGHT, BODY_LIGHT, withColor } from "../ui/textStyle";
+
+// MathProblemScene runs on a dark backdrop, so all foreground text is light.
+// Color tokens kept local since they're only used here.
+const C_ACCENT = "#4488cc";
+const C_HINT = "#88aacc";
+const C_INPUT = "#ffcc00";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -105,8 +112,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Title
     this.add
       .text(WIDTH / 2, panelY + 6, "MATH CHALLENGE", {
-        fontSize: "8px",
-        color: "#4488cc",
+        ...withColor(BODY_LIGHT, C_ACCENT),
         fontStyle: "bold",
       })
       .setOrigin(0.5);
@@ -114,13 +120,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Separator line
     this.add.rectangle(WIDTH / 2, panelY + 16, panelW - 12, 1, 0x4488cc, 0.5);
 
-    // Question text — use smaller font + word wrap for longer text (e.g. word problems)
-    const isLongQuestion = displayQuestion.length > 40;
-    const questionFontSize = isLongQuestion ? "8px" : "10px";
+    // Question text — always 8 px (PressStart2P's native grid). Long question
+    // word-wraps; short questions just render at the same size centered.
     const questionObj = this.add
       .text(WIDTH / 2, panelY + 22, displayQuestion, {
-        fontSize: questionFontSize,
-        color: "#ffffff",
+        ...BODY_LIGHT,
         fontStyle: "bold",
         wordWrap: { width: panelW - 12 },
         align: "center",
@@ -147,7 +151,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Feedback text (correct/incorrect)
     this.feedbackText = this.add
       .text(WIDTH / 2, HEIGHT - panelY - 10, "", {
-        fontSize: "8px",
+        ...BODY_LIGHT,
         fontStyle: "bold",
       })
       .setOrigin(0.5);
@@ -237,18 +241,14 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.add.rectangle(WIDTH / 2, inputY, 56, 14, 0x222244).setStrokeStyle(1, 0x6666aa);
 
     this.answerText = this.add
-      .text(WIDTH / 2, inputY, "_", {
-        fontSize: "10px",
-        color: "#ffcc00",
-      })
+      .text(WIDTH / 2, inputY, "_", withColor(BODY_LIGHT, C_INPUT))
       .setOrigin(0.5);
 
     // Submit button
     const submitY = inputY + 18;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "8px",
-        color: "#ffcc00",
+        ...withColor(BODY_LIGHT, C_INPUT),
         backgroundColor: "#333333",
         padding: { x: 5, y: 2 },
       })
@@ -259,8 +259,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint button
     this.add
       .text(WIDTH / 2, submitY + 14, "? HINT", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         backgroundColor: "#222233",
         padding: { x: 4, y: 2 },
       })
@@ -271,8 +270,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint display area
     this.hintText = this.add
       .text(WIDTH / 2, submitY + 28, "", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         wordWrap: { width: panelW - 20 },
         align: "center",
       })
@@ -312,12 +310,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Labels
     const labels = widget.options.labels;
-    this.add
-      .text(leftX, inputY - 10, labels[0], { fontSize: "8px", color: "#88aacc" })
-      .setOrigin(0.5);
-    this.add
-      .text(rightX, inputY - 10, labels[1], { fontSize: "8px", color: "#88aacc" })
-      .setOrigin(0.5);
+    this.add.text(leftX, inputY - 10, labels[0], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
+    this.add.text(rightX, inputY - 10, labels[1], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
 
     // Input boxes
     this.dualBoxes[0] = this.add
@@ -329,10 +323,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Answer texts
     this.dualTexts[0] = this.add
-      .text(leftX, inputY, "_", { fontSize: "10px", color: "#ffcc00" })
+      .text(leftX, inputY, "_", withColor(BODY_LIGHT, C_INPUT))
       .setOrigin(0.5);
     this.dualTexts[1] = this.add
-      .text(rightX, inputY, "_", { fontSize: "10px", color: "#ffcc00" })
+      .text(rightX, inputY, "_", withColor(BODY_LIGHT, C_INPUT))
       .setOrigin(0.5);
 
     // Click to focus
@@ -349,8 +343,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     const submitY = inputY + 18;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "8px",
-        color: "#ffcc00",
+        ...withColor(BODY_LIGHT, C_INPUT),
         backgroundColor: "#333333",
         padding: { x: 5, y: 2 },
       })
@@ -361,8 +354,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint button
     this.add
       .text(WIDTH / 2, submitY + 14, "? HINT", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         backgroundColor: "#222233",
         padding: { x: 4, y: 2 },
       })
@@ -373,8 +365,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint display
     this.hintText = this.add
       .text(WIDTH / 2, submitY + 28, "", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         wordWrap: { width: _panelW - 20 },
         align: "center",
       })
@@ -461,8 +452,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const y = startY + i * spacing;
       const btn = this.add
         .text(WIDTH / 2, y, choices[i].content, {
-          fontSize: "9px",
-          color: "#ffffff",
+          ...BODY_LIGHT,
           backgroundColor: "#333355",
           padding: { x: 6, y: 2 },
           fixedWidth: panelW - 32,
@@ -510,23 +500,12 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     const rowY = contentY + 12;
     const { left, right } = widget.options;
 
-    // Left value
-    this.add
-      .text(WIDTH / 2 - 60, rowY, left, {
-        fontSize: "14px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    // Left value — BIG_LIGHT is 16 px (2× the body grid), the "big number" we're comparing.
+    const bigBold: Phaser.Types.GameObjects.Text.TextStyle = { ...BIG_LIGHT, fontStyle: "bold" };
+    this.add.text(WIDTH / 2 - 60, rowY, left, bigBold).setOrigin(0.5);
 
     // Right value
-    this.add
-      .text(WIDTH / 2 + 60, rowY, right, {
-        fontSize: "14px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    this.add.text(WIDTH / 2 + 60, rowY, right, bigBold).setOrigin(0.5);
 
     // Three comparison buttons in the middle
     const symbols: Array<">" | "=" | "<"> = [">", "=", "<"];
@@ -537,8 +516,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const x = startX + i * btnSpacing;
       const btn = this.add
         .text(x, rowY, symbols[i], {
-          fontSize: "12px",
-          color: "#ffffff",
+          ...bigBold,
           backgroundColor: "#333355",
           padding: { x: 4, y: 3 },
           align: "center",
@@ -615,12 +593,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.add.rectangle(x, lineY, 1, tickH, 0x6688aa);
 
       if (isLabel) {
-        this.add
-          .text(x, lineY + 8, String(val), {
-            fontSize: "8px",
-            color: "#88aacc",
-          })
-          .setOrigin(0.5, 0);
+        this.add.text(x, lineY + 8, String(val), withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5, 0);
       }
     }
 
@@ -633,8 +606,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Value label above marker
     this.nlValueText = this.add
       .text(markerX, lineY - 10, String(range[0]), {
-        fontSize: "8px",
-        color: "#ffcc00",
+        ...withColor(BODY_LIGHT, C_INPUT),
         fontStyle: "bold",
       })
       .setOrigin(0.5, 1);
@@ -670,8 +642,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     const submitY = lineY + 20;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "8px",
-        color: "#ffcc00",
+        ...withColor(BODY_LIGHT, C_INPUT),
         backgroundColor: "#333333",
         padding: { x: 5, y: 2 },
       })
@@ -682,8 +653,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint button
     this.add
       .text(WIDTH / 2, submitY + 14, "? HINT", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         backgroundColor: "#222233",
         padding: { x: 4, y: 2 },
       })
@@ -852,8 +822,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     this.dropdownPlaceholder = this.add
       .text(WIDTH / 2, dropY, widget.options.placeholder, {
-        fontSize: "9px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         fontStyle: "bold",
       })
       .setOrigin(0.5);
@@ -871,8 +840,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     const submitY = dropY + 22;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
-        fontSize: "8px",
-        color: "#ffcc00",
+        ...withColor(BODY_LIGHT, C_INPUT),
         backgroundColor: "#333333",
         padding: { x: 5, y: 2 },
       })
@@ -883,8 +851,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint button
     this.add
       .text(WIDTH / 2, submitY + 14, "? HINT", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         backgroundColor: "#222233",
         padding: { x: 4, y: 2 },
       })
@@ -895,8 +862,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Hint display
     this.hintText = this.add
       .text(WIDTH / 2, submitY + 26, "", {
-        fontSize: "8px",
-        color: "#88aacc",
+        ...withColor(BODY_LIGHT, C_HINT),
         wordWrap: { width: panelW - 20 },
         align: "center",
       })
@@ -938,8 +904,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       const y = listY + 2 + i * itemH + itemH / 2;
       const btn = this.add
         .text(WIDTH / 2, y, choices[i].content, {
-          fontSize: "9px",
-          color: "#ffffff",
+          ...BODY_LIGHT,
           backgroundColor: "#333355",
           padding: { x: 6, y: 2 },
           fixedWidth: 80,

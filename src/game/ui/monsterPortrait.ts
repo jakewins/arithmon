@@ -1,7 +1,6 @@
 import type { Scene } from "phaser";
 import type { Monster } from "../model/Monster";
-
-const TEXT_COLOR = "#1a1a1a";
+import { BODY, withColor } from "./textStyle";
 
 export interface PortraitObjects {
   container: Phaser.GameObjects.Container;
@@ -62,9 +61,12 @@ export function createStatsDisplay(
   const labels: Phaser.GameObjects.Text[] = [];
   const lineH = 9;
 
+  // Single space between label and value — PressStart2P is wider than Arial,
+  // so the previous "HP  99/99" with double-space (9 chars × 8 = 72 px)
+  // pushed past the 72 px stats-column budget.
   const lines = [
     `Lv ${monster.level}`,
-    `HP  ${monster.currentHp}/${monster.maxHp}`,
+    `HP ${monster.currentHp}/${monster.maxHp}`,
     `MEL ${monster.melee}`,
     `RNG ${monster.ranged}`,
     `ARM ${monster.armor}`,
@@ -73,20 +75,18 @@ export function createStatsDisplay(
   ];
 
   for (let i = 0; i < lines.length; i++) {
-    const label = scene.add.text(0, i * lineH, lines[i], {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    const label = scene.add.text(0, i * lineH, lines[i], BODY);
     labels.push(label);
     container.add(label);
   }
 
-  // XP progress bar
+  // XP progress bar — 48 px wide so the label + bar fit inside a 72 px
+  // stats column ("XP" label at x=0, bar starting at x=14, ending at 62).
   const xpY = lines.length * lineH + 2;
-  const XP_BAR_W = 64;
+  const XP_BAR_W = 48;
   const XP_BAR_H = 3;
 
-  const xpLabel = scene.add.text(0, xpY, "XP", { fontSize: "8px", color: "#4488ff" });
+  const xpLabel = scene.add.text(0, xpY, "XP", withColor(BODY, "#4488ff"));
   labels.push(xpLabel);
   container.add(xpLabel);
 
@@ -113,23 +113,19 @@ export function createTechniqueList(
   const container = scene.add.container(x, y);
   container.setDepth(depth);
 
-  const header = scene.add.text(0, 0, "Moves:", {
-    fontSize: "8px",
-    color: TEXT_COLOR,
-  });
+  const header = scene.add.text(0, 0, "Moves:", BODY);
   container.add(header);
 
   for (let i = 0; i < monster.techniques.length; i++) {
     const tech = monster.techniques[i];
-    const label = scene.add.text(0, 10 + i * 9, `${tech.name} (${tech.dpCost}DP)`, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    // Drop the parens — at 8 px PressStart2P, every glyph counts and the
+    // techniques column has to fit inside a ~70 px gutter on the party screen.
+    const label = scene.add.text(0, 10 + i * 9, `${tech.name} ${tech.dpCost}DP`, BODY);
     container.add(label);
   }
 
   if (monster.techniques.length === 0) {
-    const none = scene.add.text(0, 10, "None", { fontSize: "8px", color: "#999999" });
+    const none = scene.add.text(0, 10, "None", withColor(BODY, "#999999"));
     container.add(none);
   }
 

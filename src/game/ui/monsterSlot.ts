@@ -1,10 +1,12 @@
 import type { Scene } from "phaser";
 import type { Monster } from "../model/Monster";
+import { BODY, withColor } from "./textStyle";
 
-// Slot widget sized for the 256×144 viewport: ~70 px wide total (bar + label).
-const HP_BAR_W = 50;
+// Slot widget sized for the 256×144 viewport: ~80 px wide total (bar + label).
+// The bar shrank from 50 → 36 px to leave room for "99/99" at 8 px PressStart2P
+// (5 chars ≈ 40 px) without clipping the right edge of the party-screen panel.
+const HP_BAR_W = 36;
 const HP_BAR_H = 3;
-const TEXT_COLOR = "#1a1a1a";
 const DISABLED_COLOR = "#999999";
 
 export interface MonsterSlotObjects {
@@ -36,33 +38,29 @@ export function createMonsterSlot(
   container.setDepth(depth);
 
   const fainted = monster.fainted;
-  const color = fainted ? DISABLED_COLOR : TEXT_COLOR;
+  const style = fainted ? withColor(BODY, DISABLED_COLOR) : BODY;
 
   const nameText = fainted
     ? `${monster.name} Lv${monster.level} KO`
     : `${monster.name} Lv${monster.level}`;
 
-  const nameLabel = scene.add.text(0, 0, nameText, {
-    fontSize: "8px",
-    color,
-  });
+  const nameLabel = scene.add.text(0, 0, nameText, style);
   container.add(nameLabel);
 
-  // HP bar background
-  const hpBarBg = scene.add.rectangle(HP_BAR_W / 2, 11, HP_BAR_W, HP_BAR_H, 0x333333);
+  // HP bar + text on a second row below the name. PressStart2P glyphs are
+  // ~8 px tall, so the bar/text sit at y=12 to clear the name's bounding box
+  // without overlapping the slot below (slot pitch in PartyScreen is 22 px).
+  const hpBarBg = scene.add.rectangle(HP_BAR_W / 2, 13, HP_BAR_W, HP_BAR_H, 0x333333);
   container.add(hpBarBg);
 
   // HP bar foreground
   const ratio = monster.currentHp / monster.maxHp;
-  const hpBarFg = scene.add.rectangle(HP_BAR_W / 2, 11, HP_BAR_W, HP_BAR_H, hpColor(ratio));
+  const hpBarFg = scene.add.rectangle(HP_BAR_W / 2, 13, HP_BAR_W, HP_BAR_H, hpColor(ratio));
   hpBarFg.setScale(Math.max(0, ratio), 1);
   container.add(hpBarFg);
 
-  // HP text
-  const hpLabel = scene.add.text(HP_BAR_W + 3, 8, `${monster.currentHp}/${monster.maxHp}`, {
-    fontSize: "8px",
-    color,
-  });
+  // HP text — same row as the bar, just to its right.
+  const hpLabel = scene.add.text(HP_BAR_W + 3, 10, `${monster.currentHp}/${monster.maxHp}`, style);
   container.add(hpLabel);
 
   return { container, nameLabel, hpBarBg, hpBarFg, hpLabel };
@@ -78,10 +76,7 @@ export function createEmptySlot(
   const container = scene.add.container(x, y);
   container.setDepth(depth);
 
-  const label = scene.add.text(0, 4, "- - - - -", {
-    fontSize: "8px",
-    color: DISABLED_COLOR,
-  });
+  const label = scene.add.text(0, 4, "- - - - -", withColor(BODY, DISABLED_COLOR));
   container.add(label);
 
   return container;

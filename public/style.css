@@ -1,3 +1,17 @@
+/*
+ * PressStart2P is upstream Tuxemon's UI font. We register it here (rather than
+ * via Phaser's preloader) so the browser starts fetching the file during the
+ * initial HTML parse, before any scene runs. main.ts awaits
+ * `document.fonts.ready` (and an explicit FontFace.load() for the family)
+ * before booting Phaser; that guarantees the first rendered frame already
+ * uses the bitmap font — no flash of fallback Arial.
+ */
+@font-face {
+    font-family: "PressStart2P";
+    src: url("/assets/font/PressStart2P.ttf") format("truetype");
+    font-display: block;
+}
+
 body {
     margin: 0;
     padding: 0;

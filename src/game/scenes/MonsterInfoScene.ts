@@ -18,6 +18,7 @@ import { MONSTERS } from "../data/monsters";
 import { t } from "../i18n";
 import { formatText } from "../textFormatter";
 import { SCREEN_W, SCREEN_H } from "../screen";
+import { BODY, HEADING, NAME, withWrap } from "../ui/textStyle";
 
 // Upstream `tux_info.png` is 256×144 — same as our native viewport, so it
 // blits 1:1 from the top-left. BG_W is reused for the bottom panel width;
@@ -26,10 +27,6 @@ import { SCREEN_W, SCREEN_H } from "../screen";
 const BG_W = SCREEN_W;
 const BG_X = 0;
 const BG_Y = 0;
-
-const TEXT_COLOR = "#1a1a1a";
-const FONT_SMALL = "8px";
-const FONT_NAME = "16px";
 
 // Sprite is drawn inside the striped frame; the frame sits in the top-left
 // quadrant of the cream area. Centre of the 64×64 sprite ≈ centre of frame.
@@ -114,10 +111,7 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     } else {
       // Unknown slug — render a placeholder rather than crashing.
       this.add
-        .text(SCREEN_W / 2, SCREEN_H / 2, `Unknown monster: ${this.slug}`, {
-          fontSize: FONT_SMALL,
-          color: TEXT_COLOR,
-        })
+        .text(SCREEN_W / 2, SCREEN_H / 2, `Unknown monster: ${this.slug}`, BODY)
         .setOrigin(0.5)
         .setDepth(5);
     }
@@ -171,35 +165,23 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     // cram these 6 rows in (ID, NAME, species, size, types, body type).
     // ID
     const idText = def.txmnId !== undefined ? `ID: ${def.txmnId}` : "ID: —";
-    this.add
-      .text(RIGHT_COL_X, BG_Y + 6, idText, { fontSize: FONT_SMALL, color: TEXT_COLOR })
-      .setDepth(5);
+    this.add.text(RIGHT_COL_X, BG_Y + 6, idText, BODY).setDepth(5);
 
-    // Name (uppercase, larger font)
-    this.add
-      .text(RIGHT_COL_X, BG_Y + 14, def.name.toUpperCase(), {
-        fontSize: FONT_NAME,
-        color: TEXT_COLOR,
-        fontStyle: "bold",
-      })
-      .setDepth(5);
+    // Name (uppercase, 16 px = 2× the body grid, bold).
+    this.add.text(RIGHT_COL_X, BG_Y + 14, def.name.toUpperCase(), NAME).setDepth(5);
 
     // Species ("<Species> Species"). Category strings can carry placeholders.
     const speciesText = def.species
       ? formatText(`${t(`cat_${def.species}`)} ${t("monster_menu_species")}`)
       : "—";
-    this.add
-      .text(RIGHT_COL_X, BG_Y + 30, speciesText, { fontSize: FONT_SMALL, color: TEXT_COLOR })
-      .setDepth(5);
+    this.add.text(RIGHT_COL_X, BG_Y + 30, speciesText, BODY).setDepth(5);
 
     // Height + weight on one line: "69.0 cm 37.0 kg".
     const sizeText =
       def.heightCm !== undefined && def.weightKg !== undefined
         ? `${def.heightCm.toFixed(1)} cm ${def.weightKg.toFixed(1)} kg`
         : "—";
-    this.add
-      .text(RIGHT_COL_X, BG_Y + 40, sizeText, { fontSize: FONT_SMALL, color: TEXT_COLOR })
-      .setDepth(5);
+    this.add.text(RIGHT_COL_X, BG_Y + 40, sizeText, BODY).setDepth(5);
 
     // Type(s) row — icons stacked horizontally next to the "Type(s)" label.
     this.renderTypeRow(def.types, RIGHT_COL_X + 16, BG_Y + 52);
@@ -208,41 +190,25 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     const shapeText = def.shape
       ? `${t("monster_menu_shape")}: ${t(def.shape)}`
       : `${t("monster_menu_shape")}: —`;
-    this.add
-      .text(RIGHT_COL_X, BG_Y + 68, shapeText, { fontSize: FONT_SMALL, color: TEXT_COLOR })
-      .setDepth(5);
+    this.add.text(RIGHT_COL_X, BG_Y + 68, shapeText, BODY).setDepth(5);
 
     // Description (bottom panel, wordwrapped). Run through formatText so any
     // `${{...}}` in the description resolves (most are parameter-free today,
     // but upstream descriptions reference player + monster vars).
     const descText = def.descriptionKey ? formatText(t(def.descriptionKey)) : "—";
-    this.add
-      .text(BOTTOM_PANEL_X, DESC_Y, descText, {
-        fontSize: FONT_SMALL,
-        color: TEXT_COLOR,
-        wordWrap: { width: BOTTOM_PANEL_W },
-      })
-      .setDepth(5);
+    this.add.text(BOTTOM_PANEL_X, DESC_Y, descText, withWrap(BODY, BOTTOM_PANEL_W)).setDepth(5);
 
     // Evolution heading — upstream picks one of three keys based on count.
     const evoCount = def.evolutions?.length ?? 0;
     const evoLabelKey =
       evoCount === 0 ? "no_evolution" : evoCount === 1 ? "yes_evolution" : "yes_evolutions";
-    this.add
-      .text(BOTTOM_PANEL_X, EVO_LABEL_Y, t(evoLabelKey), {
-        fontSize: FONT_SMALL,
-        color: TEXT_COLOR,
-        fontStyle: "bold",
-      })
-      .setDepth(5);
+    this.add.text(BOTTOM_PANEL_X, EVO_LABEL_Y, t(evoLabelKey), HEADING).setDepth(5);
 
     // Evolution list — distinct slugs preserving order, uppercased.
     if (def.evolutions && def.evolutions.length > 0) {
       const slugs = Array.from(new Set(def.evolutions.map((e) => e.species)));
       const text = slugs.map((s) => (MONSTERS[s]?.name ?? s).toUpperCase()).join("   ");
-      this.add
-        .text(BOTTOM_PANEL_X + 8, EVO_LIST_Y, text, { fontSize: FONT_SMALL, color: TEXT_COLOR })
-        .setDepth(5);
+      this.add.text(BOTTOM_PANEL_X + 8, EVO_LIST_Y, text, BODY).setDepth(5);
     }
   }
 
@@ -268,12 +234,10 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     }
 
     // "Type(s)" label
-    this.add
-      .text(x, y - 4, t("monster_menu_type"), { fontSize: FONT_SMALL, color: TEXT_COLOR })
-      .setDepth(5);
+    this.add.text(x, y - 4, t("monster_menu_type"), BODY).setDepth(5);
     // Type name(s) below the label, e.g. "Wood" or "Wood Frost".
     const names = types.map((tp) => t(tp)).join(" ");
-    this.add.text(x, y + 6, names, { fontSize: FONT_SMALL, color: TEXT_COLOR }).setDepth(5);
+    this.add.text(x, y + 6, names, BODY).setDepth(5);
   }
 
   // --- Input ---

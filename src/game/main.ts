@@ -1,5 +1,6 @@
 import { AUTO, Core, Game, Scale } from "phaser";
 import { SCREEN_W, SCREEN_H } from "./screen";
+import { ensureUiFontLoaded } from "./ui/textStyle";
 import { TitleScene } from "./scenes/TitleScene";
 import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
@@ -76,7 +77,14 @@ function snapToIntegerZoom(game: Game) {
   }
 }
 
-const StartGame = (parent: string) => {
+const StartGame = async (parent: string): Promise<Game> => {
+  // PressStart2P must be in the FontFaceSet before Phaser's first paint,
+  // otherwise the title screen briefly renders in the fallback Arial. The
+  // browser is already fetching the .ttf via `@font-face` in style.css; we
+  // just need to await that handle here. `finally` so a font-fetch failure
+  // still boots the game (with a fallback face).
+  await ensureUiFontLoaded();
+
   const game = new Game({ ...config, parent });
 
   const apply = () => snapToIntegerZoom(game);

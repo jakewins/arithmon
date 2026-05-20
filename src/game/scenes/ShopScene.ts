@@ -5,13 +5,14 @@ import { session } from "../session";
 import { addItem, removeItem, getInventoryItems } from "../item/inventory";
 import { debugBridge, type DebugStateProvider } from "../debug";
 import { SCREEN_W, SCREEN_H } from "../screen";
+import { BODY, withColor } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
-const TEXT_COLOR = "#1a1a1a";
 const GRAY_COLOR = "#999999";
+const TEXT_COLOR = "#1a1a1a";
 const CURSOR_CHAR = "\u25b6";
 
 const KEY_UP = 38;
@@ -84,36 +85,27 @@ export class ShopScene extends Scene implements DebugStateProvider {
     this.panel.setDepth(1);
 
     // Tab labels
-    const buyTab = this.add.text(12, 8, "BUY", { fontSize: "8px", color: TEXT_COLOR });
+    const buyTab = this.add.text(12, 8, "BUY", BODY);
     buyTab.setDepth(2);
-    const sellTab = this.add.text(40, 8, "SELL", { fontSize: "8px", color: GRAY_COLOR });
+    const sellTab = this.add.text(40, 8, "SELL", withColor(BODY, GRAY_COLOR));
     sellTab.setDepth(2);
     this.tabLabels = [buyTab, sellTab];
 
     // Gold display
-    this.goldLabel = this.add.text(WIDTH - 12, 8, "", {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.goldLabel = this.add.text(WIDTH - 12, 8, "", BODY);
     this.goldLabel.setOrigin(1, 0);
     this.goldLabel.setDepth(2);
 
     // Cursor
-    this.cursor = this.add.text(8, 22, CURSOR_CHAR, { fontSize: "8px", color: TEXT_COLOR });
+    this.cursor = this.add.text(8, 22, CURSOR_CHAR, BODY);
     this.cursor.setDepth(2);
 
     // Message area at bottom
-    this.messageLabel = this.add.text(12, HEIGHT - 22, "", {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.messageLabel = this.add.text(12, HEIGHT - 22, "", BODY);
     this.messageLabel.setDepth(2);
 
     // Hint
-    const hint = this.add.text(WIDTH - 12, HEIGHT - 22, "ESC: Close", {
-      fontSize: "8px",
-      color: GRAY_COLOR,
-    });
+    const hint = this.add.text(WIDTH - 12, HEIGHT - 22, "ESC: Close", withColor(BODY, GRAY_COLOR));
     hint.setOrigin(1, 0);
     hint.setDepth(2);
 
@@ -205,10 +197,12 @@ export class ShopScene extends Scene implements DebugStateProvider {
         const def = ITEMS[entry.slug];
         if (!def) continue;
         const canAfford = session.player.money >= entry.price;
-        const label = this.add.text(18, startY + i * lineH, `${def.name}  ${entry.price}G`, {
-          fontSize: "8px",
-          color: canAfford ? TEXT_COLOR : GRAY_COLOR,
-        });
+        const label = this.add.text(
+          18,
+          startY + i * lineH,
+          `${def.name}  ${entry.price}G`,
+          canAfford ? BODY : withColor(BODY, GRAY_COLOR),
+        );
         label.setDepth(2);
         this.itemLabels.push(label);
       }
@@ -221,7 +215,7 @@ export class ShopScene extends Scene implements DebugStateProvider {
           18,
           startY + i * lineH,
           `${item.name} x${count}  ${sellPrice}G`,
-          { fontSize: "8px", color: TEXT_COLOR },
+          BODY,
         );
         label.setDepth(2);
         this.itemLabels.push(label);

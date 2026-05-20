@@ -1,4 +1,5 @@
 import { SCREEN_W, SCREEN_H } from "../../screen";
+import { BODY, withColor } from "../../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -87,8 +88,7 @@ export class DialogBox {
     // Text label — start empty to avoid a flash of full text, then use
     // getWrappedText with the full string for pagination.
     this.label = scene.add.text(PAD_X, BOX_Y + PAD_Y, "", {
-      fontSize: `${FONT_SIZE}px`,
-      color: this.textColor,
+      ...withColor(BODY, this.textColor),
       wordWrap: { width: TEXT_WIDTH },
       lineSpacing: LINE_SPACING,
     });
@@ -100,10 +100,12 @@ export class DialogBox {
     this.pageIndex = 0;
 
     // Prompt indicator (down-arrow in bottom-right of the box)
-    this.prompt = scene.add.text(WIDTH - 12, BOX_Y + BOX_H - 10, "\u25bc", {
-      fontSize: "8px",
-      color: this.promptColor,
-    });
+    this.prompt = scene.add.text(
+      WIDTH - 12,
+      BOX_Y + BOX_H - 10,
+      "\u25bc",
+      withColor(BODY, this.promptColor),
+    );
     this.prompt.setDepth(101).setScrollFactor(0);
     this.prompt.setVisible(false);
   }

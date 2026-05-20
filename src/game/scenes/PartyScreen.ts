@@ -11,13 +11,13 @@ import {
   type StatsObjects,
 } from "../ui/monsterPortrait";
 import { SCREEN_W, SCREEN_H } from "../screen";
+import { BODY } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
-const TEXT_COLOR = "#1a1a1a";
 const CURSOR_CHAR = "\u25b6";
 const HIGHLIGHT_COLOR = 0x4488cc;
 const HIGHLIGHT_ALPHA = 0.25;
@@ -33,7 +33,12 @@ const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
 // Layout — left panel = monster detail, right panel = party slots.
-const LEFT_W = 112;
+// LEFT_W bumped from 112 → 152 in STORY-0208: PressStart2P glyphs are wider
+// than Arial, so the stats column (~64 px for "HP 99/99") was bleeding into
+// the techniques column on the right side of the detail panel. 152 leaves
+// ~104 px for the slot list on the right — still wide enough for the
+// "<name> Lv99" + HP bar layout in monsterSlot.ts.
+const LEFT_W = 152;
 const RIGHT_W = WIDTH - LEFT_W;
 const SLOT_H = 22;
 const SLOT_START_Y = 8;
@@ -143,10 +148,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     this.slotHighlight.setDepth(2);
 
     // Slot cursor
-    this.slotCursor = this.add.text(LEFT_W + 2, 0, CURSOR_CHAR, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.slotCursor = this.add.text(LEFT_W + 2, 0, CURSOR_CHAR, BODY);
     this.slotCursor.setDepth(10);
 
     // Detail container (left side)
@@ -296,15 +298,16 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
 
     const monster = party[this.slotIndex];
 
-    // Portrait — 64×64 sprite centred in the upper half of the left panel.
-    this.portrait = createMonsterPortrait(this, LEFT_W / 2, 36, monster, 5);
+    // Portrait — 64×64 sprite top-left of the left panel.
+    this.portrait = createMonsterPortrait(this, 40, 36, monster, 5);
 
-    // Stats column under the portrait.
-    this.statsDisplay = createStatsDisplay(this, PAD_X + 2, 72, monster, 5);
+    // Stats column to the right of the portrait. PressStart2P is wider than
+    // Arial; the stats block needs ~64 px ("HP 99/99") so we put it where
+    // the portrait isn't.
+    this.statsDisplay = createStatsDisplay(this, 80, 8, monster, 5);
 
-    // Techniques on the right side of the left panel so both columns fit
-    // in the 144 px height.
-    this.techList = createTechniqueList(this, LEFT_W / 2 + 8, 72, monster, 5);
+    // Techniques below the portrait, spanning the full left panel width.
+    this.techList = createTechniqueList(this, PAD_X + 2, 76, monster, 5);
   }
 
   // --- Browse mode ---
@@ -368,18 +371,12 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
 
     // Options
     for (let i = 0; i < CONTEXT_OPTIONS.length; i++) {
-      const label = this.add.text(10, 3 + i * CTX_OPTION_H, CONTEXT_OPTIONS[i], {
-        fontSize: "8px",
-        color: TEXT_COLOR,
-      });
+      const label = this.add.text(10, 3 + i * CTX_OPTION_H, CONTEXT_OPTIONS[i], BODY);
       this.ctxContainer.add(label);
     }
 
     // Cursor
-    const cursor = this.add.text(3, 3, CURSOR_CHAR, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    const cursor = this.add.text(3, 3, CURSOR_CHAR, BODY);
     cursor.setName("ctxCursor");
     this.ctxContainer.add(cursor);
 
@@ -456,10 +453,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     }
     const party = session.player.monsters;
     const sourceName = party[this.moveSourceIndex]?.name ?? "?";
-    this.moveIndicator = this.add.text(PAD_X, HEIGHT - 10, `Move ${sourceName} where?`, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.moveIndicator = this.add.text(PAD_X, HEIGHT - 10, `Move ${sourceName} where?`, BODY);
     this.moveIndicator.setDepth(10);
   }
 

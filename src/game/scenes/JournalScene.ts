@@ -4,6 +4,7 @@ import { session } from "../session";
 import { MONSTERS, type MonsterDef } from "../data/monsters";
 import { getStatus, type RegistrationStatus } from "../model/monsterRegistry";
 import { SCREEN_W, SCREEN_H } from "../screen";
+import { BODY, withColor } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -104,10 +105,7 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
 
     // Title — anchored left so it can't collide with the longer count text
     // on the right. At 256 px wide there isn't room to centre both.
-    this.titleText = this.add.text(6, 4, "Journal", {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.titleText = this.add.text(6, 4, "Journal", BODY);
     this.titleText.setDepth(5);
 
     // Seen/caught count
@@ -118,16 +116,13 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
       WIDTH - 6,
       4,
       `${seenCount}/${totalCount} seen, ${caughtCount} caught`,
-      { fontSize: "8px", color: GRAY_COLOR },
+      withColor(BODY, GRAY_COLOR),
     );
     this.countText.setOrigin(1, 0);
     this.countText.setDepth(5);
 
     // List cursor
-    this.listCursor = this.add.text(LIST_X - 8, LIST_Y, CURSOR_CHAR, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.listCursor = this.add.text(LIST_X - 8, LIST_Y, CURSOR_CHAR, BODY);
     this.listCursor.setDepth(5);
 
     // Detail container
@@ -247,10 +242,7 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
         color = CAUGHT_COLOR;
       }
 
-      const label = this.add.text(LIST_X, LIST_Y + i * LIST_ITEM_H, text, {
-        fontSize: "8px",
-        color,
-      });
+      const label = this.add.text(LIST_X, LIST_Y + i * LIST_ITEM_H, text, withColor(BODY, color));
       label.setDepth(5);
       this.listLabels.push(label);
     }
@@ -343,10 +335,7 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
       WIDTH / 2,
       2,
       `#${String(entry.index).padStart(2, "0")} ${entry.def.name}`,
-      {
-        fontSize: "8px",
-        color: TEXT_COLOR,
-      },
+      BODY,
     );
     title.setOrigin(0.5, 0);
     this.detailContainer.add(title);
@@ -384,20 +373,19 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
         `Base SPD: ${entry.def.baseStats.speed}`,
       ];
       for (let i = 0; i < statLines.length; i++) {
-        const label = this.add.text(statsX, statsY + i * lineH, statLines[i], {
-          fontSize: "8px",
-          color: TEXT_COLOR,
-        });
+        const label = this.add.text(statsX, statsY + i * lineH, statLines[i], BODY);
         this.detailContainer.add(label);
       }
     } else {
       // Seen but not caught — hide stats
       const statLines = ["Base HP:  ???", "Base ATK: ???", "Base DEF: ???", "Base SPD: ???"];
       for (let i = 0; i < statLines.length; i++) {
-        const label = this.add.text(statsX, statsY + i * lineH, statLines[i], {
-          fontSize: "8px",
-          color: GRAY_COLOR,
-        });
+        const label = this.add.text(
+          statsX,
+          statsY + i * lineH,
+          statLines[i],
+          withColor(BODY, GRAY_COLOR),
+        );
         this.detailContainer.add(label);
       }
     }
@@ -405,10 +393,7 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     // Moves section — right column.
     const movesX = 90;
     const movesY = 16;
-    const movesHeader = this.add.text(movesX, movesY, "Moves:", {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    const movesHeader = this.add.text(movesX, movesY, "Moves:", BODY);
     this.detailContainer.add(movesHeader);
 
     if (isCaught) {
@@ -418,33 +403,34 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
           movesX,
           movesY + (i + 1) * 8,
           `Lv${move.learnedAt}: ${move.slug}`,
-          { fontSize: "8px", color: TEXT_COLOR },
+          BODY,
         );
         this.detailContainer.add(label);
       }
     } else {
-      const hidden = this.add.text(movesX, movesY + 9, "???", {
-        fontSize: "8px",
-        color: GRAY_COLOR,
-      });
+      const hidden = this.add.text(movesX, movesY + 9, "???", withColor(BODY, GRAY_COLOR));
       this.detailContainer.add(hidden);
     }
 
     // Catch rate (only if caught) \u2014 under the stat column.
     const infoY = statsY + 6 * lineH + 2;
     if (isCaught) {
-      const catchLabel = this.add.text(statsX, infoY, `Catch: ${entry.def.catchRate}`, {
-        fontSize: "8px",
-        color: GRAY_COLOR,
-      });
+      const catchLabel = this.add.text(
+        statsX,
+        infoY,
+        `Catch: ${entry.def.catchRate}`,
+        withColor(BODY, GRAY_COLOR),
+      );
       this.detailContainer.add(catchLabel);
     }
 
     // Navigation hint
-    const navHint = this.add.text(WIDTH / 2, HEIGHT - 8, "\u25c4 \u25ba Cycle   ESC Back", {
-      fontSize: "8px",
-      color: GRAY_COLOR,
-    });
+    const navHint = this.add.text(
+      WIDTH / 2,
+      HEIGHT - 8,
+      "\u25c4 \u25ba Cycle   ESC Back",
+      withColor(BODY, GRAY_COLOR),
+    );
     navHint.setOrigin(0.5, 0.5);
     this.detailContainer.add(navHint);
   }

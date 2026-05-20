@@ -2,6 +2,7 @@ import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
 import { debugBridge } from "../../debug";
 import { SCREEN_W, SCREEN_H } from "../../screen";
+import { BODY, withColor } from "../../ui/textStyle";
 
 const RANDOM_NAMES = [
   "Ash",
@@ -100,17 +101,11 @@ class RenamePlayerAction implements EventAction {
     this.border.setDepth(100).setScrollFactor(0);
 
     // Prompt label (line 1)
-    this.promptText = scene.add.text(PAD_X, BOX_Y + PAD_Y, "Enter your name:", {
-      fontSize: `${FONT_SIZE}px`,
-      color: "#1a1a1a",
-    });
+    this.promptText = scene.add.text(PAD_X, BOX_Y + PAD_Y, "Enter your name:", BODY);
     this.promptText.setDepth(101).setScrollFactor(0);
 
     // Editable name display (line 2)
-    this.inputText = scene.add.text(PAD_X, BOX_Y + PAD_Y + LINE_H, "", {
-      fontSize: `${FONT_SIZE}px`,
-      color: "#1a1a1a",
-    });
+    this.inputText = scene.add.text(PAD_X, BOX_Y + PAD_Y + LINE_H, "", BODY);
     this.inputText.setDepth(101).setScrollFactor(0);
     this.updateInputDisplay();
 
@@ -119,10 +114,7 @@ class RenamePlayerAction implements EventAction {
       PAD_X,
       BOX_Y + BOX_H - PAD_Y - FONT_SIZE,
       "Type, then press Enter",
-      {
-        fontSize: `${FONT_SIZE}px`,
-        color: "#666666",
-      },
+      withColor(BODY, "#666666"),
     );
     this.hintText.setDepth(101).setScrollFactor(0);
 

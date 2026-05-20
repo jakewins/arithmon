@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import { debugBridge } from "../debug";
 import { session } from "../session";
 import { SCREEN_W, SCREEN_H } from "../screen";
+import { BODY } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -9,12 +10,14 @@ const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
 // Narrow side panel anchored to the right edge — five options of ~12 px each.
-const PANEL_W = 70;
+// PressStart2P widens labels: "Tuxemon"/"Journal" (7 chars × 8 = 56 px) need
+// the label inset + a right margin, so 80 px panel with 8 px left padding +
+// 8 px cursor + 56 px label leaves 8 px breathing room before the border.
+const PANEL_W = 80;
 const PANEL_X = WIDTH - PANEL_W;
 const PAD_X = 6;
 const PAD_Y = 6;
 const OPTION_H = 12;
-const TEXT_COLOR = "#1a1a1a";
 const CURSOR_CHAR = "\u25b6";
 
 // Key codes
@@ -115,20 +118,14 @@ export class PauseMenuScene extends Scene {
         PANEL_X + PAD_X + 8,
         PAD_Y + PAD_Y + i * OPTION_H,
         this.visibleOptions[i].label,
-        {
-          fontSize: "8px",
-          color: TEXT_COLOR,
-        },
+        BODY,
       );
       label.setDepth(202);
       this.labels.push(label);
     }
 
     // Cursor
-    this.cursor = this.add.text(PANEL_X + PAD_X, PAD_Y + PAD_Y, CURSOR_CHAR, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.cursor = this.add.text(PANEL_X + PAD_X, PAD_Y + PAD_Y, CURSOR_CHAR, BODY);
     this.cursor.setDepth(202);
 
     // Keys
@@ -190,8 +187,7 @@ export class PauseMenuScene extends Scene {
     }
 
     this.stubMessage = this.add.text(4, HEIGHT - 18, message, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
+      ...BODY,
       backgroundColor: "#ffffff",
       padding: { x: 3, y: 2 },
     });

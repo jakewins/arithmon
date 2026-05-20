@@ -1,5 +1,6 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
+import { BODY_LIGHT } from "../../ui/textStyle";
 
 /** Key prefix for bubble objects stored on NPC sprites. */
 const BUBBLE_KEY = "__bubble";
@@ -42,8 +43,7 @@ class SetBubbleAction implements EventAction {
       const char = BUBBLE_CHARS[this.bubbleType] ?? this.bubbleType;
       const bubble = ctx.scene.add
         .text(npc.sprite.x, npc.sprite.y - 20, char, {
-          fontSize: "12px",
-          color: "#ffffff",
+          ...BODY_LIGHT,
           backgroundColor: "#333333",
           padding: { x: 2, y: 1 },
         })

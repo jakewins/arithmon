@@ -4,6 +4,7 @@ import { t } from "../../i18n";
 import { formatText } from "../../textFormatter";
 import { debugBridge } from "../../debug";
 import { SCREEN_W, SCREEN_H } from "../../screen";
+import { BODY } from "../../ui/textStyle";
 
 // Choice overlay sizing — mirrors the conventions in `event/ui/dialogBox.ts`
 // so the choice box visually matches the dialog box that almost always
@@ -76,19 +77,13 @@ class TranslatedDialogChoiceAction implements EventAction {
         PAD_X + 8,
         boxY + PAD_Y + i * OPTION_H,
         formatText(t(this.options[i])),
-        {
-          fontSize: `${FONT_SIZE}px`,
-          color: "#1a1a1a",
-        },
+        BODY,
       );
       label.setDepth(101).setScrollFactor(0);
       this.labels.push(label);
     }
 
-    this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", {
-      fontSize: `${FONT_SIZE}px`,
-      color: "#1a1a1a",
-    });
+    this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", BODY);
     this.cursor.setDepth(101).setScrollFactor(0);
 
     this.upKey = scene.input.keyboard!.addKey(KEY_UP);

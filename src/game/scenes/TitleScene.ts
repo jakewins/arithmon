@@ -3,6 +3,7 @@ import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "
 import { clearSave, hasSave } from "../save";
 import { PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 import { SCREEN_W } from "../screen";
+import { BODY, BODY_LIGHT, TITLE } from "../ui/textStyle";
 
 // Mirrors upstream Tuxemon's StartState — the first thing the player sees on
 // boot. Shows the title plus "New Game" and (when a save exists) "Load Game".
@@ -20,8 +21,6 @@ const BORDER_SLICE = 3;
 // screen sits on the same blue used by the character-creation cutscene.
 const BG_COLOR = 0x2244aa;
 
-const TITLE_COLOR = "#ffffff";
-const TEXT_COLOR = "#1a1a1a";
 const CURSOR_CHAR = "▶";
 
 // Key codes — same set the pause menu uses.
@@ -81,20 +80,11 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
     this.cameras.main.setBackgroundColor(BG_COLOR);
 
     // Title text — sized to fit the 256×144 viewport without dominating it.
-    this.add
-      .text(WIDTH / 2, 20, "Arithmon", {
-        fontSize: "20px",
-        color: TITLE_COLOR,
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5, 0);
+    // PressStart2P at 16 px (TITLE) is a clean 2× of the body grid; 20 px
+    // would scale to fractional pixels and fuzz at integer zoom.
+    this.add.text(WIDTH / 2, 20, "Arithmon", TITLE).setOrigin(0.5, 0);
 
-    this.add
-      .text(WIDTH / 2, 48, "A Tuxemon clone with math", {
-        fontSize: "8px",
-        color: TITLE_COLOR,
-      })
-      .setOrigin(0.5, 0);
+    this.add.text(WIDTH / 2, 48, "A Tuxemon clone with math", BODY_LIGHT).setOrigin(0.5, 0);
 
     // Build menu options. "Load Game" only appears when a save exists.
     this.options = [];
@@ -136,18 +126,12 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
         labelX,
         optionsStartY + i * PANEL_H_PER_OPT,
         this.options[i].label,
-        {
-          fontSize: "8px",
-          color: TEXT_COLOR,
-        },
+        BODY,
       );
       this.labels.push(label);
     }
 
-    this.cursor = this.add.text(labelX - 8, optionsStartY, CURSOR_CHAR, {
-      fontSize: "8px",
-      color: TEXT_COLOR,
-    });
+    this.cursor = this.add.text(labelX - 8, optionsStartY, CURSOR_CHAR, BODY);
 
     this.keys = {
       up: this.input.keyboard!.addKey(KEY_UP),
