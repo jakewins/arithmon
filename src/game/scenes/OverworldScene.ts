@@ -546,10 +546,11 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
       debugBridge.emit("scene_stopped", { scene: "OverworldScene" });
     });
 
-    // Auto-launch character selection on first load (new game)
-    if (!session.player.gameVariables.has("scenario_choice")) {
-      this.startCutscene();
-    }
+    // Note: we used to auto-launch CutsceneScene/start_tuxemon.yaml here for
+    // brand-new players, but STORY-0194 moved that handoff to TitleScene's
+    // "New Game" button (which now pre-sets scenario/gender/race and teleports
+    // straight to spyder_bedroom). start_tuxemon.yaml is still in the repo,
+    // it's just unreachable from the new boot path. STORY-0198 will remove it.
   }
 
   getDebugState(): Record<string, unknown> {

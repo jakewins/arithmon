@@ -106,8 +106,13 @@ export interface SetupGameOptions {
   money?: number;
 }
 
-/** Race → { template, gender } mapping matching start_tuxemon.yaml */
-const RACE_DEFAULTS: Record<string, { template: string; gender: string }> = {
+/**
+ * Race → { template, gender } mapping matching start_tuxemon.yaml's per-race
+ * `set_template` / `set_char_attribute` blocks. Exported so TitleScene's
+ * "New Game" handler can apply the same defaults without going through the
+ * cutscene that the YAML used to drive.
+ */
+export const RACE_DEFAULTS: Record<string, { template: string; gender: string }> = {
   black_female: { template: "brownheroine_brown", gender: "female" },
   white_female: { template: "heroine", gender: "female" },
   black_male: { template: "adventurerblack", gender: "male" },

@@ -1,6 +1,27 @@
 import { Scene } from "phaser";
-import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
+import {
+  RACE_DEFAULTS,
+  debugBridge,
+  type DebugCommandHandler,
+  type DebugStateProvider,
+} from "../debug";
 import { clearSave, hasSave } from "../save";
+import { session } from "../session";
+import type { OverworldInitData } from "./OverworldScene";
+
+// Hard-coded "New Game" appearance — upstream Tuxemon prompts for these via
+// the start_tuxemon.yaml cutscene, but we only ship the Spyder campaign and
+// pre-pick the male/white adventurer combo our QA scripts use everywhere
+// else (see RACE_DEFAULTS in debug.ts and setupGame()'s defaults).
+const NEW_GAME_SCENARIO = "spyder_campaign";
+const NEW_GAME_GENDER = "gender_male";
+const NEW_GAME_RACE = "white_male";
+
+// Where a new game drops the player — upstream's start_tuxemon.yaml ends with
+// `transition_teleport player,spyder_bedroom.tmx,4,4,0.3`, so match that.
+const NEW_GAME_MAP = "spyder_bedroom";
+const NEW_GAME_SPAWN_X = 4;
+const NEW_GAME_SPAWN_Y = 4;
 
 // Mirrors upstream Tuxemon's StartState — the first thing the player sees on
 // boot. Shows the title plus "New Game" and (when a save exists) "Load Game".
@@ -185,10 +206,29 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
     // Wipe any persisted save + reset session in case the user is starting
     // fresh after a previous playthrough.
     clearSave();
-    // OverworldScene auto-launches the character-creation cutscene whenever
-    // `scenario_choice` is unset — see OverworldScene.create's last branch.
-    // STORY-0194 will replace this with the new simplified intro.
-    this.scene.start("OverworldScene");
+
+    // Pre-set the variables and template that upstream's start_tuxemon.yaml
+    // would otherwise prompt for. We only ship the Spyder campaign and use a
+    // fixed default appearance, so the campaign/gender/race chooser is gone
+    // (STORY-0194). The variables are still set so the rest of the Spyder
+    // intro events (which gate on `is variable_set scenario_choice` etc.)
+    // continue to work, and so setupGame() / save state stay consistent.
+    const vars = session.player.gameVariables;
+    vars.set("scenario_choice", NEW_GAME_SCENARIO);
+    vars.set("gender_choice", NEW_GAME_GENDER);
+    vars.set("race_choice", NEW_GAME_RACE);
+    const appearance = RACE_DEFAULTS[NEW_GAME_RACE];
+    session.player.template = appearance.template;
+    session.player.gender = appearance.gender;
+
+    // Boot directly into the Spyder bedroom — upstream teleports here as the
+    // final step of start_tuxemon.yaml; we just skip the prompts.
+    this.scene.start("OverworldScene", {
+      mapKey: NEW_GAME_MAP,
+      spawnTileX: NEW_GAME_SPAWN_X,
+      spawnTileY: NEW_GAME_SPAWN_Y,
+      spawnFacing: "down",
+    } satisfies OverworldInitData);
   }
 
   private onLoadGame() {
