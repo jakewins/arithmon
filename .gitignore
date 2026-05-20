@@ -26,5 +26,6 @@ dist-ssr
 devenv.local.nix
 mods
 trees
+.envrc
 qa/screenshots
 upstream

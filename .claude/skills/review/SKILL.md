@@ -7,7 +7,7 @@ allowed-tools: Bash Read Agent
 
 # Review
 
-Hand off a story to a reviewing sub-agent. The skill resolves the story (in `board/reviewing/`), then dispatches a sub-agent with the full reviewer briefing.
+Hand off a story to a reviewing sub-agent. Work happens in the **`trees/reviewer`** worktree (branch `review-wip`, port 8082) so the implementor can run in parallel in `trees/implementor`. The skill syncs the worktree, dispatches the agent, and fast-forwards `main` when the agent's verdict is committed.
 
 ## Args
 
@@ -23,19 +23,27 @@ If the reference is ambiguous or matches nothing in `board/reviewing/`, stop and
 
 ## Steps
 
-1. **Resolve the story directory** under `board/reviewing/` using the rules above. Read `STORY.md` and `JOURNAL.md` (if present) so you have context.
+Run all skill commands from the **main checkout** (`/home/jake/Code/toy/arithmon`). The worktree is at `/home/jake/Code/toy/arithmon/trees/reviewer`.
 
-2. **Confirm the implementor has committed.** Run `git status` and `git log -1 --stat`. The implementor should have committed both their code change and the move-to-`reviewing/`. If the working tree has uncommitted changes (e.g. WIP from a parallel pickup), stop and tell the user — do not start review on a dirty tree.
+1. **Resolve the story directory** under `board/reviewing/` (on main) using the rules above. Read `STORY.md` and `JOURNAL.md` (if present) so you have context.
 
-3. **Dispatch the reviewing agent** via the Agent tool. Use `subagent_type: "general-purpose"`. The prompt must be self-contained (the sub-agent sees none of this conversation). Include:
-   - The absolute path to the story directory under `board/reviewing/`.
+2. **Confirm the implementor has committed.** Run `git log -1 --stat` on main; the latest commit should be the implementor's (move-to-reviewing + code change). Capture the SHA — the reviewer agent will want it.
+
+3. **Sync the reviewer worktree.** Verify it is clean and reset it to `main`. If it is not clean, stop and tell the user — do not silently discard WIP:
+   ```bash
+   git -C trees/reviewer status --porcelain --untracked-files=no  # must be empty
+   git -C trees/reviewer reset --hard main
+   ```
+
+4. **Dispatch the reviewing agent** via the Agent tool. Use `subagent_type: "general-purpose"`. The prompt must be self-contained (the sub-agent sees none of this conversation). Include:
+   - The absolute path to the story directory **inside the worktree**: `/home/jake/Code/toy/arithmon/trees/reviewer/board/reviewing/<STORY-DIR>`.
    - The git SHA of the implementor's commit (so the agent can `git show <sha>` to see exactly what changed).
    - The full text of `STORY.md` inline.
    - The briefing below, verbatim.
 
    Briefing (paste into the prompt after the story path, commit SHA, and STORY.md contents):
 
-   > You are the reviewer of a STORY on the board — it's been implemented by a separate implementing agent. Your job is to decide whether to approve it (move to `board/done/`) or bounce it back (move to `board/next/` with todos + a journal entry).
+   > You are the reviewer of a STORY on the board — it's been implemented by a separate implementing agent. **All your work happens inside `/home/jake/Code/toy/arithmon/trees/reviewer`** — a git worktree on branch `review-wip`. `cd` there first; do not touch the main checkout or the implementor's worktree. The dev server in this worktree runs on **port 8082** — when you launch the game or run QA scripts that hit it, prefix commands with `ARITHMON_PORT=8082` (e.g. `ARITHMON_PORT=8082 npx tsx qa/local/foo.ts`). Your job is to decide whether to approve the story (move to `board/done/`) or bounce it back (move to `board/next/` with todos + a journal entry).
    >
    > - Read through the story and make a plan per below.
    > - Think about the *story itself* critically: is it actually asking the implementor to do something that makes sense? If the story is wrong (bad scope, contradicts upstream, missing context), say so in the journal — don't paper over it by silently approving.
@@ -49,19 +57,32 @@ If the reference is ambiguous or matches nothing in `board/reviewing/`, stop and
    >
    > **Outcome — pick one:**
    >
-   > **Approve.** `git mv` the story directory from `board/reviewing/` to `board/done/`. Append a dated entry to `JOURNAL.md` summarizing what you validated (and which checks you ran). Commit the move + journal update together. Done.
+   > **Approve.** `git mv` the story directory from `board/reviewing/` to `board/done/`. Append a dated entry to `JOURNAL.md` summarizing what you validated (and which checks you ran). Commit the move + journal update together on `review-wip`. Done — do not push or merge to main yourself; the skill handles that.
    >
-   > **Bounce back.** For each piece of feedback, add a new todo file under `<story>/todos/open/` (numbered, kebab-case, e.g. `03-fix-stale-save-bug.md`) with concrete instructions for the implementor. Append a dated entry to `JOURNAL.md` recording your findings — what you validated, what's defective, and why you're bouncing. `git mv` the story directory from `board/reviewing/` to `board/next/`. Commit the new todos + journal entry + move together.
+   > **Bounce back.** For each piece of feedback, add a new todo file under `<story>/todos/open/` (numbered, kebab-case, e.g. `03-fix-stale-save-bug.md`) with concrete instructions for the implementor. Append a dated entry to `JOURNAL.md` recording your findings — what you validated, what's defective, and why you're bouncing. `git mv` the story directory from `board/reviewing/` to `board/next/`. Commit the new todos + journal entry + move together on `review-wip`.
    >
    > Conventions to match existing stories:
    > - Journal entries lead with `## YYYY-MM-DD — Reviewer findings` (or similar) and use short bullet lists.
    > - Todos are individual markdown files with a `# Todo: <title>` heading and numbered list of steps.
    > - Stash any uncommitted changes before running pre-commit gates / QA, so unrelated WIP doesn't pollute results.
 
-4. **Wait for the agent to finish** (foreground), then relay a one-line summary to the user: which story, approved or bounced, and (if bounced) how many new todos were filed.
+5. **Wait for the agent to finish** (foreground).
+
+6. **Fast-forward main to the reviewer's verdict commit.** From the main checkout:
+   ```bash
+   git merge --ff-only review-wip
+   ```
+   If this fails because main moved (e.g. implementor just landed a claim or finish), rebase the worktree onto main and retry:
+   ```bash
+   git -C trees/reviewer rebase main
+   git merge --ff-only review-wip
+   ```
+
+7. **Relay** a one-line summary to the user: which story, approved or bounced, and (if bounced) how many new todos were filed.
 
 ## Notes
 
 - The skill itself does not run tests, edit the story, or commit; that's the sub-agent's job.
 - Don't auto-pick the next story when this one finishes — `/review next` is a single review. Use `/loop /review next` for continuous review.
 - If the sub-agent reports it can't decide (e.g. the story is fundamentally unclear), relay that to the user without forcing an outcome.
+- The `trees/reviewer` worktree must be on branch `review-wip` and have its own `node_modules` (one-time `npm install`). The implementor worktree runs in parallel in `trees/implementor` on port 8081.
