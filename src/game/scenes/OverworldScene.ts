@@ -556,6 +556,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
         facing: this.playerFacing,
         pixelX: this.player.x,
         pixelY: this.player.y,
+        texture: this.player.texture.key,
       },
       npcs: [...this.npcs.values()].map((npc) => ({
         slug: npc.slug,

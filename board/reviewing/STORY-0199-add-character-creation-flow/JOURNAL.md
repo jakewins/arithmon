@@ -54,4 +54,32 @@
   shadowing the real upstream art because no byte-level compare was
   run against upstream.
 
-See `todos/open/01-port-player-sprite-pngs.md` for the fix steps.
+See `todos/done/01-port-player-sprite-pngs.md` for the fix steps.
+
+## 2026-05-20 — Re-implementor notes
+
+- Copied the six real upstream PNGs into `public/assets/sprites/`
+  verbatim: `adventurer.png`, `adventurerblack.png`,
+  `brownheroine_brown.png`, `enbyasian.png`, `heroine.png`,
+  `penguin.png`. All six `cmp` clean against
+  `upstream/mods/tuxemon/sprites/` and all are 48×128 RGBA per
+  `[[project_npc_sprite_assets]]`.
+- Exposed the player sprite's live `texture.key` via
+  `OverworldScene.getDebugState()` as `player.texture` — fits the
+  existing per-scene `getDebugState` convention in `src/game/debug.ts`
+  (no new top-level bridge method needed).
+- Tightened `qa/character-creation-test.ts` to assert
+  `state.player.texture === spec.template` in addition to the
+  pre-existing `session.template` check, so a future placeholder-PNG
+  regression would fail the test instead of slipping through. Per
+  `[[feedback_sprite_byte_compare]]`.
+- Re-ran both branches (`male-white` → `adventurer`, `female-black` →
+  `brownheroine_brown`) — pass. Final-frame screenshots show visibly
+  distinct sprites (different md5s, different file sizes); eyeballed
+  both — male-white is a male with blue cap + orange shirt, female-black
+  is a female with brown hair + blue dress.
+- Re-ran `qa/title-screen-test.ts`, `qa/bedroom-intro-test.ts`,
+  `qa/smoke.ts` — all pass.
+- Pre-commit gates: `npm run format:check`, `npm run lint`,
+  `npx tsc --noEmit`, `npm test` (440/440) all pass.
+- Moved `todos/open/01-port-player-sprite-pngs.md` → `todos/done/`.

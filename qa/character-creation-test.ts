@@ -24,7 +24,7 @@ const KEY_ENTER = 13;
 interface FullState {
   scene: string;
   mapKey?: string;
-  player?: { tileX: number; tileY: number; facing: string };
+  player?: { tileX: number; tileY: number; facing: string; texture?: string };
   session?: {
     template: string;
     gender: string | null;
@@ -123,6 +123,15 @@ async function runPath(spec: PathSpec): Promise<void> {
   assert(
     state.session?.gender === spec.gender,
     `[${spec.name}] expected gender=${spec.gender}, got ${state.session?.gender}`,
+  );
+  // Bounce-back fix: assert the actual rendered texture key on the player
+  // sprite, not just the session template slug. Catches the regression
+  // where all six template PNGs were byte-identical adventurer.png
+  // placeholders — every branch passed the template check but rendered
+  // the same sprite. See JOURNAL.md 2026-05-20.
+  assert(
+    state.player?.texture === spec.template,
+    `[${spec.name}] expected player sprite texture=${spec.template}, got ${state.player?.texture}`,
   );
 
   await screenshot(page, `character-creation-${spec.name}-final`);
