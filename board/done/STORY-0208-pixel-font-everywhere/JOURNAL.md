@@ -91,3 +91,30 @@ Visual verification: all dialog/menu text renders in PressStart2P; no flash of f
 - The `XP` / `HP` text and bar baked into `hud-player.png` / `hud-opponent.png` still renders in the original art's typeface — that's a sprite-sheet asset, not a Phaser text node. Out of scope here; would need a sprite-replacement story.
 - Dialog border / panel background is unchanged per the story's "out of scope" note. Upstream's purple-on-white panel can come later.
 - Non-ASCII strings haven't been audited — PressStart2P's character coverage stops at basic Latin. If we ever ship CJK content we'll need the upstream fallback fonts in `upstream/mods/tuxemon/font/`.
+
+## 2026-05-20 — Reviewer findings (Approved)
+
+- Confirmed `public/assets/font/PressStart2P.ttf` is byte-for-byte identical to
+  `upstream/mods/tuxemon/font/PressStart2P.ttf` (`cmp` returns 0).
+- `@font-face` block in `public/style.css` with `font-display: block` + `main.ts`
+  awaiting `ensureUiFontLoaded()` before `new Game()` — correct no-flash boot.
+- `grep -r "fontSize:" src/game/` returns zero results outside `textStyle.ts`;
+  `grep -r "fontFamily:" src/game/` likewise. Every `add.text(...)` call spreads
+  or directly passes a `textStyle.ts` constant (`BODY`, `BODY_LIGHT`, `HEADING`,
+  `TITLE`, `BIG_LIGHT`, `NAME`, `withColor`, `withWrap`) — acceptance criterion
+  met.
+- Spot-checked `dialogBox.ts`, `CombatScene.ts`, `PauseMenuScene.ts`,
+  `MathProblemScene.ts`, `translatedDialogChoice.ts`, `renamePlayer.ts` — all
+  migrate cleanly to shared constants; no inline `fontSize` or browser-default
+  font survives.
+- Visual QA via Puppeteer: `document.fonts.check('8px "PressStart2P"')` returns
+  `true` at first render (before any scene interaction). Screenshots confirmed:
+  - Title screen: "Arithmon" header and subtitle in crisp PressStart2P.
+  - Pause menu: "Tuxemon / Journal / Bag / Save / Close" grid-aligned,
+    no overflow past panel right edge (80 px panel fits "Tuxemon" + "Journal").
+  - Combat scene: "Budaye Lv5", "What will Budaye do?", "FIGHT / TUXEMON / ITEM
+    / RUN" 2×2 menu, "DP" purple label — all PressStart2P, no clipping.
+- Re-ran pre-commit gates (`format:check / lint / tsc --noEmit / npm test`):
+  42 test files, 465 tests pass.
+- `qa/pixel-font-readability.ts` (489 lines) is checked in and covers 17
+  labelled scenes — appropriate coverage for a visual-only migration story.
