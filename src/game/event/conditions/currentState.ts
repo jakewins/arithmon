@@ -5,6 +5,7 @@ const SCENE_TO_STATE: Record<string, string> = {
   OverworldScene: "WorldState",
   CombatScene: "CombatState",
   JournalScene: "JournalState",
+  MonsterInfoScene: "JournalInfoState",
   PauseMenuScene: "PauseState",
   PartyScreenScene: "PartyState",
 };

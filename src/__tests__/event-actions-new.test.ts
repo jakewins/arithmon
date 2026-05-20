@@ -38,7 +38,7 @@ function stubSceneWithUI(): Phaser.Scene {
         removeKey: vi.fn(),
       },
     },
-    scene: { launch: vi.fn(), key: "OverworldScene" },
+    scene: { launch: vi.fn(), isActive: vi.fn(() => false), key: "OverworldScene" },
   } as unknown as Phaser.Scene;
 }
 
@@ -335,7 +335,7 @@ describe("choice_monster action", () => {
 });
 
 describe("open_journal action", () => {
-  it("launches JournalScene and marks monster as seen", () => {
+  it("launches MonsterInfoScene and marks monster as seen", () => {
     const scene = stubSceneWithUI();
     const launchSpy = (scene as unknown as { scene: { launch: ReturnType<typeof vi.fn> } }).scene
       .launch;
@@ -351,8 +351,38 @@ describe("open_journal action", () => {
       { scene },
     );
 
-    expect(launchSpy).toHaveBeenCalledWith("JournalScene");
+    expect(launchSpy).toHaveBeenCalledWith("MonsterInfoScene", { slug: "dollfin" });
     expect(session.monsterRegistry.seen.has("dollfin")).toBe(true);
+  });
+
+  it("stays blocking while MonsterInfoScene is active and completes when it closes", () => {
+    const scene = stubSceneWithUI();
+    const sceneNs = (
+      scene as unknown as {
+        scene: { launch: ReturnType<typeof vi.fn>; isActive: ReturnType<typeof vi.fn> };
+      }
+    ).scene;
+
+    // First two ticks: modal still up → engine should still be blocking.
+    sceneNs.isActive.mockReturnValue(true);
+    const engine = new EventEngine([
+      {
+        id: 191,
+        name: "Open journal blocking",
+        conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
+        actions: [{ type: "open_journal", args: ["dollfin"] }],
+        ...inZone(),
+      },
+    ]);
+    engine.update(makeCtx({ scene }), 0.016);
+    expect(engine.blocking).toBe(true);
+    engine.update(makeCtx({ scene }), 0.016);
+    expect(engine.blocking).toBe(true);
+
+    // Scene closes → next tick the action flips done and the event finishes.
+    sceneNs.isActive.mockReturnValue(false);
+    engine.update(makeCtx({ scene }), 0.016);
+    expect(engine.blocking).toBe(false);
   });
 });
 

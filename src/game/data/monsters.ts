@@ -20,6 +20,29 @@ export interface MonsterDef {
   catchRate: number;
   moveset: { slug: string; learnedAt: number }[];
   evolutions?: { species: string; level: number }[];
+
+  // --- Journal / "Tuxepedia" info fields (used by MonsterInfoScene) ---
+  // All optional so monsters can be ported in stages — the viewer renders "—"
+  // for any missing field. Mirrors upstream `MonsterModel` fields verbatim.
+  /** Upstream `txmn_id` (national-dex-style number). */
+  txmnId?: number;
+  /**
+   * Upstream `species` slug — short word used to look up `cat_<species>` in
+   * the PO file (e.g. `gumnut` → `cat_gumnut` → "Gumnut").
+   */
+  species?: string;
+  /** Body shape (a `ShapeSlug` — also a PO translation key). */
+  shape?: ShapeSlug;
+  /** Height in centimetres, copied verbatim from upstream's `height:`. */
+  heightCm?: number;
+  /** Weight in kilograms, copied verbatim from upstream's `weight:`. */
+  weightKg?: number;
+  /**
+   * Translation key for flavour text. Convention matches upstream:
+   * `<slug>_description`. Stored as a key (not raw text) so other locales
+   * resolve correctly via the loaded PO.
+   */
+  descriptionKey?: string;
 }
 
 // Shape stat tables, ported verbatim from upstream/mods/tuxemon/db/shape/shapes.yaml.
@@ -41,7 +64,7 @@ const SHAPES = {
   varmint: { hp: 6, melee: 8, ranged: 4, armor: 6, dodge: 6, speed: 6 },
 } as const satisfies Record<string, MonsterBaseStats>;
 
-type ShapeSlug = keyof typeof SHAPES;
+export type ShapeSlug = keyof typeof SHAPES;
 const stats = (shape: ShapeSlug): MonsterBaseStats => SHAPES[shape];
 
 export const MONSTERS: Record<string, MonsterDef> = {
@@ -66,6 +89,12 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "bitingWinds", learnedAt: 52 },
     ],
     evolutions: [{ species: "rockat", level: 24 }],
+    txmnId: 1,
+    species: "cute_boulder",
+    shape: "hunter",
+    heightCm: 55,
+    weightKg: 9,
+    descriptionKey: "rockitten_description",
   },
   budaye: {
     slug: "budaye",
@@ -1108,6 +1137,12 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "supernova", learnedAt: 31 },
     ],
     evolutions: [{ species: "agnidon", level: 24 }],
+    txmnId: 13,
+    species: "false_dragon",
+    shape: "dragon",
+    heightCm: 80,
+    weightKg: 24,
+    descriptionKey: "agnite_description",
   },
   agnidon: {
     slug: "agnidon",
@@ -2309,6 +2344,12 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "invictus", learnedAt: 52 },
     ],
     evolutions: [{ species: "legko", level: 24 }],
+    txmnId: 10,
+    species: "gumnut",
+    shape: "sprite",
+    heightCm: 69,
+    weightKg: 37,
+    descriptionKey: "lambert_description",
   },
   legko: {
     slug: "legko",
@@ -2373,6 +2414,12 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "thunderclap", learnedAt: 25 },
     ],
     evolutions: [{ species: "bolt", level: 9 }],
+    txmnId: 4,
+    species: "hardware",
+    shape: "blob",
+    heightCm: 45,
+    weightKg: 4,
+    descriptionKey: "nut_description",
   },
   bolt: {
     slug: "bolt",
@@ -2604,6 +2651,12 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { slug: "snowstorm", learnedAt: 52 },
     ],
     evolutions: [{ species: "heronquak", level: 24 }],
+    txmnId: 7,
+    species: "halcyon",
+    shape: "flier",
+    heightCm: 45,
+    weightKg: 1,
+    descriptionKey: "tweesher_description",
   },
   heronquak: {
     slug: "heronquak",

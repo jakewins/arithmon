@@ -60,6 +60,7 @@ interface DebugBridgeAPI {
   setVariable(key: string, value: string): void;
   setLayer(rgba?: string): void;
   openJournal(): void;
+  openMonsterInfo(slug: string): void;
   setupGame(opts?: SetupGameOptions): Promise<void>;
   showProblem(problem: PerseusProblem): Promise<void>;
   spawnNpc(

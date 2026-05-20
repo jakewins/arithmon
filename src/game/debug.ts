@@ -141,6 +141,15 @@ export class DebugBridge {
     this.activeScene = scene;
   }
 
+  /**
+   * Read-only access to the current "active" Phaser scene tracked by the
+   * bridge — used by modal scenes (e.g. MonsterInfoScene) that need to stash
+   * and later restore the previous scene on shutdown.
+   */
+  getActiveScene(): Phaser.Scene | null {
+    return this.activeScene;
+  }
+
   /** Emit a debug event into the rolling buffer and notify listeners. */
   emit(type: string, data: Record<string, unknown>): void {
     const event: DebugEvent = { type, time: performance.now(), data };
@@ -466,6 +475,15 @@ export class DebugBridge {
     if (!this.activeScene) throw new Error("No active scene");
     const scene = this.activeScene.scene;
     scene.launch("JournalScene");
+  }
+
+  /**
+   * Open the per-monster info viewer directly (bypasses the `open_journal`
+   * event action). Useful for QA — fires the same scene the action launches.
+   */
+  openMonsterInfo(slug: string): void {
+    if (!this.activeScene) throw new Error("No active scene");
+    this.activeScene.scene.launch("MonsterInfoScene", { slug });
   }
 
   /** Teleport the player to a map at the given tile. Restarts OverworldScene. */
