@@ -177,8 +177,11 @@ export function loadGame(): SavedLocation | null {
   // Faint teleport
   session.faintTeleport = data.faintTeleport;
 
-  // Skill states
-  session.skillStates = data.skillStates;
+  // Skill states — merge saved entries onto the register-initialized state
+  // so nodes added since the save was created keep their default entries.
+  for (const [id, state] of Object.entries(data.skillStates ?? {})) {
+    session.skillStates[id] = state;
+  }
   session.skillEncounter = data.skillEncounter;
 
   // Monster storage

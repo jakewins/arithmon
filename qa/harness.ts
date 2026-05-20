@@ -111,11 +111,26 @@ export async function launchGame(): Promise<{
   });
   const page = await browser.newPage({ viewport: VIEWPORT });
 
-  // Capture browser errors so QA scripts surface them automatically
+  // Capture browser errors and console errors. Any of these crash the harness
+  // as soon as they fire — we want game-runtime errors to blow up the test
+  // immediately, not silently log and let the script keep running.
   const browserErrors: string[] = [];
-  page.on("pageerror", (err) => {
-    browserErrors.push(err.message);
-    console.error("[BROWSER ERROR]", err.message);
+  const fail = (source: string, message: string) => {
+    browserErrors.push(message);
+    console.error(`[BROWSER ${source}]`, message);
+    // Inject the error into the page so any pending evaluate() call rejects,
+    // breaking the test out of whatever it was waiting on.
+    page
+      .evaluate((m) => {
+        throw new Error(m);
+      }, `Game runtime ${source.toLowerCase()}: ${message}`)
+      .catch(() => {
+        /* expected — we're forcing the rejection */
+      });
+  };
+  page.on("pageerror", (err) => fail("ERROR", err.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") fail("CONSOLE ERROR", msg.text());
   });
 
   await page.goto(GAME_URL);
@@ -134,12 +149,12 @@ export async function launchGame(): Promise<{
   return {
     page,
     close: async () => {
+      await browser.close();
       if (browserErrors.length > 0) {
-        console.error(
-          `\n[QA] ${browserErrors.length} browser error(s) during session:\n${browserErrors.join("\n")}`,
+        throw new Error(
+          `${browserErrors.length} browser error(s) during session:\n${browserErrors.join("\n")}`,
         );
       }
-      await browser.close();
     },
   };
 }
