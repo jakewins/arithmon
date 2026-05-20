@@ -529,6 +529,11 @@ export class DebugBridge {
     const tileY = opts.tileY ?? 19;
     const monsters = opts.monsters ?? [{ slug: "budaye", level: 5 }];
 
+    // If the title screen is up (the default boot state on launchGame),
+    // teleport() below transitions out of it via scene.start("OverworldScene").
+    // No extra setup is needed here — existing QA scripts that only call
+    // setupGame() continue to work unchanged.
+
     // 1. Set intro-skip variables (character creation + campaign intro)
     const vars = session.player.gameVariables;
     vars.set("scenario_choice", scenario);

@@ -121,3 +121,14 @@ function createSession(): GameSession {
 }
 
 export const session: GameSession = createSession();
+
+/**
+ * Reset the live `session` object back to a fresh-boot state. Mutates the
+ * exported singleton in place so any module-scoped references keep working.
+ * Used by `clearSave()` when the player chooses "New Game" from the title
+ * screen and we need to wipe stale state from a previous run.
+ */
+export function resetSession(): void {
+  const fresh = createSession();
+  Object.assign(session, fresh);
+}

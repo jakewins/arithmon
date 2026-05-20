@@ -1,4 +1,4 @@
-import { session, type CombatOutcome } from "./session";
+import { session, resetSession, type CombatOutcome } from "./session";
 import { Monster } from "./model/Monster";
 import { createInventory, addItem } from "./item/inventory";
 import { createMonsterRegistry, markSeen, markCaught } from "./model/monsterRegistry";
@@ -126,6 +126,23 @@ export function hasSave(): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Remove any persisted save and reset the in-memory session back to defaults.
+ * Called when the player picks "New Game" from the title screen — we don't
+ * want stale monsters or variables from a previous run leaking into the new
+ * playthrough.
+ */
+export function clearSave(): void {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+    // localStorage may be unavailable; in-memory reset still happens below.
+  }
+  resetSession();
+  currentLocation = { mapKey: "starter", tileX: 10, tileY: 7, facing: "down" };
+  pendingSavedLocation = null;
 }
 
 /**

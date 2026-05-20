@@ -1,4 +1,5 @@
 import { AUTO, Game } from "phaser";
+import { TitleScene } from "./scenes/TitleScene";
 import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
 import { MathProblemScene } from "./scenes/MathProblemScene";
@@ -31,7 +32,9 @@ const config: Phaser.Types.Core.GameConfig = {
       gravity: { x: 0, y: 0 },
     },
   },
+  // TitleScene must come first so Phaser auto-starts it on boot.
   scene: [
+    TitleScene,
     OverworldScene,
     CombatScene,
     MathProblemScene,
