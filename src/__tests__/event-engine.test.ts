@@ -780,7 +780,9 @@ events:
       name: "Teleport blocks",
       conditions: [{ operator: "is", type: "char_at", args: ["player"] }],
       actions: [
-        { type: "transition_teleport", args: ["player", "foo", "1", "2", "0.3"] },
+        // Use a real registered map — unknown maps now short-circuit the
+        // action (see transitionTeleport's missing-map handling).
+        { type: "transition_teleport", args: ["player", "player_house_bedroom", "1", "2", "0.3"] },
         { type: "set_variable", args: ["after_teleport:yes"] },
       ],
       x: 19,
@@ -1401,7 +1403,10 @@ describe("play_music action", () => {
 });
 
 describe("music_playing condition", () => {
-  it("always returns false (stub)", () => {
+  it("is true after play_music sets the track, false otherwise", () => {
+    const ctx = makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } });
+    ctx.session.musicPlaying = null;
+
     const event: EventDef = {
       id: 71,
       name: "Music cond",
@@ -1415,12 +1420,19 @@ describe("music_playing condition", () => {
       width: 3,
       height: 3,
     };
-    const engine = new EventEngine([event]);
-    engine.update(makeCtx({ player: { tileX: 20, tileY: 19, facing: "down" } }), 0.016);
 
-    // Since music_playing always returns false, "not music_playing" is true
+    // Track not yet playing → "not music_playing" is true → event fires.
+    const engine = new EventEngine([event]);
+    engine.update(ctx, 0.016);
     expect(gameVariables.get("music_cond")).toBe("yes");
     gameVariables.remove("music_cond");
+
+    // After play_music sets the track, the condition flips and the event
+    // shouldn't re-fire on a fresh engine.
+    ctx.session.musicPlaying = "music_home";
+    const engine2 = new EventEngine([event]);
+    engine2.update(ctx, 0.016);
+    expect(gameVariables.has("music_cond")).toBe(false);
   });
 });
 

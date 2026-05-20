@@ -50,6 +50,13 @@ export interface GameSession {
   monsterRegistry: MonsterRegistry;
   /** Tracks last battle outcome per NPC slug. Written by start_battle, read by battle_outcome condition. */
   battleOutcomes: Map<string, CombatOutcome>;
+  /**
+   * Per-NPC dynamic parties. Populated by `add_monster <slug>,<level>,<npc>`
+   * (e.g. the First Fight assigns Billie a copy of the player's scoop pick).
+   * `start_battle` reads this first, then falls back to the static party in
+   * `npcParties.ts` if there's no dynamic entry. Cleared on new game.
+   */
+  npcParties: Map<string, Monster[]>;
   /** Cathedral billing accounts, keyed by bill name (e.g. "bill_cathedral"). */
   bills: Record<string, number>;
   /** Current map environment (can be overridden by set_environment action). */
@@ -64,6 +71,8 @@ export interface GameSession {
   timeStage: "dawn" | "morning" | "day" | "dusk" | "night";
   /** Named kennels for monster storage. */
   kennels: Record<string, { monsters: Monster[]; visible: boolean }>;
+  /** Slug of the currently playing music track (or null). Written by `play_music`. */
+  musicPlaying: string | null;
 }
 
 class GameVariablesImpl implements GameVariables {
@@ -110,6 +119,7 @@ function createSession(): GameSession {
     monsterStorage: [],
     monsterRegistry: createMonsterRegistry(),
     battleOutcomes: new Map(),
+    npcParties: new Map(),
     bills: {},
     environment: "grass",
     inside: false,
@@ -117,6 +127,7 @@ function createSession(): GameSession {
     mapKey: "",
     timeStage: "day",
     kennels: { Kennel: { monsters: [], visible: true } },
+    musicPlaying: null,
   };
 }
 

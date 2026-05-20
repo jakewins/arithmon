@@ -1,227 +1,636 @@
+# Verbatim mechanical port of spyder_paper_town.tmx event objects
+# from upstream/mods/tuxemon/maps/spyder_paper_town.tmx (STORY-0196).
+# Pixel coords converted to tile coords (/16). Do not hand-edit; this
+# file is regenerated whenever upstream changes — see the story journal
+# for the conversion script.
 events:
-  # --- NPC spawns ---
 
-  Create Silver:
-    conditions:
-    - not char_exists spyder_papertown_silver
-    actions:
-    - create_npc spyder_papertown_silver,10,14
-
-  Create Granny Piper:
-    conditions:
-    - not char_exists spyder_grannypiper
-    actions:
-    - create_npc spyder_grannypiper,26,8
-
-  # --- Map connections ---
-
-  Enter Paper Scoop:
-    x: 19
-    y: 12
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_paper_scoop.tmx,6,9,0.3
-    - char_face player,up
-
-  Enter House:
-    x: 10
-    y: 6
-    conditions:
-    - is char_at player
-    actions:
-    - transition_teleport player,spyder_downstairs.tmx,4,5,0.3
-    - char_face player,down
-
-  Go To Route 1 West:
-    x: 13
-    y: 0
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_route1.tmx,13,18,0.3
-    - char_face player,up
-
-  Go To Route 1 East:
-    x: 14
-    y: 0
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_route1.tmx,14,18,0.3
-    - char_face player,up
-
-  Enter Manor:
-    x: 10
-    y: 12
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_paper_manor.tmx,6,7,0.3
-    - char_face player,up
-
-  Enter Daycare:
-    x: 20
-    y: 4
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    - is variable_set seentimber:yes
-    actions:
-    - transition_teleport player,spyder_paper_daycare.tmx,3,8,0.3
-    - char_face player,up
-
-  Daycare Locked:
-    x: 20
-    y: 4
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    - not variable_set seentimber:yes
-    actions:
-    - dialog The daycare isn't open yet. Try coming back later.
-
-  Enter Daycare Back:
-    x: 21
-    y: 3
-    conditions:
-    - is char_at player
-    - is char_facing player,left
-    - is variable_set seentimber:yes
-    actions:
-    - transition_teleport player,spyder_paper_daycare.tmx,13,7,0.3
-    - char_face player,left
-
-  Enter Rival House:
-    x: 32
-    y: 5
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    actions:
-    - transition_teleport player,spyder_paper_rival_downstairs.tmx,1,11,0.3
-    - char_face player,up
-
-  # --- NPC dialogs ---
-
-  Talk Granny:
-    behav: talk spyder_grannypiper
-    actions:
-    - dialog This town used to be much busier before the storms.
-
-  Talk Silver No Battle:
-    conditions:
-    - is char_facing_char player,spyder_papertown_silver
-    - is button_pressed INTERACT
-    - not variable_set silver_battle:ready
-    - not battle_outcome player,spyder_papertown_silver,won
-    actions:
-    - char_face spyder_papertown_silver,player
-    - dialog I'm Silver. I've been training my monsters nearby.
-    - dialog Think you can take me on? Come talk to me when you're ready!
-    - set_variable silver_battle:ready
-
-  # --- Trainer battle with Silver ---
-
-  Talk Silver Ready:
-    conditions:
-    - is char_facing_char player,spyder_papertown_silver
-    - is button_pressed INTERACT
-    - is variable_set silver_battle:ready
-    - not battle_outcome player,spyder_papertown_silver,won
-    actions:
-    - char_face spyder_papertown_silver,player
-    - lock_controls
-    - dialog Let's see what you've got!
-    - start_battle spyder_papertown_silver
-    - unlock_controls
-
-  Silver Post Win:
-    conditions:
-    - is char_facing_char player,spyder_papertown_silver
-    - is button_pressed INTERACT
-    - is battle_outcome player,spyder_papertown_silver,won
-    actions:
-    - char_face spyder_papertown_silver,player
-    - dialog Not bad! You really showed me. I'll have to train harder next time.
-
-  # --- Signs ---
-
-  Mart Sign:
+  "Mart Sign":
     x: 16
     y: 12
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
     actions:
-    - dialog Paper Scoop - Supplies & More
+      - "translated_dialog spyder_multi_martsign"
 
-  Town Sign:
-    x: 12
-    y: 1
+  "Teleport to Protagonist House":
+    x: 10
+    y: 6
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "is char_at player"
     actions:
-    - dialog Welcome to Paper Town!
+      - "transition_teleport player,spyder_downstairs.tmx,4,6,0.3"
+      - "char_face player,up"
 
-  Home Sign:
+  "Sign for Protagonist House":
     x: 12
     y: 6
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
     actions:
-    - dialog Home sweet home!
+      - "translated_dialog spyder_papertown_home"
 
-  Under Repairs Sign:
+  "Sign Repairs":
     x: 4
     y: 15
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not variable_set captainreturns:yes
+      - "not char_exists spyder_sign"
+      - "not variable_set captainreturns:yes"
     actions:
-    - dialog The sign reads, 'Under repairs'
+      - "create_npc spyder_sign,4,15"
 
-  Daycare Sign Before:
+  "Under Repairs":
+    x: 4
+    y: 15
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+      - "not variable_set captainreturns:yes"
+    actions:
+      - "translated_dialog spyder_multi_underrepairs"
+
+  "Paper Town Sign":
+    x: 12
+    y: 1
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+    actions:
+      - "translated_dialog welcome_location_town"
+
+  "Sign for Daycare, Before Opening":
     x: 16
     y: 4
     conditions:
-    - not variable_set seentimber:yes
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "not variable_set seentimber:yes"
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
     actions:
-    - dialog Daycare Centre - Under construction.
+      - "translated_dialog spyder_papertown_daycare1"
 
-  Daycare Sign After:
+  "Teleport to Route 1 #142":
+    x: 14
+    y: 0
+    conditions:
+      - "is char_at player"
+      - "is char_facing player,up"
+      - "is variable_set firstfightdue:no"
+    actions:
+      - "transition_teleport player,spyder_route1.tmx,14,19,0.3"
+      - "char_face player,up"
+
+  "Teleport to Route 1 #143":
+    x: 13
+    y: 0
+    conditions:
+      - "is char_at player"
+      - "is char_facing player,up"
+      - "is variable_set firstfightdue:no"
+    actions:
+      - "transition_teleport player,spyder_route1.tmx,13,19,0.3"
+      - "char_face player,up"
+
+  "Teleport to Daycare":
+    x: 20
+    y: 4
+    conditions:
+      - "is char_at player"
+    actions:
+      - "transition_teleport player,spyder_paper_daycare.tmx,3,8,0.3"
+      - "char_face player,up"
+
+  "Teleport to Mart":
+    x: 19
+    y: 12
+    conditions:
+      - "is char_at player"
+    actions:
+      - "transition_teleport player,spyder_paper_scoop.tmx,6,10,0.3"
+      - "char_face player,up"
+
+  "Stop!":
+    x: 13
+    y: 1
+    width: 2
+    conditions:
+      - "is char_at player"
+      - "is party_size player,less_than,1"
+    actions:
+      - "lock_controls"
+      - "char_stop player"
+      - "create_npc spyder_dante,15,8"
+      - "pathfind_to_char player,spyder_dante,right"
+      - "char_face spyder_dante,left"
+      - "translated_dialog spyder_papertown_stopthere"
+      - "pathfind player,13,3"
+      - "char_face player,down"
+      - "pathfind spyder_dante,13,14"
+      - "remove_npc spyder_dante"
+      - "unlock_controls"
+
+  "Sign for Daycare, After Opening":
     x: 16
     y: 4
     conditions:
-    - is variable_set seentimber:yes
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "is variable_set seentimber:yes"
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
     actions:
-    - dialog Daycare Centre - Open now!
+      - "translated_dialog spyder_papertown_daycare2"
 
-  Sunnyside Manor Sign:
+  "Create Conileaf":
+    x: 24
+    y: 2
+    conditions:
+      - "not char_exists spyder_rockittenfrolicking"
+      - "is variable_set captainreturns:yes"
+    actions:
+      - "create_npc spyder_rockittenfrolicking,24,2,wander"
+
+  "Create Rockitten":
+    x: 25
+    y: 2
+    conditions:
+      - "not char_exists spyder_conileaffrolicking"
+      - "is variable_set captainreturns:yes"
+    actions:
+      - "create_npc spyder_conileaffrolicking,27,3,wander"
+
+  "Create Homemaker":
+    x: 10
+    y: 14
+    conditions:
+      - "not char_exists spyder_papertown_silver"
+    actions:
+      - "create_npc spyder_papertown_silver,10,14"
+
+  "Talk homemaker":
+    x: 25
+    y: 7
+    behav: "talk spyder_papertown_silver"
+    actions:
+      - "translated_dialog spyder_papertown_homemaker1"
+
+  "Teleport to Sea Route":
+    x: 0
+    y: 14
+    height: 4
+    conditions:
+      - "is char_at player"
+      - "is char_facing player,left"
+    actions:
+      - "transition_teleport player,spyder_routec.tmx,39,35,0.3"
+      - "char_face player,left"
+
+  "My First Mon":
+    x: 23
+    y: 13
+    width: 9
+    conditions:
+      - "is char_at player"
+      - "is party_size player,less_than,1"
+      - "is variable_set dantefirst:yes"
+      - "not variable_set dantebin:yes"
+    actions:
+      - "char_stop player"
+      - "lock_controls"
+      - "create_npc spyder_dante,19,13"
+      - "pathfind_to_char player,spyder_dante,down"
+      - "char_face spyder_dante,up"
+      - "char_face player,down"
+      - "translated_dialog spyder_papertown_myfirstmon"
+      - "pathfind spyder_dante,26,9"
+      - "char_face spyder_dante,right"
+      - "char_face player,up"
+      - "translated_dialog spyder_papertown_myfirstmon1"
+      - "wait 1.0"
+      - "translated_dialog spyder_papertown_myfirstmon2"
+      - "pathfind spyder_dante,19,13"
+      - "remove_npc spyder_dante"
+      - "set_variable dantebin:yes"
+      - "unlock_controls"
+
+  "Chosen - Rockitten":
+    x: 32
+    y: 8
+    conditions:
+      - "is variable_set rockittenchosen:yes"
+      - "is party_size player,less_than,1"
+    actions:
+      - "add_monster rockitten,5"
+      - "translated_dialog rockitten,,center,center,center"
+      - "set_variable firstfightdue:yes"
+      - "set_variable mymonchoice:rockitten"
+
+  "Chosen - Lambert":
+    x: 32
+    y: 10
+    conditions:
+      - "is variable_set lambertchosen:yes"
+      - "is party_size player,less_than,1"
+    actions:
+      - "add_monster lambert,5"
+      - "translated_dialog lambert,,center,center,center"
+      - "set_variable firstfightdue:yes"
+      - "set_variable mymonchoice:lambert"
+
+  "Chosen - Nut":
+    x: 32
+    y: 12
+    conditions:
+      - "is variable_set nutchosen:yes"
+      - "is party_size player,less_than,1"
+    actions:
+      - "add_monster nut,5"
+      - "translated_dialog nut,,center,center,center"
+      - "set_variable firstfightdue:yes"
+      - "set_variable mymonchoice:nut"
+
+  "Chosen - Tweesher":
+    x: 32
+    y: 14
+    conditions:
+      - "is variable_set tweesherchosen:yes"
+      - "is party_size player,less_than,1"
+    actions:
+      - "add_monster tweesher,5"
+      - "translated_dialog tweesher,,center,center,center"
+      - "set_variable firstfightdue:yes"
+      - "set_variable mymonchoice:tweesher"
+
+  "Chosen - Agnite":
+    x: 32
+    y: 16
+    conditions:
+      - "is variable_set agnitechosen:yes"
+      - "is party_size player,less_than,1"
+    actions:
+      - "add_monster agnite,5"
+      - "translated_dialog agnite,,center,center,center"
+      - "set_variable firstfightdue:yes"
+      - "set_variable mymonchoice:agnite"
+
+  "First Fight - Start":
+    x: 25
+    y: 8
+    conditions:
+      - "is variable_set firstfightdue:yes"
+    actions:
+      - "lock_controls"
+      - "set_teleport_faint player,spyder_bedroom.tmx,3,4"
+      - "add_item friendship_scroll,1"
+      - "create_npc spyder_billie,13,14"
+      - "pathfind spyder_billie,25,13"
+      - "wait 1.0"
+      - "pathfind_to_char player,spyder_billie,down"
+      - "char_face spyder_billie,player"
+      - "char_face player,spyder_billie"
+      - "translated_dialog spyder_papertown_firstfight"
+      - "add_monster billie_choice,5,spyder_billie,5,10"
+      - "set_monster_attribute add_monster,gender,male"
+      - "start_battle player,spyder_billie"
+      - "set_variable firstfightdue:no"
+      - "set_variable firstfightend:yes"
+
+  "First Fight - Win":
+    x: 24
+    y: 8
+    conditions:
+      - "is variable_set battle_last_result:won"
+      - "is variable_set firstfightend:yes"
+    actions:
+      - "translated_dialog spyder_papertown_firstfight_win"
+      - "pathfind spyder_billie,25,14"
+      - "wait 1.0"
+      - "translated_dialog spyder_papertown_firstfight_pause"
+      - "pathfind_to_char player,spyder_billie,down"
+      - "translated_dialog spyder_papertown_firstfight_after"
+      - "pathfind spyder_billie,15,14"
+      - "remove_npc spyder_billie"
+      - "unlock_controls"
+      - "set_monster_health"
+      - "set_monster_status"
+      - "set_variable firstfightend:no"
+
+  "First Fight - Lose":
+    x: 26
+    y: 8
+    conditions:
+      - "not variable_set battle_last_result:won"
+      - "is variable_set firstfightend:yes"
+    actions:
+      - "translated_dialog spyder_papertown_firstfight_lose"
+      - "pathfind spyder_billie,25,14"
+      - "wait 1.0"
+      - "pathfind_to_char player,spyder_billie,down"
+      - "translated_dialog spyder_papertown_firstfight_after"
+      - "pathfind spyder_billie,15,14"
+      - "remove_npc spyder_billie"
+      - "unlock_controls"
+      - "set_monster_health"
+      - "set_monster_status"
+      - "set_variable firstfightend:no"
+
+  "Play Music":
+    x: 0
+    y: 0
+    conditions:
+      - "not music_playing music_town_theme"
+    actions:
+      - "play_music music_town_theme"
+
+  "Sign for Sunnyside Manor":
     x: 12
     y: 12
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
     actions:
-    - dialog Sunnyside Manor - If we are not home leave a message with our housekeeper.
+      - "translated_dialog spyder_papertown_sunnyside"
 
-  Rival House Sign:
+  "Create Captain":
+    x: 4
+    y: 16
+    conditions:
+      - "not char_exists spyder_captain"
+      - "is variable_set captainreturns:yes"
+    actions:
+      - "create_npc spyder_captain,4,14"
+      - "char_face spyder_captain,up"
+
+  "Talk Captain - Flower":
+    x: 13
+    y: 15
+    behav: "talk spyder_captain"
+    conditions:
+      - "not variable_set seentimber:yes"
+    actions:
+      - "translated_dialog spyder_river_captain2"
+      - "translated_dialog_choice paper_town:leather_town:flower_city,rivergoto"
+
+  "Talk Captain - Timber":
+    x: 15
+    y: 15
+    behav: "talk spyder_captain"
+    conditions:
+      - "not variable_set seencandy:yes"
+      - "is variable_set seentimber:yes"
+    actions:
+      - "translated_dialog spyder_river_captain2"
+      - "translated_dialog_choice paper_town:leather_town:flower_city:timber_town,rivergoto"
+
+  "Talk Captain - Candy":
+    x: 14
+    y: 15
+    behav: "talk spyder_captain"
+    conditions:
+      - "is variable_set seencandy:yes"
+    actions:
+      - "translated_dialog spyder_river_captain2"
+      - "translated_dialog_choice paper_town:leather_town:flower_city:timber_town:candy_port,rivergoto"
+
+  "Destination - Flower":
+    x: 13
+    y: 16
+    conditions:
+      - "is variable_set rivergoto:flower_city"
+    actions:
+      - "set_variable rivergoto:nothing"
+      - "char_face player,up"
+      - "transition_teleport player,spyder_flower_city.tmx,17,30,0.3"
+
+  "Destination - Leather":
+    x: 14
+    y: 16
+    conditions:
+      - "is variable_set rivergoto:leather_town"
+    actions:
+      - "set_variable rivergoto:nothing"
+      - "transition_teleport player,spyder_leather_town.tmx,17,19,0.3"
+      - "char_face player,right"
+
+  "Destination - Paper":
+    x: 12
+    y: 16
+    conditions:
+      - "is variable_set rivergoto:paper_town"
+    actions:
+      - "set_variable rivergoto:nothing"
+      - "transition_teleport player,spyder_paper_town.tmx,4,13,0.3"
+      - "char_face player,up"
+
+  "Destination - Candy":
+    x: 12
+    y: 15
+    conditions:
+      - "is variable_set rivergoto:candy_port"
+    actions:
+      - "set_variable rivergoto:nothing"
+      - "transition_teleport player,spyder_candy_port.tmx,37,13,0.3"
+      - "char_face player,down"
+
+  "Environment Day":
+    x: 1
+    y: 0
+    conditions:
+      - "not time_is stage_of_day,equals,night"
+      - "not char_sprite player,swimmer"
+      - "not environment_is grass"
+    actions:
+      - "set_environment grass"
+
+  "Environment Night":
+    x: 2
+    y: 0
+    conditions:
+      - "is time_is stage_of_day,equals,night"
+      - "not char_sprite player,swimmer"
+      - "not environment_is night_grass"
+    actions:
+      - "set_environment night_grass"
+
+  "Destination - Timber":
+    x: 15
+    y: 16
+    conditions:
+      - "is variable_set rivergoto:timber_town"
+    actions:
+      - "set_variable rivergoto:nothing"
+      - "transition_teleport player,spyder_timber_town.tmx,8,21,0.3"
+      - "char_face player,up"
+
+  "Teleport to Manor":
+    x: 10
+    y: 12
+    conditions:
+      - "is char_at player"
+    actions:
+      - "transition_teleport player,spyder_paper_manor.tmx,6,7,0.3"
+      - "char_face player,up"
+
+  "Stop 2!":
+    x: 1
+    y: 14
+    height: 4
+    conditions:
+      - "is char_at player"
+      - "is party_size player,less_than,1"
+    actions:
+      - "lock_controls"
+      - "char_stop player"
+      - "create_npc spyder_dante,19,13"
+      - "pathfind spyder_dante,2,14"
+      - "translated_dialog spyder_papertown_stopthere"
+      - "pathfind player,4,12"
+      - "pathfind spyder_dante,19,13"
+      - "remove_npc spyder_dante"
+      - "unlock_controls"
+
+  "Teleport to Daycare Back":
+    x: 21
+    y: 3
+    conditions:
+      - "is char_at player"
+      - "is char_facing player,left"
+    actions:
+      - "transition_teleport player,spyder_paper_daycare.tmx,13,7,0.3"
+      - "char_face player,left"
+
+  "Teleport to Rival":
+    x: 32
+    y: 5
+    conditions:
+      - "is char_at player"
+    actions:
+      - "transition_teleport player,spyder_paper_rival_downstairs.tmx,1,11,0.3"
+      - "char_face player,up"
+
+  "Sign for Rival House":
     x: 28
     y: 5
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
     actions:
-    - dialog Billie's House
+      - "translated_dialog spyder_papertown_rival"
+
+  "My First Mon - Not Met":
+    x: 23
+    y: 13
+    width: 9
+    conditions:
+      - "is char_at player"
+      - "is party_size player,less_than,1"
+      - "not variable_set dantefirst:yes"
+      - "not variable_set dantebin:yes"
+    actions:
+      - "char_stop player"
+      - "lock_controls"
+      - "create_npc spyder_dante,19,13"
+      - "pathfind_to_char player,spyder_dante,down"
+      - "char_face spyder_dante,up"
+      - "char_face player,down"
+      - "translated_dialog spyder_papertown_myfirstmon_notmet"
+      - "pathfind spyder_dante,26,9"
+      - "char_face spyder_dante,right"
+      - "char_face player,up"
+      - "translated_dialog spyder_papertown_myfirstmon1"
+      - "wait 1.0"
+      - "translated_dialog spyder_papertown_myfirstmon2"
+      - "pathfind spyder_dante,19,13"
+      - "remove_npc spyder_dante"
+      - "set_variable dantefirst:yes"
+      - "set_variable dantebin:yes"
+      - "unlock_controls"
+
+  "Rockitten":
+    x: 22
+    y: 9
+    height: 2
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+      - "is party_size player,less_than,1"
+    actions:
+      - "translated_dialog spyder_papertown_thereis"
+      - "open_journal rockitten"
+      - "translated_dialog spyder_papertown_rockitten"
+      - "translated_dialog_choice yes:no,rockittenchosen"
+
+  "Lambert":
+    x: 22
+    y: 11
+    height: 2
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+      - "is party_size player,less_than,1"
+    actions:
+      - "translated_dialog spyder_papertown_thereis"
+      - "open_journal lambert"
+      - "translated_dialog spyder_papertown_lambert"
+      - "translated_dialog_choice yes:no,lambertchosen"
+
+  "Nut":
+    x: 27
+    y: 9
+    width: 2
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+      - "is party_size player,less_than,1"
+    actions:
+      - "translated_dialog spyder_papertown_thereis"
+      - "open_journal nut"
+      - "translated_dialog spyder_papertown_nut"
+      - "translated_dialog_choice yes:no,nutchosen"
+
+  "Tweesher":
+    x: 29
+    y: 9
+    width: 2
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+      - "is party_size player,less_than,1"
+    actions:
+      - "translated_dialog spyder_papertown_thereis"
+      - "open_journal tweesher"
+      - "translated_dialog spyder_papertown_tweesher"
+      - "translated_dialog_choice yes:no,tweesherchosen"
+
+  "Agnite":
+    x: 30
+    y: 11
+    height: 2
+    conditions:
+      - "is char_facing_tile player"
+      - "is button_pressed INTERACT"
+      - "is party_size player,less_than,1"
+    actions:
+      - "translated_dialog spyder_papertown_thereis"
+      - "open_journal agnite"
+      - "translated_dialog spyder_papertown_agnite"
+      - "translated_dialog_choice yes:no,agnitechosen"
+
+  "Teleport to Brideswood B":
+    x: 39
+    y: 7
+    conditions:
+      - "is char_at player"
+      - "is char_facing player,right"
+    actions:
+      - "transition_teleport player,spyder_brideswood.tmx,0,27,0.3"
+      - "char_face player,right"
+
+  "Teleport to Brideswood A":
+    x: 39
+    y: 6
+    conditions:
+      - "is char_at player"
+      - "is char_facing player,right"
+    actions:
+      - "transition_teleport player,spyder_brideswood.tmx,0,26,0.3"
+      - "char_face player,right"

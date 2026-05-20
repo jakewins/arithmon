@@ -83,4 +83,18 @@ export const ITEMS: Record<string, ItemDef> = {
     effects: [],
     buyPrice: 0,
   },
+  // Key item handed out by paper_town's First Fight Start cutscene. Upstream
+  // marks it `sort: utility, category: none, effects: []` — purely a flavor
+  // keepsake with no engine effect. Description verbatim from the upstream
+  // `friendship_scroll_description` msgid.
+  friendship_scroll: {
+    slug: "friendship_scroll",
+    name: "Friendship Scroll",
+    description: "It allows to deepen your relationship with the monsters.",
+    category: "other",
+    sprite: "item/friendship_scroll",
+    usableIn: [],
+    effects: [],
+    buyPrice: 0,
+  },
 };

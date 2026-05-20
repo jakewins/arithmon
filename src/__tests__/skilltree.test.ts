@@ -26,6 +26,7 @@ function makeSession(): GameSession {
     monsterStorage: [],
     monsterRegistry: { seen: new Set(), caught: new Set() },
     battleOutcomes: new Map(),
+    npcParties: new Map(),
     bills: {},
     environment: "grass",
     inside: false,
@@ -33,6 +34,7 @@ function makeSession(): GameSession {
     mapKey: "",
     timeStage: "day",
     kennels: { Kennel: { monsters: [], visible: true } },
+    musicPlaying: null,
   };
 }
 

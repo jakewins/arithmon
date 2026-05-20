@@ -766,6 +766,26 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
 
     const blocked = this.eventEngine.blocking || this.controlsState.locked;
 
+    // If a cutscene grabs control mid-walkTo / walkStep (e.g. paper_town's
+    // "Stop!" blocker locks controls the same frame the player enters the
+    // trigger zone), resolve the pending promise so callers don't deadlock.
+    // The cutscene's pathfind drives the player from here.
+    if (blocked && this.walkToActive) {
+      this.walkToWaypoints = [];
+      const resolve = this.walkToResolve;
+      this.walkToResolve = undefined;
+      resolve?.();
+    }
+    if (blocked && this.walkStepResolve) {
+      const resolve = this.walkStepResolve;
+      this.walkStepDir = undefined;
+      this.walkStepStartTile = undefined;
+      this.walkStepResolve = undefined;
+      this.player.setVelocity(0);
+      this.player.anims.stop();
+      resolve(this.playerTile());
+    }
+
     if (!blocked && !this.teleporting) {
       if (this.walkStepDir) {
         // walkStep: single-tile keyboard-style movement for debug/tests.

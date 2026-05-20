@@ -18,6 +18,15 @@ class OpenJournalAction implements EventAction {
 
   private monsterSlug: string | undefined;
   private launched = false;
+  /**
+   * Set to true once the modal has actually been seen as active. We can't
+   * use `scene.isActive("MonsterInfoScene")` for the close detection until
+   * we've observed it as `true` at least once — Phaser doesn't add the new
+   * scene to the active list until the next scene-manager tick after
+   * `scene.launch`, so a same-frame `isActive` check returns `false` and
+   * would prematurely mark the action complete.
+   */
+  private modalSeen = false;
 
   constructor(args: string[]) {
     this.monsterSlug = args[0];
@@ -37,15 +46,30 @@ class OpenJournalAction implements EventAction {
 
     ctx.scene.scene.launch("MonsterInfoScene", { slug: this.monsterSlug });
     this.launched = true;
+
+    // Belt: hook the modal's shutdown event for the canonical close signal.
+    // The polled isActive check below is the suspenders. `get` may be
+    // unavailable on harness/test scene stubs — guard for that.
+    const sceneMgr = ctx.scene.scene as unknown as {
+      get?: (k: string) => { events?: { once?: (e: string, cb: () => void) => void } };
+    };
+    const modal = sceneMgr.get?.("MonsterInfoScene");
+    modal?.events?.once?.("shutdown", () => {
+      this.done = true;
+    });
   }
 
   update(ctx: EventContext): void {
     if (!this.launched) return;
-    // Mirror upstream's `if "JournalInfoState" not in active_state_names:` —
-    // we hold this action open until the modal scene actually shuts down.
-    if (!ctx.scene.scene.isActive("MonsterInfoScene")) {
+    const active = ctx.scene.scene.isActive("MonsterInfoScene");
+    if (active) {
+      this.modalSeen = true;
+    } else if (this.modalSeen) {
+      // Was active, now isn't — modal closed.
       this.done = true;
     }
+    // If !active && !this.modalSeen, the scene-manager hasn't promoted the
+    // launched scene to active yet — wait another frame.
   }
 
   cleanup(): void {}

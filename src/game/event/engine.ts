@@ -31,6 +31,7 @@ import "./actions/translatedDialog";
 import "./actions/screenTransition";
 import "./actions/setMonsterHealth";
 import "./actions/setMonsterStatus";
+import "./actions/setMonsterAttribute";
 import "./actions/setTeleportFaint";
 import "./actions/playMusic";
 import "./actions/accessPc";
