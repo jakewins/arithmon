@@ -70,3 +70,27 @@ other display-the-slug-instead-of-name bugs:
 
 `npm run format:check && npm run lint && npx tsc --noEmit && npm test` all
 green; 462 tests pass including the new 14-case `textFormatter.test.ts`.
+
+## 2026-05-20 — Reviewer findings
+
+Approved.
+
+- Verified `formatText` covers every placeholder produced by
+  `grep -oh '\${{[^}]*}}' public/assets/l10n/en_US.po`. The 4 cardinal
+  directions are warn+passthrough by design (no map-metadata backing
+  field yet); everything else resolves from live session state.
+- Confirmed the `dialog.ts` dead-code removal is genuine —
+  `grep -rE '\$player' public/` and a grep for the legacy bare
+  `${{var}}` spelling return nothing in `public/assets/events/`.
+- Billie static `NPC_PARTIES` row is appropriate: its purpose is the
+  display-name lookup (`partyDef?.name ?? t(slug)`), not the party
+  contents. The dynamic `add_monster billie_choice,...` path remains
+  load-bearing for the actual party, exactly as the journal claims.
+- `t()` already title-cases unknown slugs, so even without a .po entry
+  the trainer name fallback can't leak `spyder_billie` verbatim.
+- Re-ran pre-commit gates: `format:check`, `lint`, `tsc --noEmit`,
+  `vitest` — all green, 462 tests.
+- Ran `qa/text-substitution.ts` against the worktree dev server on
+  port 8082. Both screenshots inspected: homemaker dialog renders
+  `"How are you, Test?"` and the Billie defeat screen renders
+  `"You defeated Billie!"`. No literal `${{` visible in either.
