@@ -3,7 +3,7 @@
  * page. Mirrors upstream `JournalInfoState` (tuxemon/states/journal_info.py).
  *
  * Launched by the `open_journal <slug>` event action, e.g. from the
- * paper-town bin events. Closes on B / ESC / BACKSPACE.
+ * paper-town bin events. Closes on B / ESC / BACKSPACE / SPACE.
  *
  * The cream background + striped sprite frame + blue border all come from the
  * upstream `tux_info.png` (256×144). At our native viewport it now fills the
@@ -64,6 +64,7 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 const KEY_B = 66;
+const KEY_SPACE = 32;
 
 export interface MonsterInfoSceneData {
   slug: string;
@@ -121,6 +122,7 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
       backX: this.input.keyboard!.addKey(KEY_X),
       backB: this.input.keyboard!.addKey(KEY_B),
       backspace: this.input.keyboard!.addKey(KEY_BACKSPACE),
+      backSpace: this.input.keyboard!.addKey(KEY_SPACE),
     };
 
     // Stash the previous DebugBridge scene so we can restore it on shutdown —
@@ -254,7 +256,8 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
       this.justPressed("back") ||
       this.justPressed("backX") ||
       this.justPressed("backB") ||
-      this.justPressed("backspace")
+      this.justPressed("backspace") ||
+      this.justPressed("backSpace")
     );
   }
 
