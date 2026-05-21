@@ -36,7 +36,11 @@ class SetLayerAction implements EventAction {
 
     if (this.rgba) {
       const cam = ctx.scene.cameras.main;
-      const color = Phaser.Display.Color.GetColor(this.rgba.r, this.rgba.g, this.rgba.b);
+      // Same packing as Phaser's Display.Color.GetColor — imported inline
+      // so the action module doesn't pull Phaser at load time (it gets imported
+      // by the vitest-running event engine, where Phaser's init touches
+      // `window` and crashes in node).
+      const color = (this.rgba.r << 16) | (this.rgba.g << 8) | this.rgba.b;
       const overlay = ctx.scene.add
         .rectangle(cam.scrollX, cam.scrollY, cam.width, cam.height, color, this.rgba.a / 255)
         .setOrigin(0, 0)
