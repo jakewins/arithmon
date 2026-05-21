@@ -1,9 +1,21 @@
 import type { Monster } from "../model/Monster";
 import type { TechniqueDef, TechniqueEffect } from "../data/techniques";
 import { calculateDamage, rollAccuracy } from "./formula";
-import { applyStatus } from "./statusHandler";
+import { previewApplyStatus } from "./statusHandler";
 import { adjustStage } from "./statStages";
 
+/**
+ * One entry of the combat narration log. The `apply` closure performs the
+ * model mutation associated with this event (e.g. deducting HP for `damage`,
+ * pushing a status entry for `status_apply`). The CombatScene runs `apply`
+ * at the moment it displays `message`, keeping the HUD in lockstep with
+ * narration. Events that are pure narration (`attack_use`, `miss`,
+ * `effectiveness`) leave `apply` undefined.
+ *
+ * STORY-0233: Damage/HP/status are no longer applied during turn resolution.
+ * The executor instead computes the post-attack numbers up front (RNG locked
+ * in here so order is deterministic) and bakes them into `apply` closures.
+ */
 export interface ExecutorEvent {
   type:
     | "attack_use"
@@ -19,6 +31,12 @@ export interface ExecutorEvent {
   amount?: number;
   /** Effectiveness multiplier for `effectiveness`. */
   effectiveness?: number;
+  /**
+   * Performs the model mutation tied to this event. Invoked by the narrator
+   * (CombatScene.processNextEvent) at the moment `message` is displayed,
+   * NOT when `executeTechnique` runs.
+   */
+  apply?: () => void;
 }
 
 /**
@@ -37,10 +55,15 @@ function describeEffectiveness(multiplier: number): string | null {
 }
 
 /**
- * Run a technique: roll accuracy, then apply each effect in order.
+ * Run a technique: roll accuracy and damage now (RNG locked in at decision
+ * time so narration order is deterministic), but DEFER the model mutations
+ * into per-event `apply` closures. The caller drains those closures in
+ * lockstep with narration — see CombatScene.processNextEvent.
  *
- * The executor mutates `attacker` / `defender` (HP, status) and returns a
- * flat event log for the combat UI to consume.
+ * Branching that needs to know post-effect state ("did the defender faint?
+ * → skip later effects on the same turn") is decided here against a
+ * `projectedHp` local; the same number is baked into the damage event's
+ * closure so the live model lands on it when the narrator runs `apply`.
  */
 export function executeTechnique(
   attacker: Monster,
@@ -59,11 +82,22 @@ export function executeTechnique(
     return events;
   }
 
+  // Track the defender's projected HP across effects so we can early-exit
+  // on faint without consulting `defender.currentHp` (which still holds the
+  // pre-turn value because mutations are deferred).
+  let projectedDefenderHp = defender.currentHp;
+
   for (const effect of technique.effects) {
-    events.push(...applyEffect(effect, attacker, defender, technique));
-    // Bail if the defender fainted from a damage effect — later effects
+    const effectEvents = applyEffect(effect, attacker, defender, technique, projectedDefenderHp);
+    for (const ev of effectEvents) {
+      events.push(ev);
+      if (ev.type === "damage" && typeof ev.amount === "number") {
+        projectedDefenderHp = Math.max(0, projectedDefenderHp - ev.amount);
+      }
+    }
+    // Bail if the defender would faint from a damage effect — later effects
     // (status apply, etc.) shouldn't pile on once HP is at 0.
-    if (defender.currentHp <= 0) break;
+    if (projectedDefenderHp <= 0) break;
   }
 
   // Silence unused param warning — kept for future per-side logging hooks.
@@ -76,6 +110,7 @@ function applyEffect(
   attacker: Monster,
   defender: Monster,
   technique: TechniqueDef,
+  projectedDefenderHp: number,
 ): ExecutorEvent[] {
   switch (effect.kind) {
     case "damage": {
@@ -85,12 +120,17 @@ function applyEffect(
         defender,
         effect.power,
       );
-      defender.currentHp = Math.max(0, defender.currentHp - damage);
+      // Message reports raw damage; the closure clamps to >= 0 at apply
+      // time. `projectedDefenderHp` is used only for projection
+      // bookkeeping in the caller (decides faint branching).
       const events: ExecutorEvent[] = [
         {
           type: "damage",
           message: `${defender.name} took ${damage} damage!`,
           amount: damage,
+          apply: () => {
+            defender.currentHp = Math.max(0, defender.currentHp - damage);
+          },
         },
       ];
       const effMsg = describeEffectiveness(effectiveness);
@@ -104,23 +144,34 @@ function applyEffect(
       if (!debugFlags.forceStatusApply && Math.random() >= effect.chance) {
         return [];
       }
-      const applyMsg = applyStatus(target, effect.status);
-      if (!applyMsg) {
+      // Status apply: ask the handler what message would fire (and whether
+      // the apply itself is a no-op due to an existing status). We still
+      // defer the actual `monster.status.push` into the closure.
+      const preview = previewApplyStatus(target, effect.status);
+      if (!preview) {
         // Already had the status — no event.
         return [];
       }
-      return [{ type: "status_apply", message: applyMsg }];
+      return [
+        {
+          type: "status_apply",
+          message: preview.message,
+          apply: preview.apply,
+        },
+      ];
     }
     case "heal": {
       const target = effect.target === "self" ? attacker : defender;
-      const before = target.currentHp;
-      target.currentHp = Math.min(target.maxHp, target.currentHp + effect.amount);
-      const healed = target.currentHp - before;
+      // Message reports the raw heal amount; closure clamps at maxHp.
+      void projectedDefenderHp;
       return [
         {
           type: "heal",
-          message: `${target.name} recovered ${healed} HP!`,
-          amount: healed,
+          message: `${target.name} recovered ${effect.amount} HP!`,
+          amount: effect.amount,
+          apply: () => {
+            target.currentHp = Math.min(target.maxHp, target.currentHp + effect.amount);
+          },
         },
       ];
     }
@@ -136,11 +187,13 @@ function applyEffect(
           },
         ];
       }
-      target.statStages[effect.stat] = newStage;
       return [
         {
           type: "stat_stage",
           message: describeStageChange(target.name, effect.stat, effect.delta),
+          apply: () => {
+            target.statStages[effect.stat] = newStage;
+          },
         },
       ];
     }

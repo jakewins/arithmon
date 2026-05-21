@@ -4,6 +4,7 @@ import { Monster, PARTY_LIMIT } from "../game/model/Monster";
 import { createInventory, addItem, getItemCount } from "../game/item/inventory";
 import { type Inventory } from "../game/item/inventory";
 import { shakeCheck, attemptCapture } from "../game/combat/formula";
+import { drainEvents } from "./_combatTestHelpers";
 
 describe("capture formula", () => {
   it("shakeCheck is higher when target HP is lower", () => {
@@ -127,7 +128,8 @@ describe("CombatMachine capture action", () => {
     enemy.currentHp = 1;
     expect(getItemCount(inventory, "tuxeball")).toBe(5);
 
-    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(getItemCount(inventory, "tuxeball")).toBe(4);
   });
@@ -136,7 +138,8 @@ describe("CombatMachine capture action", () => {
     vi.spyOn(Math, "random").mockReturnValue(0.99);
     expect(getItemCount(inventory, "tuxeball")).toBe(5);
 
-    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(getItemCount(inventory, "tuxeball")).toBe(4);
   });
@@ -159,7 +162,8 @@ describe("CombatMachine capture action", () => {
     const captured: Monster[] = [];
     machine.onCapture = (mon) => captured.push(mon);
 
-    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(captured).toHaveLength(1);
     expect(captured[0]).toBe(enemy);
@@ -202,7 +206,8 @@ describe("capture post-capture handling", () => {
 
     vi.spyOn(Math, "random").mockReturnValue(0);
     enemy.currentHp = 1;
-    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(capturedMonsters[0]).toBe(enemy);
     vi.restoreAllMocks();
@@ -231,7 +236,8 @@ describe("capture post-capture handling", () => {
 
     vi.spyOn(Math, "random").mockReturnValue(0);
     enemy.currentHp = 1;
-    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(storage).toHaveLength(1);
     expect(storage[0]).toBe(enemy);

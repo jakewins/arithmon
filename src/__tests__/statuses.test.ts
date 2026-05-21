@@ -25,14 +25,22 @@ describe("statusHandler", () => {
     const startHp = m.currentHp;
     const tickDmg = Math.max(1, Math.floor(m.maxHp / 8));
 
-    const t1 = tickStatuses(m);
+    // STORY-0233: tickStatuses returns events with deferred apply closures.
+    // Helper that drains each batch the way the combat machine does.
+    const runTick = () => {
+      const evs = tickStatuses(m);
+      for (const e of evs) e.apply();
+      return evs;
+    };
+
+    const t1 = runTick();
     expect(t1.some((e) => e.type === "status_tick")).toBe(true);
     expect(m.currentHp).toBe(startHp - tickDmg);
 
     // Run remaining ticks: status starts at duration 4, one tick consumed.
-    tickStatuses(m); // 3 → 2
-    tickStatuses(m); // 2 → 1
-    const final = tickStatuses(m); // 1 → 0 (wear off)
+    runTick(); // 3 → 2
+    runTick(); // 2 → 1
+    const final = runTick(); // 1 → 0 (wear off)
     expect(final.some((e) => e.type === "status_wear_off")).toBe(true);
     expect(hasStatus(m, "poisoned")).toBe(false);
   });
@@ -79,8 +87,11 @@ describe("technique executor", () => {
     const hp0 = def.currentHp;
 
     const events = executeTechnique(att, def, TECHNIQUES["ram"], true);
-    expect(def.currentHp).toBeLessThan(hp0);
     expect(events.some((e) => e.type === "damage")).toBe(true);
+    // STORY-0233: executor returns events whose `apply` closures perform
+    // the model mutation. Drain to land them on the live model.
+    for (const e of events) e.apply?.();
+    expect(def.currentHp).toBeLessThan(hp0);
   });
 
   it("applyStatus effect applies the status when forced", () => {
@@ -88,7 +99,8 @@ describe("technique executor", () => {
     const att = Monster.spawn("budaye", 5);
     const def = Monster.spawn("ignibus", 5);
 
-    executeTechnique(att, def, TECHNIQUES["poisonSting"], true);
+    const events = executeTechnique(att, def, TECHNIQUES["poisonSting"], true);
+    for (const e of events) e.apply?.();
     expect(hasStatus(def, "poisoned")).toBe(true);
   });
 
@@ -98,7 +110,8 @@ describe("technique executor", () => {
     const def = Monster.spawn("ignibus", 5);
     const hp0 = def.currentHp;
 
-    executeTechnique(att, def, TECHNIQUES["lullaby"], true);
+    const events = executeTechnique(att, def, TECHNIQUES["lullaby"], true);
+    for (const e of events) e.apply?.();
     expect(hasStatus(def, "sleep")).toBe(true);
     expect(def.currentHp).toBe(hp0);
   });

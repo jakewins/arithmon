@@ -33,8 +33,11 @@ export interface StatusDef {
   /** Display name surfaced in combat log messages. */
   displayName: string;
   /**
-   * End-of-turn tick. May damage the monster (returning an event) or return
-   * `null` to indicate no tick-effect (e.g. sleep, which only gates actions).
+   * End-of-turn tick PREVIEW. Computes what *would* happen (damage amount,
+   * message) without mutating the monster. The caller wraps the returned
+   * data into an `apply` closure that runs in lockstep with narration
+   * (STORY-0233). Returns `null` for tick-free statuses (e.g. sleep, which
+   * only gates actions).
    */
   onTurnEnd(monster: Monster): StatusTickEvent | null;
   /**
@@ -65,8 +68,7 @@ export const STATUSES: Record<StatusSlug, StatusDef> = {
     duration: 4,
     displayName: "Poisoned",
     onTurnEnd(monster) {
-      const damage = defaultTickDamage(monster);
-      monster.currentHp = Math.max(0, monster.currentHp - damage);
+      const damage = Math.min(defaultTickDamage(monster), monster.currentHp);
       return {
         type: "status_tick",
         damage,
@@ -84,8 +86,7 @@ export const STATUSES: Record<StatusSlug, StatusDef> = {
     duration: 4,
     displayName: "Burned",
     onTurnEnd(monster) {
-      const damage = defaultTickDamage(monster);
-      monster.currentHp = Math.max(0, monster.currentHp - damage);
+      const damage = Math.min(defaultTickDamage(monster), monster.currentHp);
       return {
         type: "status_tick",
         damage,

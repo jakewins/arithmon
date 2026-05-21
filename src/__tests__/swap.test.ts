@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CombatMachine } from "../game/combat/machine";
 import { Monster } from "../game/model/Monster";
+import { drainEvents } from "./_combatTestHelpers";
 
 describe("Monster swapping", () => {
   let party: Monster[];
@@ -26,9 +27,11 @@ describe("Monster swapping", () => {
 
   it("voluntary swap changes the active monster", () => {
     const events = machine.submitAction({ type: "swap", partyIndex: 1 });
-    expect(machine.player).toBe(party[1]);
     expect(events.some((e) => e.type === "swap_out")).toBe(true);
     expect(events.some((e) => e.type === "swap_in")).toBe(true);
+    // STORY-0233: the `this.player = target` flip lives in swap_in.apply.
+    drainEvents(events);
+    expect(machine.player).toBe(party[1]);
   });
 
   it("voluntary swap costs the player's turn — enemy still attacks", () => {
@@ -86,11 +89,13 @@ describe("Monster swapping", () => {
       // Set up: make active monster very weak
       machine.player.currentHp = 1;
       // Use a fight action that will let the enemy attack and faint us
-      machine.submitAction({ type: "fight", technique: "scratch" });
+      const turnEvents = machine.submitAction({ type: "fight", technique: "scratch" });
+      drainEvents(turnEvents);
 
       if (machine.state === "FORCE_SWAP") {
         const hpBefore = party[1].currentHp;
         const events = machine.submitForceSwap(1);
+        drainEvents(events);
         expect(machine.player).toBe(party[1]);
         expect(machine.state).toBe("DECISION");
         // No enemy attack during force swap

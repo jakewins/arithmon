@@ -31,6 +31,10 @@ export interface DebugCommandHandler {
   debugStartCombat?(): void;
   debugSetEnemyHp?(hp: number): void;
   debugSubmitCombatAction?(action: unknown): { type: string; message: string }[];
+  /** STORY-0233: snapshot of the live CombatScene model for QA scripts. */
+  peekCombatModel?(): Record<string, unknown>;
+  /** STORY-0233: pop one event from the scene's queue and apply it. */
+  drainNextCombatEvent?(): { type: string; message: string } | null;
   debugSpawnBattle?(
     playerSlug: string,
     enemySlug: string,
@@ -362,6 +366,11 @@ export class DebugBridge {
   /**
    * Submit a combat action directly to the CombatScene's machine. Returns the
    * resulting event list synchronously. Bypasses menu UI; intended for QA.
+   *
+   * STORY-0233: the returned events carry `apply` closures (stripped from
+   * the JSON-marshalled cross-context return value). The model is NOT
+   * mutated until each event is drained via `drainNextCombatEvent` (or
+   * the scene's own 1 s pace tick).
    */
   submitCombatAction(action: unknown): { type: string; message: string }[] {
     const handler = this.getCommandHandler();
@@ -369,6 +378,27 @@ export class DebugBridge {
       return handler.debugSubmitCombatAction(action);
     }
     return [];
+  }
+
+  /**
+   * STORY-0233: snapshot the live CombatScene model. Lets QA scripts assert
+   * "after submit, before drain, HP is unchanged" and step through the
+   * narration queue one event at a time, verifying each mutation lands at
+   * its narration step. Returns null when no CombatScene is active.
+   */
+  peekCombatModel(): Record<string, unknown> | null {
+    const handler = this.getCommandHandler();
+    return handler?.peekCombatModel?.() ?? null;
+  }
+
+  /**
+   * STORY-0233: pop one event from the active CombatScene's queue and run
+   * its `apply` closure + HUD update, without the 1 s pacing tick.
+   * Returns the popped event's `{ type, message }` or null if empty.
+   */
+  drainNextCombatEvent(): { type: string; message: string } | null {
+    const handler = this.getCommandHandler();
+    return handler?.drainNextCombatEvent?.() ?? null;
   }
 
   /**

@@ -4,6 +4,7 @@ import { Monster } from "../game/model/Monster";
 import { createInventory, addItem } from "../game/item/inventory";
 import { type Inventory } from "../game/item/inventory";
 import { getNpcParty } from "../game/data/npcParties";
+import { drainEvents } from "./_combatTestHelpers";
 
 describe("Trainer battle restrictions", () => {
   let player: Monster;
@@ -102,13 +103,15 @@ describe("Multi-monster enemy party", () => {
     expect(events.some((e) => e.type === "swap_in" && e.message.includes(enemy2.name))).toBe(true);
     // Combat continues (not END)
     expect(machine.state).toBe("DECISION");
+    // STORY-0233: swap_in.apply does the enemy-pointer flip.
+    drainEvents(events);
     expect(machine.enemy).toBe(enemy2);
   });
 
   it("battle ends when all enemies faint", () => {
     // Kill both enemies
     enemy1.currentHp = 1;
-    machine.submitAction({ type: "fight", technique: "scratch" });
+    drainEvents(machine.submitAction({ type: "fight", technique: "scratch" }));
     expect(machine.enemy).toBe(enemy2);
 
     // Now kill second enemy

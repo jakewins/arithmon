@@ -85,6 +85,8 @@ describe("statStage technique effect", () => {
     expect(def.statStages.melee).toBe(0);
 
     const events = executeTechnique(att, def, TECHNIQUES["growl"], true);
+    // STORY-0233: stat-stage mutations are deferred into per-event closures.
+    for (const e of events) e.apply?.();
     expect(def.statStages.melee).toBe(-1);
     expect(events.some((e) => e.type === "stat_stage" && /fell/.test(e.message))).toBe(true);
   });
@@ -92,7 +94,8 @@ describe("statStage technique effect", () => {
   it("harden buffs self armor by one stage", () => {
     const att = Monster.spawn("rockitten", 5);
     const def = Monster.spawn("rockitten", 5);
-    executeTechnique(att, def, TECHNIQUES["harden"], true);
+    const events = executeTechnique(att, def, TECHNIQUES["harden"], true);
+    for (const e of events) e.apply?.();
     expect(att.statStages.armor).toBe(1);
   });
 

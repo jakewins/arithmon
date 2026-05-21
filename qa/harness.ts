@@ -74,6 +74,8 @@ interface DebugBridgeAPI {
   setMonsterHp(index: number, hp: number): void;
   setMonsterXp(index: number, xp: number): void;
   submitCombatAction(action: unknown): { type: string; message: string }[];
+  peekCombatModel(): Record<string, unknown> | null;
+  drainNextCombatEvent(): { type: string; message: string } | null;
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;
   teleport(mapKey: string, tileX: number, tileY: number): Promise<void>;

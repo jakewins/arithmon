@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CombatMachine } from "../game/combat/machine";
 import { Monster } from "../game/model/Monster";
+import { drainEvents } from "./_combatTestHelpers";
 
 describe("CombatMachine", () => {
   let player: Monster;
@@ -38,6 +39,9 @@ describe("CombatMachine", () => {
 
     expect(events.some((e) => e.type === "player_attack")).toBe(true);
     expect(events.some((e) => e.type === "enemy_attack")).toBe(true);
+    // STORY-0233: mutations are deferred. Drain the queue to land them on
+    // the live model the way CombatScene would over the course of the turn.
+    drainEvents(events);
     expect(enemy.currentHp).toBeLessThan(enemy.maxHp);
     expect(player.currentHp).toBeLessThan(player.maxHp);
     expect(machine.state).toBe("DECISION");
@@ -48,7 +52,8 @@ describe("CombatMachine", () => {
     const technique = player.techniques[0];
 
     while (machine.state === "DECISION") {
-      machine.submitAction({ type: "fight", technique: technique.slug });
+      const events = machine.submitAction({ type: "fight", technique: technique.slug });
+      drainEvents(events);
     }
 
     expect(machine.state).toBe("END");
@@ -59,7 +64,8 @@ describe("CombatMachine", () => {
     machine.intro();
     const technique = player.techniques[0];
     while (machine.state === "DECISION") {
-      machine.submitAction({ type: "fight", technique: technique.slug });
+      const events = machine.submitAction({ type: "fight", technique: technique.slug });
+      drainEvents(events);
     }
     expect(machine.outcome).toBe("win");
   });
@@ -97,8 +103,55 @@ describe("CombatMachine", () => {
     machine.intro();
     expect(machine.darkPower).toBe(5);
     // Scratch costs 1 DP
-    machine.submitAction({ type: "fight", technique: "scratch" });
+    const events = machine.submitAction({ type: "fight", technique: "scratch" });
+    drainEvents(events);
     expect(machine.darkPower).toBe(4);
+  });
+
+  // STORY-0233: turn resolution defers visible-state mutations. Pin the
+  // contract so refactors don't accidentally re-introduce eager mutation.
+  describe("deferred mutation contract", () => {
+    beforeEach(() => machine.intro());
+
+    it("submitAction does NOT mutate enemy HP until events drain", () => {
+      const enemyHpBefore = enemy.currentHp;
+      const events = machine.submitAction({ type: "fight", technique: "scratch" });
+      expect(enemy.currentHp).toBe(enemyHpBefore);
+
+      // Drain events up to (but not including) the damage event.
+      const damageIdx = events.findIndex((e) => e.type === "damage");
+      expect(damageIdx).toBeGreaterThan(0);
+      for (let i = 0; i < damageIdx; i++) events[i].apply?.();
+      expect(enemy.currentHp).toBe(enemyHpBefore);
+
+      // Apply just the damage event.
+      events[damageIdx].apply?.();
+      expect(enemy.currentHp).toBeLessThan(enemyHpBefore);
+    });
+
+    it("submitAction does NOT drain DP until the dp_drain event applies", () => {
+      const dpBefore = machine.darkPower;
+      const events = machine.submitAction({ type: "fight", technique: "scratch" });
+      expect(machine.darkPower).toBe(dpBefore);
+
+      const dpIdx = events.findIndex((e) => e.type === "dp_drain");
+      expect(dpIdx).toBeGreaterThanOrEqual(0);
+      events[dpIdx].apply?.();
+      expect(machine.darkPower).toBe(dpBefore - 1);
+    });
+
+    it("xp_gain.apply credits XP only when the narrator reveals it", () => {
+      // Set enemy to 1 HP so any hit ends the battle and triggers XP.
+      enemy.currentHp = 1;
+      const xpBefore = player.totalXp;
+      const events = machine.submitAction({ type: "fight", technique: "scratch" });
+      expect(player.totalXp).toBe(xpBefore);
+
+      const xpIdx = events.findIndex((e) => e.type === "xp_gain");
+      expect(xpIdx).toBeGreaterThanOrEqual(0);
+      for (let i = 0; i <= xpIdx; i++) events[i].apply?.();
+      expect(player.totalXp).toBeGreaterThan(xpBefore);
+    });
   });
 
   it("canAfford returns false when DP is insufficient", () => {

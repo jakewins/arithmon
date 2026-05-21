@@ -3,6 +3,7 @@ import { Monster } from "../game/model/Monster";
 import { xpForLevel, calculateXpReward } from "../game/combat/formula";
 import { CombatMachine } from "../game/combat/machine";
 import { createInventory, addItem } from "../game/item/inventory";
+import { drainEvents } from "./_combatTestHelpers";
 
 describe("xpForLevel", () => {
   it("returns 0 for level 0", () => {
@@ -134,7 +135,8 @@ describe("CombatMachine XP award", () => {
     const startXp = player.totalXp;
 
     while (machine.state === "DECISION") {
-      machine.submitAction({ type: "fight", technique: "ram" });
+      const events = machine.submitAction({ type: "fight", technique: "ram" });
+      drainEvents(events);
     }
 
     expect(machine.outcome).toBe("win");
@@ -147,6 +149,7 @@ describe("CombatMachine XP award", () => {
     let events: ReturnType<typeof machine.submitAction> = [];
     while (machine.state === "DECISION") {
       events = machine.submitAction({ type: "fight", technique: "ram" });
+      drainEvents(events);
     }
 
     expect(events.some((e) => e.type === "xp_gain")).toBe(true);
@@ -157,7 +160,8 @@ describe("CombatMachine XP award", () => {
   it("does not award XP on flee", () => {
     machine.intro();
     const startXp = player.totalXp;
-    machine.submitAction({ type: "run" });
+    const events = machine.submitAction({ type: "run" });
+    drainEvents(events);
     expect(machine.outcome).toBe("fled");
     expect(player.totalXp).toBe(startXp);
   });
@@ -187,6 +191,7 @@ describe("XP awarded on capture", () => {
     enemy.currentHp = 1;
 
     const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(machine.outcome).toBe("win");
     expect(player.totalXp).toBeGreaterThan(startXp);
@@ -197,7 +202,8 @@ describe("XP awarded on capture", () => {
     vi.spyOn(Math, "random").mockReturnValue(0.99);
     const startXp = player.totalXp;
 
-    machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    const events = machine.submitAction({ type: "capture", itemSlug: "tuxeball" });
+    drainEvents(events);
 
     expect(machine.state).toBe("DECISION");
     expect(player.totalXp).toBe(startXp);

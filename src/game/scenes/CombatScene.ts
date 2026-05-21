@@ -791,11 +791,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   }
 
   /**
-   * Submit a combat action directly to the machine for QA scripting. Bypasses
-   * the menu UI and skips the event queue — events are returned synchronously.
+   * Submit a combat action directly to the machine for QA scripting.
+   * Bypasses the menu UI. Events are returned synchronously AND queued
+   * into the scene's `eventQueue` so subsequent `drainNextCombatEvent()`
+   * calls step them one at a time without the 1 s pace tick.
+   *
+   * Crucially this does NOT auto-start `processNextEvent` — QA scripts
+   * own the drain cadence and snapshot between steps. Calling sites that
+   * want the scene's normal 1 s pacing should use the menu instead.
    */
   debugSubmitCombatAction(action: PlayerAction): CombatEvent[] {
-    return this.machine.submitAction(action);
+    const events = this.machine.submitAction(action);
+    this.eventQueue.push(...events);
+    return events;
   }
 
   debugIsBlocking(): boolean {
@@ -1480,6 +1488,41 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.enemyHpBar.setFillStyle(this.hpColor(eRatio));
   }
 
+  /**
+   * STORY-0233: tween the HP bars toward the current model HP over ~500 ms
+   * with an out-quint ease (upstream uses the same easing at 0.7 s for
+   * `animate_hp` in combat_animations.py:293-305). Called after an
+   * event's `apply` closure has mutated `currentHp`, so the tween
+   * animates from the previous on-screen value to the freshly-mutated one.
+   * Snap any in-flight tween before kicking the new one so multiple
+   * back-to-back hits don't queue up overlapping animations.
+   */
+  private tweenHpBars() {
+    const pRatio = Math.max(0, this.machine.player.currentHp / this.machine.player.maxHp);
+    const eRatio = Math.max(0, this.machine.enemy.currentHp / this.machine.enemy.maxHp);
+    this.tweens.killTweensOf([this.playerHpBar, this.enemyHpBar]);
+    this.tweens.add({
+      targets: this.playerHpBar,
+      scaleX: pRatio,
+      duration: 500,
+      ease: "Quint.easeOut",
+      onUpdate: () => {
+        const ratio = this.playerHpBar.scaleX;
+        this.playerHpBar.setFillStyle(this.hpColor(ratio));
+      },
+    });
+    this.tweens.add({
+      targets: this.enemyHpBar,
+      scaleX: eRatio,
+      duration: 500,
+      ease: "Quint.easeOut",
+      onUpdate: () => {
+        const ratio = this.enemyHpBar.scaleX;
+        this.enemyHpBar.setFillStyle(this.hpColor(ratio));
+      },
+    });
+  }
+
   private hpColor(ratio: number): number {
     if (ratio > 0.5) return 0x44cc44;
     if (ratio > 0.2) return 0xcccc44;
@@ -1631,11 +1674,25 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
     this.processing = true;
     const event = this.eventQueue.shift()!;
+
+    // STORY-0233: events carry the visible-state mutation in `apply`.
+    // Fire it the moment the corresponding message is displayed so the
+    // HUD tween (below) animates the bar to the freshly-mutated value.
+    event.apply?.();
+
+    // Quiet decrement-only events (e.g. sleep mid-duration) carry an
+    // empty message; skip narration entirely and advance immediately.
+    if (event.message === "") {
+      this.processNextEvent();
+      return;
+    }
+
     this.messageText.setText(event.message);
-    this.updateHpBars();
+    this.tweenHpBars();
     this.updateDpPips();
 
-    // Update sprite and name when a new monster is swapped in
+    // Update sprite and name when a new monster is swapped in. The
+    // `apply` above already flipped `this.machine.player` / `enemy`.
     if (event.type === "swap_in") {
       this.updatePlayerSprite();
       this.updateEnemySprite();
@@ -1677,6 +1734,68 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     }
 
     this.time.delayedCall(1000, () => this.processNextEvent());
+  }
+
+  /**
+   * STORY-0233 QA hook: pop one event from the queue and run the same
+   * apply + HUD update logic that `processNextEvent` performs, but
+   * synchronously and without scheduling the 1 s delayedCall. Lets QA
+   * scripts step the narrator one event at a time and snapshot the live
+   * model between steps. Mirrors `processNextEvent` exactly minus the
+   * scheduling.
+   */
+  drainNextCombatEvent(): { type: string; message: string } | null {
+    if (this.eventQueue.length === 0) return null;
+    const event = this.eventQueue.shift()!;
+    event.apply?.();
+    if (event.message !== "") {
+      this.messageText.setText(event.message);
+      this.tweenHpBars();
+      this.updateDpPips();
+      if (event.type === "swap_in") {
+        this.updatePlayerSprite();
+        this.updateEnemySprite();
+        this.updateNameLabels();
+      }
+      if (event.type === "level_up") {
+        this.updateNameLabels();
+        if (event.levelUpSummary) {
+          this.pendingLevelUpSummary = event.levelUpSummary;
+        }
+      }
+      if (event.type === "faint" || event.type === "swap_in") {
+        this.updatePartyTray();
+      }
+    }
+    return { type: event.type, message: event.message };
+  }
+
+  /**
+   * Snapshot the live model state. Lets QA assert "after submit, before
+   * drain, HP is unchanged" and step the narrator forward to verify each
+   * mutation lands at its narration step.
+   */
+  peekCombatModel(): Record<string, unknown> {
+    const m = this.machine;
+    return {
+      state: m.state,
+      outcome: m.outcome,
+      darkPower: m.darkPower,
+      playerHp: m.player.currentHp,
+      playerMaxHp: m.player.maxHp,
+      playerLevel: m.player.level,
+      playerTotalXp: m.player.totalXp,
+      playerXpProgress: m.player.xpProgress,
+      playerSlug: m.player.slug,
+      playerFainted: m.player.fainted,
+      playerStatus: m.player.status.map((s) => s.slug),
+      enemyHp: m.enemy.currentHp,
+      enemyMaxHp: m.enemy.maxHp,
+      enemySlug: m.enemy.slug,
+      enemyFainted: m.enemy.fainted,
+      enemyStatus: m.enemy.status.map((s) => s.slug),
+      queueLength: this.eventQueue.length,
+    };
   }
 
   // --- Capture animation methods ---

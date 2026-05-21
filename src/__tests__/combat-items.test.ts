@@ -3,6 +3,7 @@ import { CombatMachine } from "../game/combat/machine";
 import { Monster } from "../game/model/Monster";
 import { createInventory, addItem, getItemCount } from "../game/item/inventory";
 import { type Inventory } from "../game/item/inventory";
+import { drainEvents } from "./_combatTestHelpers";
 
 describe("CombatMachine item usage", () => {
   let player: Monster;
@@ -38,6 +39,7 @@ describe("CombatMachine item usage", () => {
 
     expect(events.some((e) => e.type === "item_used")).toBe(true);
     expect(events.some((e) => e.type === "item_heal")).toBe(true);
+    drainEvents(events);
     expect(ally.currentHp).toBe(40);
   });
 
@@ -47,7 +49,8 @@ describe("CombatMachine item usage", () => {
     ally.currentHp = ally.maxHp - 5;
     party.push(ally);
 
-    machine.submitAction({ type: "item", itemSlug: "potion", targetIndex: 1 });
+    const events = machine.submitAction({ type: "item", itemSlug: "potion", targetIndex: 1 });
+    drainEvents(events);
 
     expect(ally.currentHp).toBe(ally.maxHp);
   });
@@ -56,7 +59,8 @@ describe("CombatMachine item usage", () => {
     player.currentHp = 20;
     expect(getItemCount(inventory, "potion")).toBe(3);
 
-    machine.submitAction({ type: "item", itemSlug: "potion", targetIndex: 0 });
+    const events = machine.submitAction({ type: "item", itemSlug: "potion", targetIndex: 0 });
+    drainEvents(events);
 
     expect(getItemCount(inventory, "potion")).toBe(2);
   });
@@ -77,6 +81,7 @@ describe("CombatMachine item usage", () => {
     const events = machine.submitAction({ type: "item", itemSlug: "revive", targetIndex: 1 });
 
     expect(events.some((e) => e.type === "item_revive")).toBe(true);
+    drainEvents(events);
     expect(ally.currentHp).toBeGreaterThan(0);
     expect(ally.currentHp).toBe(Math.floor(ally.maxHp * 0.5));
     expect(getItemCount(inventory, "revive")).toBe(0);
