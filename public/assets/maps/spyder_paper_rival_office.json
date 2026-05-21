@@ -1,1 +1,501 @@
-{"compressionlevel": 0, "height": 8, "infinite": false, "layers": [{"data": [2269, 2269, 2269, 2269, 2269, 2269, 2269, 2269, 2269, 2315, 2315, 2315, 2315, 2315, 2315, 2315, 2315, 2315, 2361, 2361, 2361, 2361, 2361, 2361, 2361, 2361, 2361, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169], "height": 8, "id": 1, "name": "Tile Layer 1", "opacity": 1, "type": "tilelayer", "visible": true, "width": 9, "x": 0, "y": 0}, {"data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2595, 2595, 0, 0, 0, 2595, 2595, 0, 0, 0, 0, 2532, 2533, 2534, 0, 0, 0, 0, 0, 0, 0, 2626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "height": 8, "id": 2, "name": "Tile Layer 2", "opacity": 1, "type": "tilelayer", "visible": true, "width": 9, "x": 0, "y": 0}, {"data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "height": 8, "id": 3, "name": "Tile Layer 3", "opacity": 1, "type": "tilelayer", "visible": true, "width": 9, "x": 0, "y": 0}, {"data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "height": 8, "id": 4, "name": "Tile Layer 4", "opacity": 1, "type": "tilelayer", "visible": true, "width": 9, "x": 0, "y": 0}, {"data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "height": 8, "id": 5, "name": "Above player", "opacity": 1, "type": "tilelayer", "visible": true, "width": 9, "x": 0, "y": 0}, {"color": "#ff0000", "draworder": "topdown", "id": 6, "name": "Collisions", "objects": [{"height": 16, "id": 1, "name": "", "opacity": 1, "rotation": 0, "type": "collision", "visible": true, "width": 144, "x": 0, "y": 32}, {"height": 16, "id": 2, "name": "", "opacity": 1, "rotation": 0, "type": "collision", "visible": true, "width": 48, "x": 48, "y": 48}], "opacity": 1, "type": "objectgroup", "visible": true, "x": 0, "y": 0}], "nextlayerid": 8, "nextobjectid": 100, "orientation": "orthogonal", "properties": [{"name": "edges", "type": "string", "value": "clamped"}, {"name": "inside", "type": "bool", "value": true}, {"name": "map_type", "type": "string", "value": "notype"}, {"name": "scenario", "type": "string", "value": "spyder"}, {"name": "slug", "type": "string", "value": "paper_rival_office"}], "renderorder": "right-down", "tiledversion": "1.12.1", "tileheight": 16, "tilesets": [{"columns": 46, "firstgid": 1, "image": "core_indoor_floors.png", "imageheight": 1344, "imagewidth": 736, "margin": 0, "name": "core_indoor_floors", "spacing": 0, "tilecount": 3864, "tileheight": 16, "tiles": [{"id": 1093, "properties": [{"name": "endure", "type": "string", "value": "up"}, {"name": "exit_from", "type": "string", "value": "up"}]}, {"id": 1094, "properties": [{"name": "endure", "type": "string", "value": "down"}, {"name": "exit_from", "type": "string", "value": "down"}]}, {"id": 1139, "properties": [{"name": "endure", "type": "string", "value": "right"}, {"name": "exit_from", "type": "string", "value": "right"}]}, {"id": 1140, "properties": [{"name": "endure", "type": "string", "value": "left"}, {"name": "exit_from", "type": "string", "value": "left"}]}], "tilewidth": 16}, {"columns": 46, "firstgid": 1170, "image": "core_indoor_walls.png", "imageheight": 1344, "imagewidth": 736, "margin": 0, "name": "core_indoor_walls", "spacing": 0, "tilecount": 3864, "tileheight": 16, "tilewidth": 16}, {"columns": 31, "firstgid": 2362, "image": "core_set pieces.png", "imageheight": 800, "imagewidth": 496, "margin": 0, "name": "core_set pieces", "spacing": 0, "tilecount": 1550, "tileheight": 16, "tiles": [{"animation": [{"duration": 150, "tileid": 19}, {"duration": 150, "tileid": 22}, {"duration": 150, "tileid": 25}, {"duration": 150, "tileid": 28}], "id": 19}, {"animation": [{"duration": 150, "tileid": 50}, {"duration": 150, "tileid": 53}, {"duration": 150, "tileid": 56}, {"duration": 150, "tileid": 59}], "id": 50}], "tilewidth": 16}], "tilewidth": 16, "type": "map", "version": "1.10", "width": 9}
+{
+  "compressionlevel": 0,
+  "height": 7,
+  "infinite": false,
+  "layers": [
+    {
+      "data": [
+        560,
+        423,
+        423,
+        423,
+        423,
+        423,
+        562,
+        468,
+        469,
+        469,
+        469,
+        469,
+        469,
+        470,
+        514,
+        515,
+        515,
+        515,
+        515,
+        515,
+        516,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326,
+        4326
+      ],
+      "height": 7,
+      "id": 1,
+      "name": "Tile Layer 1",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "width": 7,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9401,
+        0,
+        9649,
+        0,
+        0,
+        9539,
+        0,
+        9423,
+        0,
+        9671,
+        0,
+        0,
+        9561,
+        0,
+        0,
+        0,
+        9693,
+        0,
+        8207,
+        0,
+        9703,
+        9702,
+        9702,
+        9704,
+        0,
+        0,
+        0,
+        9725,
+        9724,
+        9724,
+        9726,
+        9763,
+        9764,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9785,
+        9786
+      ],
+      "height": 7,
+      "id": 2,
+      "name": "Tile Layer 2",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "width": 7,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9599,
+        9541,
+        9429,
+        9541,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 7,
+      "id": 3,
+      "name": "Tile Layer 3",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "width": 7,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9577,
+        9578,
+        9407,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9600,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 7,
+      "id": 4,
+      "name": "Above player",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "width": 7,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "color": "#ff0000",
+      "draworder": "topdown",
+      "id": 5,
+      "name": "Collisions",
+      "objects": [
+        {
+          "height": 48,
+          "id": 1,
+          "name": "",
+          "opacity": 1,
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 112,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 32,
+          "id": 5,
+          "name": "",
+          "opacity": 1,
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 32,
+          "x": 80,
+          "y": 80
+        },
+        {
+          "height": 16,
+          "id": 6,
+          "name": "",
+          "opacity": 1,
+          "rotation": 0,
+          "type": "collision",
+          "visible": true,
+          "width": 64,
+          "x": 16,
+          "y": 64
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "nextlayerid": 7,
+  "nextobjectid": 38,
+  "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "edges",
+      "type": "string",
+      "value": "clamped"
+    },
+    {
+      "name": "inside",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "map_type",
+      "type": "string",
+      "value": "notype"
+    },
+    {
+      "name": "scenario",
+      "type": "string",
+      "value": "spyder"
+    },
+    {
+      "name": "slug",
+      "type": "string",
+      "value": "rival_office"
+    }
+  ],
+  "renderorder": "right-down",
+  "tiledversion": "1.12.1",
+  "tileheight": 16,
+  "tilesets": [
+    {
+      "columns": 46,
+      "firstgid": 1,
+      "image": "core_indoor_walls.png",
+      "imageheight": 1344,
+      "imagewidth": 736,
+      "margin": 0,
+      "name": "core_indoor_walls",
+      "spacing": 0,
+      "tilecount": 3864,
+      "tileheight": 16,
+      "tilewidth": 16
+    },
+    {
+      "columns": 46,
+      "firstgid": 3865,
+      "image": "core_indoor_floors.png",
+      "imageheight": 1344,
+      "imagewidth": 736,
+      "margin": 0,
+      "name": "core_indoor_floors",
+      "spacing": 0,
+      "tilecount": 3864,
+      "tileheight": 16,
+      "tiles": [
+        {
+          "id": 1093,
+          "properties": [
+            {
+              "name": "endure",
+              "type": "string",
+              "value": "up"
+            },
+            {
+              "name": "exit_from",
+              "type": "string",
+              "value": "up"
+            }
+          ]
+        },
+        {
+          "id": 1094,
+          "properties": [
+            {
+              "name": "endure",
+              "type": "string",
+              "value": "down"
+            },
+            {
+              "name": "exit_from",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "id": 1139,
+          "properties": [
+            {
+              "name": "endure",
+              "type": "string",
+              "value": "right"
+            },
+            {
+              "name": "exit_from",
+              "type": "string",
+              "value": "right"
+            }
+          ]
+        },
+        {
+          "id": 1140,
+          "properties": [
+            {
+              "name": "endure",
+              "type": "string",
+              "value": "left"
+            },
+            {
+              "name": "exit_from",
+              "type": "string",
+              "value": "left"
+            }
+          ]
+        }
+      ],
+      "tilewidth": 16
+    },
+    {
+      "columns": 31,
+      "firstgid": 7729,
+      "image": "core_set pieces.png",
+      "imageheight": 800,
+      "imagewidth": 496,
+      "margin": 0,
+      "name": "core_set pieces",
+      "spacing": 0,
+      "tilecount": 1550,
+      "tileheight": 16,
+      "tiles": [
+        {
+          "animation": [
+            {
+              "duration": 150,
+              "tileid": 19
+            },
+            {
+              "duration": 150,
+              "tileid": 22
+            },
+            {
+              "duration": 150,
+              "tileid": 25
+            },
+            {
+              "duration": 150,
+              "tileid": 28
+            }
+          ],
+          "id": 19
+        },
+        {
+          "animation": [
+            {
+              "duration": 150,
+              "tileid": 50
+            },
+            {
+              "duration": 150,
+              "tileid": 53
+            },
+            {
+              "duration": 150,
+              "tileid": 56
+            },
+            {
+              "duration": 150,
+              "tileid": 59
+            }
+          ],
+          "id": 50
+        }
+      ],
+      "tilewidth": 16
+    },
+    {
+      "columns": 22,
+      "firstgid": 9279,
+      "image": "Office_interiors_shadowless_16x16.png",
+      "imageheight": 384,
+      "imagewidth": 352,
+      "margin": 0,
+      "name": "Office_interiors_shadowless_16x16",
+      "spacing": 0,
+      "tilecount": 528,
+      "tileheight": 16,
+      "tilewidth": 16
+    }
+  ],
+  "tilewidth": 16,
+  "type": "map",
+  "version": "1.10",
+  "width": 7
+}

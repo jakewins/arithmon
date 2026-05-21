@@ -612,21 +612,27 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
   spyder_paper_rival_downstairs: {
     jsonKey: "map-spyder_paper_rival_downstairs",
     jsonPath: "assets/maps/spyder_paper_rival_downstairs.json",
-    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    // Upstream TMX firstgids: core_indoor_stairs(1), core_indoor_floors(2971),
+    // core_indoor_walls(6835), core_set pieces(10699).
+    tilesets: [CORE_INDOOR_STAIRS, CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
     inside: true,
   },
   spyder_paper_rival_bedroom: {
     jsonKey: "map-spyder_paper_rival_bedroom",
     jsonPath: "assets/maps/spyder_paper_rival_bedroom.json",
-    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    // Upstream TMX firstgids: core_indoor_walls(1), core_indoor_floors(3865),
+    // core_set pieces(7729), Interiors_16x16(9279, embedded).
+    tilesets: [CORE_INDOOR_WALLS, CORE_INDOOR_FLOORS, CORE_SET_PIECES, INTERIORS_16X16],
     environment: "grass",
     inside: true,
   },
   spyder_paper_rival_office: {
     jsonKey: "map-spyder_paper_rival_office",
     jsonPath: "assets/maps/spyder_paper_rival_office.json",
-    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    // Upstream TMX firstgids: core_indoor_walls(1), core_indoor_floors(3865),
+    // core_set pieces(7729), Office_interiors_shadowless_16x16(9279, embedded).
+    tilesets: [CORE_INDOOR_WALLS, CORE_INDOOR_FLOORS, CORE_SET_PIECES, OFFICE_INTERIORS],
     environment: "grass",
     inside: true,
   },

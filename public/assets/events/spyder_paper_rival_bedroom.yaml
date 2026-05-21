@@ -1,67 +1,66 @@
 events:
-  # --- Music ---
-
-  Play Music:
+  Bed:
+    actions:
+    - translated_dialog spyder_rivalbedroom_bed
     conditions:
-    - not music_playing music_home
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    height: 2
+    type: event
+    width: 2
+    x: 5
+    y: 5
+  Bookshelf:
+    actions:
+    - translated_dialog spyder_rivalbedroom_bookshelf
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    height: 1
+    type: event
+    width: 2
+    x: 5
+    y: 2
+  Go Downstairs:
+    actions:
+    - transition_teleport player,spyder_paper_rival_downstairs.tmx,3,3,0.3
+    - char_face player,left
+    conditions:
+    - is char_at player
+    - is char_facing player,left
+    type: event
+    x: 0
+    y: 3
+  Radio:
+    actions:
+    - tune_radio player,94.7
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    type: event
+    x: 0
+    y: 5
+  Route Music:
     actions:
     - play_music music_home
-
-  # --- Map connections ---
-
-  Go Downstairs:
-    x: 7
-    y: 7
     conditions:
-    - is char_at player
-    actions:
-    - transition_teleport player,spyder_paper_rival_downstairs.tmx,8,3,0.3
-    - char_face player,down
-
-  Go To Office:
-    x: 0
-    y: 2
-    conditions:
-    - is char_at player
-    actions:
-    - transition_teleport player,spyder_paper_rival_office.tmx,8,6,0.3
-    - char_face player,left
-
-  # --- Interactables ---
-
-  Use Radio:
-    x: 6
-    y: 2
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog ...and the weather continues to be unpredictable across the Fondent region...
-
+    - not music_playing music_home
+    type: event
   Use Computer:
-    x: 4
-    y: 2
+    actions:
+    - access_pc player
     conditions:
     - is char_facing_tile player
     - is button_pressed INTERACT
+    type: event
+    x: 2
+    y: 3
+  Weights:
     actions:
-    - dialog A computer showing a monster encyclopedia. Many entries are still blank.
-
-  Bookshelf:
+    - translated_dialog spyder_rivalbedroom_weights
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    type: event
     x: 1
-    y: 4
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog Monster training manuals and school textbooks.
-
-  Bed:
-    x: 1
-    y: 2
-    width: 2
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog A neatly made bed. Whoever lives here keeps things tidy.
+    y: 6
