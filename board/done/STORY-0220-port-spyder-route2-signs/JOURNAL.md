@@ -90,3 +90,17 @@ side effect — it now renders "Welcome to Paper Town: ..." instead of
 `npm run format:check && npm run lint && npx tsc --noEmit && npm test`
 all green. `qa/route2-signs-test.ts` and `qa/viewport-and-scaling.ts`
 (which still hits the paper_town sign) both pass.
+
+## 2026-05-21 — Reviewer findings
+
+- Verified all 4 sign coordinates by converting upstream TMX pixel coords (x/y ÷ 16): City Park (9,2), Column 1 (11,7), Column 2 (15,5), Route 2 (1,7) — exact match.
+- Confirmed all 4 msgids (`here_to_north`, `spyder_column1_sign`, `spyder_column2_sign`, `welcome_location_route`) present in `public/assets/l10n/en_US.po` with correct msgstrs.
+- Verified upstream TMX sign actions/conditions match the YAML verbatim: `translated_dialog <msgid>` gated on `char_facing_tile player` + `button_pressed INTERACT`.
+- Reviewed `readMapMeta()` in OverworldScene — correctly handles both Phaser property shapes (plain object and Tiled 1.2+ `{name,value}[]` array). Confirmed spyder_route2 JSON uses the array form with `slug: "route2"`, `north: "citypark"`, `south: "brideswood"`, `west: "cotton_town"`, no east — rendering as `-` per upstream sentinel.
+- Reviewed textFormatter changes: `${{map_name}}` now resolves via `meta.slug` with graceful fallback; cardinals resolve through `meta` with `-` for missing edges and ` - ` join for comma-separated slugs. Clean parity with upstream `MapManager` / `TextFormatter`.
+- Pre-commit gates: `npm run format:check && npm run lint && npx tsc --noEmit && npm test` — all green (480 tests).
+- `qa/route2-signs-test.ts`: all 6 cases pass — 4 positive sign interactions + 2 negative checks (facing away, off-by-one).
+- 3 new `textFormatter.test.ts` unit tests pin the mapMeta substitution behaviour cleanly.
+- No dead code, no over-engineering. Engine fix for mapMeta is a genuine prerequisite caught during implementation; side-effect improvement to paper_town sign is a bonus.
+
+**Decision: APPROVED**
