@@ -208,6 +208,12 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
     tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
     environment: "forest",
   },
+  spyder_brideswood: {
+    jsonKey: "map-spyder_brideswood",
+    jsonPath: "assets/maps/spyder_brideswood.json",
+    tilesets: [CORE_OUTDOOR],
+    environment: "forest",
+  },
   spyder_route2: {
     jsonKey: "map-spyder_route2",
     jsonPath: "assets/maps/spyder_route2.json",

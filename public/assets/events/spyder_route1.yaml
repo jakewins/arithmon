@@ -108,6 +108,29 @@ events:
     - transition_teleport player,spyder_cotton_town.tmx,27,39,0.3
     - char_face player,up
 
+  # --- Map connections: east to Brideswood (STORY-0216) ---
+  # Route 1 east edge at (39, 4..5) — upstream `Teleport to Brideswood A/B`.
+
+  Teleport to Brideswood A:
+    x: 39
+    y: 4
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_brideswood.tmx,0,4,0.3
+    - char_face player,right
+
+  Teleport to Brideswood B:
+    x: 39
+    y: 5
+    conditions:
+    - is char_at player
+    - is char_facing player,right
+    actions:
+    - transition_teleport player,spyder_brideswood.tmx,0,5,0.3
+    - char_face player,right
+
   # --- Encounter zones (from upstream Tuxemon) ---
 
   Encounters 1:
