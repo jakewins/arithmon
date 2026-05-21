@@ -68,3 +68,16 @@ After the first successful workflow run, the game will be reachable at:
   **https://jakewins.github.io/arithmon/**
 
 (Repository: `jakewins/arithmon`, default project-pages URL pattern.)
+
+## 2026-05-21 — Reviewer findings
+
+- Pre-commit gates (format:check, lint, tsc --noEmit, npm test 483/483) all pass.
+- `index.html`: both `./favicon.png` and `./style.css` hrefs confirmed relative (no leading slash).
+- `public/style.css`: `./assets/font/PressStart2P.ttf` confirmed relative; font file is present in `dist/assets/font/` after build.
+- `vite/config.prod.mjs` left unchanged; `base: './'` is intact.
+- `.github/workflows/deploy.yml` is an exact match to the spec — correct actions (`configure-pages@v5`, `upload-pages-artifact@v3`, `deploy-pages@v4`), correct triggers (`push` on `main` + `workflow_dispatch`), correct concurrency guard, `npm ci` / `npm run build` steps.
+- `package-lock.json` is tracked in git (confirmed via `git ls-files`).
+- JOURNAL.md documents the one-time GitHub UI step and the target URL `https://jakewins.github.io/arithmon/`.
+- `npm run build` ran clean; built `dist/index.html` and `dist/style.css` carry the correct relative paths.
+- No source-code changes beyond the three path fixes and the new workflow file — minimal, surgical diff.
+- **Decision: APPROVED.**
