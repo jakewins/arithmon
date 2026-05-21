@@ -89,3 +89,60 @@ turn.
 
 `npm run format:check && npm run lint && npx tsc --noEmit && npm test`
 all pass — 490/490 tests green.
+
+---
+
+## 2026-05-21 — Reviewer findings (approved)
+
+### What was validated
+
+- Pre-commit gates re-run in the reviewer worktree: `format:check`, `lint`,
+  `npx tsc --noEmit`, and `vitest run` all pass (43 test files, 490 tests).
+
+- Code review: clean, well-structured refactor — 929 lines across 18 files.
+  - Core design: `CombatEvent` grows an optional `apply?: () => void` closure.
+    All visible-state mutations (HP, DP, XP, status, player/enemy pointers,
+    inventory removal, capture callback) are now deferred into those closures;
+    `submitAction` computes the full turn outcome up front using `projected*`
+    locals, never touching live model fields. State-machine fields (`state`,
+    `outcome`) still flip synchronously — correct, as documented.
+  - `techniqueExecutor.ts`: damage/heal/statStage/status-apply all baked into
+    `apply` closures. `previewApplyStatus` added to `statusHandler.ts` for
+    the deferred-status case.
+  - `statusHandler.ts`: `tickStatuses` now non-mutating; each `StatusLogEvent`
+    carries its own `apply` closure (tick damage + duration decrement, or
+    status removal). Quiet empty-message events for sleep mid-duration are
+    filtered by the machine before narration — sound design.
+  - `machine.ts`: `predictLevelUps` sandbox-clones the monster before calling
+    `addXp` so the level-up/move-learned narration can be queued up front
+    without mutating the live monster. `resolveActivePlayerAfter` walks the
+    forming event list to correctly point the enemy counter-attack at the
+    incoming swap target — slightly fragile (message-parse) but correct for
+    current data.
+  - `CombatScene.ts`: `processNextEvent` calls `event.apply?.()` before
+    setting message text, then `tweenHpBars()` (500 ms Quint.easeOut). End-of-
+    queue `updateHpBars()` is a safety-snap; it fires ~500 ms after the last
+    tween completes so there is no visual interruption in practice.
+  - `drainNextCombatEvent()` and `peekCombatModel()` QA hooks are well-scoped
+    and correctly mirror `processNextEvent` logic.
+
+- Unit test review: `_combatTestHelpers.ts` `drainEvents` helper is clean and
+  minimal. All 8 migrated test files correctly drain before asserting on model
+  state. The new "deferred mutation contract" describe-block in `machine.test.ts`
+  pins the contract at the right level of detail — not over-specified.
+
+- QA script (`qa/local/combat-effects-sync-review.ts`) run against port 8082:
+  - Enemy HP (60) and DP (5) both unchanged immediately after `submitCombatAction`.
+  - DP dropped from 5→3 exactly at the `dp_drain` drain step.
+  - Enemy HP dropped from 60→33 exactly at the `damage` drain step.
+  - KO path: `player.totalXp` (125) unchanged after submit; jumped to 185 at
+    the `xp_gain` drain step.
+  - Screenshots confirm correct visual state: full HP bars before any drain;
+    damage narration showing at the moment HP model mutates.
+
+- Tween duration (500 ms) is within the AC range (400–700 ms) and matches
+  upstream `animate_hp` easing (Quint.easeOut).
+
+### Outcome: approved
+
+Story moved to `board/done/`.
