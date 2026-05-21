@@ -76,3 +76,14 @@ time-of-day so day vs night picks match upstream YAML exactly.
 - Real `play_map_animation` grass-shake overlay (still a logging stub).
 - Other-map encounter tables.
 - Trainers / signs / Billie / environment day-night swap (separate stories).
+
+## 2026-05-21 — Reviewer findings
+
+- Verified encounter table: 10 rows (5 species × 2 daytimes), weights and level ranges match upstream `spyder_route2.yaml` verbatim
+- Verified `play_map_animation` stubbed in `stubs.ts` (logs args, no-ops)
+- Verified 33 `random battle*` events appended to `spyder_route2.yaml`; duplicate `random battle16` (ids 116 & 176) disambiguated as A/B
+- Verified `rollEncounter` filters by `isDaytime()`, falls back to unfiltered pool if all rows excluded
+- Pre-commit gates: `npm run format:check && npm run lint && npx tsc --noEmit && npm test` — all pass (477 tests including 10 new encounter tests)
+- QA: `ARITHMON_PORT=8082 HEADLESS=1 npx tsx qa/route2-encounters-test.ts` — 3/3 subtests pass (day encounter, night encounter, safe-path no-encounter)
+- Screenshots committed at `qa/screenshots/route2-encounter-{day,night,safe-path}.png`
+- **Approved**
