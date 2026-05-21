@@ -66,7 +66,7 @@ const PLAYER_SPRITE_Y = PLAYER_ISLAND_BOTTOM - Math.round(57 * PLAYER_ISLAND_SCA
 const PLAYER_HUD_X = 145;
 const PLAYER_HUD_Y = 45;
 const PAD_X = 4;
-const PAD_Y = 3;
+const PAD_Y = 1;
 const OPTION_H = 10;
 const TEXT_COLOR = "#1a1a1a";
 const DISABLED_COLOR = "#999999";
@@ -470,13 +470,13 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // 85 px-wide rect with room to spare, matching upstream's render.
     this.enemyNameText = addText(this, ENEMY_HUD_X + 5, ENEMY_HUD_Y + 5, "", SMALL);
     this.enemyNameText.setDepth(4);
-    this.playerNameText = addText(this, PLAYER_HUD_X + 12, PLAYER_HUD_Y + 11, "", SMALL);
+    this.playerNameText = addText(this, PLAYER_HUD_X + 12, PLAYER_HUD_Y + 8, "", SMALL);
     this.playerNameText.setDepth(4);
 
     // --- HP bars on HUD panels ---
     // Upstream hud_line2 sits at (5, 13) (opponent) / (12, 19) (player).
     const enemyHpX = ENEMY_HUD_X + 5;
-    const enemyHpY = ENEMY_HUD_Y + 13;
+    const enemyHpY = ENEMY_HUD_Y + 16;
     this.enemyHpBg = this.add.rectangle(enemyHpX, enemyHpY, HP_BAR_W, HP_BAR_H, 0x555555);
     this.enemyHpBg.setOrigin(0, 0);
     this.enemyHpBg.setDepth(4);
@@ -485,8 +485,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.enemyHpBar.setDepth(4);
 
     // Player HP bar: inside player panel, after built-in "HP" label
-    const playerHpX = PLAYER_HUD_X + 16;
-    const playerHpY = PLAYER_HUD_Y + 19;
+    const playerHpX = PLAYER_HUD_X + 12;
+    const playerHpY = PLAYER_HUD_Y + 21;
     this.playerHpBg = this.add.rectangle(playerHpX, playerHpY, PLAYER_HP_BAR_W, HP_BAR_H, 0x555555);
     this.playerHpBg.setOrigin(0, 0);
     this.playerHpBg.setDepth(4);
@@ -510,7 +510,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // overlapping the asset's baked-in "XP" label.
     const dpStartX = PLAYER_HUD_X + 8;
     const dpY = PLAYER_HUD_Y + 39;
-    addText(this, dpStartX, dpY - 1, "DP", withColor(SMALL, "#bb66ff")).setDepth(4);
+    addText(this, dpStartX, dpY - 3, "DP", withColor(SMALL, "#bb66ff")).setDepth(4);
     this.dpPips = [];
     const pipRowOffsetX = 14; // clears the "DP" prefix
     for (let i = 0; i < MAX_DARK_POWER; i++) {
@@ -591,7 +591,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // Info-card layout: name on top, then accuracy, then range pill + power,
     // then cost. SMALL gives us ~7 px per row which packs cleanly into the
     // 36 px-tall band (4 rows × ~8 px = 32 px).
-    const infoRowH = 8;
+    const infoRowH = 10;
     const infoX = PAD_X;
     const infoY = BOX_Y + PAD_Y;
     this.infoCardName = addText(this, infoX, infoY, "", SMALL);
