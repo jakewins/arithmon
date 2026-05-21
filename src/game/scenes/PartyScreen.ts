@@ -11,7 +11,7 @@ import {
   type StatsObjects,
 } from "../ui/monsterPortrait";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY } from "../ui/textStyle";
+import { addText, BODY } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -148,7 +148,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     this.slotHighlight.setDepth(2);
 
     // Slot cursor
-    this.slotCursor = this.add.text(LEFT_W + 2, 0, CURSOR_CHAR, BODY);
+    this.slotCursor = addText(this, LEFT_W + 2, 0, CURSOR_CHAR, BODY);
     this.slotCursor.setDepth(10);
 
     // Detail container (left side)
@@ -371,12 +371,12 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
 
     // Options
     for (let i = 0; i < CONTEXT_OPTIONS.length; i++) {
-      const label = this.add.text(10, 3 + i * CTX_OPTION_H, CONTEXT_OPTIONS[i], BODY);
+      const label = addText(this, 10, 3 + i * CTX_OPTION_H, CONTEXT_OPTIONS[i], BODY);
       this.ctxContainer.add(label);
     }
 
     // Cursor
-    const cursor = this.add.text(3, 3, CURSOR_CHAR, BODY);
+    const cursor = addText(this, 3, 3, CURSOR_CHAR, BODY);
     cursor.setName("ctxCursor");
     this.ctxContainer.add(cursor);
 
@@ -453,7 +453,7 @@ export class PartyScreen extends Scene implements DebugStateProvider, DebugComma
     }
     const party = session.player.monsters;
     const sourceName = party[this.moveSourceIndex]?.name ?? "?";
-    this.moveIndicator = this.add.text(PAD_X, HEIGHT - 10, `Move ${sourceName} where?`, BODY);
+    this.moveIndicator = addText(this, PAD_X, HEIGHT - 10, `Move ${sourceName} where?`, BODY);
     this.moveIndicator.setDepth(10);
   }
 

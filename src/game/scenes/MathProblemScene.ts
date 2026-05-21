@@ -3,7 +3,7 @@ import { skillTree } from "../skilltree";
 import type { PerseusProblem, ProblemWidget, GradeResult } from "../data/problems";
 import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "../debug";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BIG_LIGHT, BODY_LIGHT, withColor } from "../ui/textStyle";
+import { addText, BIG_LIGHT, BODY_LIGHT, withColor } from "../ui/textStyle";
 
 // MathProblemScene runs on a dark backdrop, so all foreground text is light.
 // Color tokens kept local since they're only used here.
@@ -300,7 +300,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     _panelW: number,
   ) {
     // Dummy answerText so updateAnswerDisplay() doesn't crash if called
-    this.answerText = this.add.text(0, 0, "").setVisible(false);
+    this.answerText = addText(this, 0, 0, "").setVisible(false);
 
     const inputY = contentY + 6;
     const boxW = 40;
@@ -310,8 +310,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Labels
     const labels = widget.options.labels;
-    this.add.text(leftX, inputY - 10, labels[0], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
-    this.add.text(rightX, inputY - 10, labels[1], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
+    addText(this, leftX, inputY - 10, labels[0], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
+    addText(this, rightX, inputY - 10, labels[1], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
 
     // Input boxes
     this.dualBoxes[0] = this.add
@@ -483,7 +483,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // No hint button for radio — the choices themselves are scaffolding.
     // Create a dummy hintText so showNextHint() doesn't crash if called.
-    this.hintText = this.add.text(0, 0, "").setVisible(false);
+    this.hintText = addText(this, 0, 0, "").setVisible(false);
   }
 
   private updateRadioHighlight() {
@@ -494,18 +494,18 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
   private createComparisonUI(widget: ProblemWidget & { type: "comparison" }, contentY: number) {
     // Dummy elements so other methods don't crash
-    this.answerText = this.add.text(0, 0, "").setVisible(false);
-    this.hintText = this.add.text(0, 0, "").setVisible(false);
+    this.answerText = addText(this, 0, 0, "").setVisible(false);
+    this.hintText = addText(this, 0, 0, "").setVisible(false);
 
     const rowY = contentY + 12;
     const { left, right } = widget.options;
 
     // Left value — BIG_LIGHT is 16 px (2× the body grid), the "big number" we're comparing.
     const bigBold: Phaser.Types.GameObjects.Text.TextStyle = { ...BIG_LIGHT, fontStyle: "bold" };
-    this.add.text(WIDTH / 2 - 60, rowY, left, bigBold).setOrigin(0.5);
+    addText(this, WIDTH / 2 - 60, rowY, left, bigBold).setOrigin(0.5);
 
     // Right value
-    this.add.text(WIDTH / 2 + 60, rowY, right, bigBold).setOrigin(0.5);
+    addText(this, WIDTH / 2 + 60, rowY, right, bigBold).setOrigin(0.5);
 
     // Three comparison buttons in the middle
     const symbols: Array<">" | "=" | "<"> = [">", "=", "<"];
@@ -565,8 +565,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     panelW: number,
   ) {
     // Dummy elements so other methods don't crash
-    this.answerText = this.add.text(0, 0, "").setVisible(false);
-    this.hintText = this.add.text(0, 0, "").setVisible(false);
+    this.answerText = addText(this, 0, 0, "").setVisible(false);
+    this.hintText = addText(this, 0, 0, "").setVisible(false);
 
     const { range, step, labelStep } = widget.options;
     this.nlRange = range;
@@ -593,7 +593,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       this.add.rectangle(x, lineY, 1, tickH, 0x6688aa);
 
       if (isLabel) {
-        this.add.text(x, lineY + 8, String(val), withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5, 0);
+        addText(this, x, lineY + 8, String(val), withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5, 0);
       }
     }
 
@@ -810,8 +810,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     panelW: number,
   ) {
     // Dummy elements so other methods don't crash
-    this.answerText = this.add.text(0, 0, "").setVisible(false);
-    this.hintText = this.add.text(0, 0, "").setVisible(false);
+    this.answerText = addText(this, 0, 0, "").setVisible(false);
+    this.hintText = addText(this, 0, 0, "").setVisible(false);
 
     const dropY = contentY + 8;
 

@@ -18,7 +18,7 @@ import { MONSTERS } from "../data/monsters";
 import { t } from "../i18n";
 import { formatText } from "../textFormatter";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY, HEADING, NAME, withWrap } from "../ui/textStyle";
+import { addText, BODY, HEADING, NAME, withWrap } from "../ui/textStyle";
 
 // Upstream `tux_info.png` is 256×144 — same as our native viewport, so it
 // blits 1:1 from the top-left. BG_W is reused for the bottom panel width;
@@ -165,23 +165,23 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     // cram these 6 rows in (ID, NAME, species, size, types, body type).
     // ID
     const idText = def.txmnId !== undefined ? `ID: ${def.txmnId}` : "ID: —";
-    this.add.text(RIGHT_COL_X, BG_Y + 6, idText, BODY).setDepth(5);
+    addText(this, RIGHT_COL_X, BG_Y + 6, idText, BODY).setDepth(5);
 
     // Name (uppercase, 16 px = 2× the body grid, bold).
-    this.add.text(RIGHT_COL_X, BG_Y + 14, def.name.toUpperCase(), NAME).setDepth(5);
+    addText(this, RIGHT_COL_X, BG_Y + 14, def.name.toUpperCase(), NAME).setDepth(5);
 
     // Species ("<Species> Species"). Category strings can carry placeholders.
     const speciesText = def.species
       ? formatText(`${t(`cat_${def.species}`)} ${t("monster_menu_species")}`)
       : "—";
-    this.add.text(RIGHT_COL_X, BG_Y + 30, speciesText, BODY).setDepth(5);
+    addText(this, RIGHT_COL_X, BG_Y + 30, speciesText, BODY).setDepth(5);
 
     // Height + weight on one line: "69.0 cm 37.0 kg".
     const sizeText =
       def.heightCm !== undefined && def.weightKg !== undefined
         ? `${def.heightCm.toFixed(1)} cm ${def.weightKg.toFixed(1)} kg`
         : "—";
-    this.add.text(RIGHT_COL_X, BG_Y + 40, sizeText, BODY).setDepth(5);
+    addText(this, RIGHT_COL_X, BG_Y + 40, sizeText, BODY).setDepth(5);
 
     // Type(s) row — icons stacked horizontally next to the "Type(s)" label.
     this.renderTypeRow(def.types, RIGHT_COL_X + 16, BG_Y + 52);
@@ -190,25 +190,25 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     const shapeText = def.shape
       ? `${t("monster_menu_shape")}: ${t(def.shape)}`
       : `${t("monster_menu_shape")}: —`;
-    this.add.text(RIGHT_COL_X, BG_Y + 68, shapeText, BODY).setDepth(5);
+    addText(this, RIGHT_COL_X, BG_Y + 68, shapeText, BODY).setDepth(5);
 
     // Description (bottom panel, wordwrapped). Run through formatText so any
     // `${{...}}` in the description resolves (most are parameter-free today,
     // but upstream descriptions reference player + monster vars).
     const descText = def.descriptionKey ? formatText(t(def.descriptionKey)) : "—";
-    this.add.text(BOTTOM_PANEL_X, DESC_Y, descText, withWrap(BODY, BOTTOM_PANEL_W)).setDepth(5);
+    addText(this, BOTTOM_PANEL_X, DESC_Y, descText, withWrap(BODY, BOTTOM_PANEL_W)).setDepth(5);
 
     // Evolution heading — upstream picks one of three keys based on count.
     const evoCount = def.evolutions?.length ?? 0;
     const evoLabelKey =
       evoCount === 0 ? "no_evolution" : evoCount === 1 ? "yes_evolution" : "yes_evolutions";
-    this.add.text(BOTTOM_PANEL_X, EVO_LABEL_Y, t(evoLabelKey), HEADING).setDepth(5);
+    addText(this, BOTTOM_PANEL_X, EVO_LABEL_Y, t(evoLabelKey), HEADING).setDepth(5);
 
     // Evolution list — distinct slugs preserving order, uppercased.
     if (def.evolutions && def.evolutions.length > 0) {
       const slugs = Array.from(new Set(def.evolutions.map((e) => e.species)));
       const text = slugs.map((s) => (MONSTERS[s]?.name ?? s).toUpperCase()).join("   ");
-      this.add.text(BOTTOM_PANEL_X + 8, EVO_LIST_Y, text, BODY).setDepth(5);
+      addText(this, BOTTOM_PANEL_X + 8, EVO_LIST_Y, text, BODY).setDepth(5);
     }
   }
 
@@ -234,10 +234,10 @@ export class MonsterInfoScene extends Scene implements DebugStateProvider {
     }
 
     // "Type(s)" label
-    this.add.text(x, y - 4, t("monster_menu_type"), BODY).setDepth(5);
+    addText(this, x, y - 4, t("monster_menu_type"), BODY).setDepth(5);
     // Type name(s) below the label, e.g. "Wood" or "Wood Frost".
     const names = types.map((tp) => t(tp)).join(" ");
-    this.add.text(x, y + 6, names, BODY).setDepth(5);
+    addText(this, x, y + 6, names, BODY).setDepth(5);
   }
 
   // --- Input ---

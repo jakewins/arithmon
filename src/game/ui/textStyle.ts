@@ -105,6 +105,96 @@ export function withWrap(
 }
 
 /**
+ * Construct a `Phaser.GameObjects.Text` at the correct pixel-art resolution.
+ *
+ * Phaser's default Text rasterises its internal canvas at the *logical*
+ * font-size (e.g. 6 px for SMALL). At runtime the game canvas is upscaled
+ * to display pixels by an integer factor via NEAREST sampling (set in
+ * `main.ts` → `snapToIntegerZoom`). That means every 1-px gray AA fringe
+ * the browser's font rasteriser produced gets multiplied into a `zoom`×`zoom`
+ * block of the same gray — the visible halo around glyphs.
+ *
+ * The fix: tell each Text object to rasterise its internal canvas at
+ * `resolution = currentZoom`. The browser then anti-aliases at the *display*
+ * resolution (each AA fringe is one device pixel — invisible to the eye),
+ * and Phaser samples down by `1/resolution` at draw time so the canvas
+ * still lands at the same world-space size. This matches what upstream
+ * Tuxemon does in `upstream/tuxemon/ui/text_renderer.py:33` — render at
+ * `scale_int(FONT_SIZE)` then blit unscaled.
+ *
+ * Call this instead of `scene.add.text(...)` for every UI text surface in
+ * the engine. Pure passthrough on the construction signature; the only
+ * difference is the post-construct `setResolution(zoom)` and registration
+ * with the resize-aware tracking set so a window resize keeps the text
+ * crisp at the new integer zoom.
+ *
+ * If the game has not booted yet (no scale manager), we fall back to
+ * resolution 1 and rely on the resize hook to upgrade us once the zoom
+ * is known. In practice every scene's `create()` runs after the scale
+ * manager is initialised so this branch is only hit by unit tests.
+ */
+export function addText(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  text: string | string[],
+  style?: Phaser.Types.GameObjects.Text.TextStyle,
+): Phaser.GameObjects.Text {
+  const obj = scene.add.text(x, y, text, style);
+  applyCrispResolution(obj, scene);
+  return obj;
+}
+
+/**
+ * Snap a Text object to the live integer zoom and remember it for the
+ * next resize. Exported separately so call sites that construct Text via
+ * non-`add.text` paths (e.g. tween factories, future migrations) can opt
+ * in.
+ */
+export function applyCrispResolution(text: Phaser.GameObjects.Text, scene: Phaser.Scene): void {
+  // Unit tests construct Text objects via lightweight stubs in fake scenes.
+  // The stubs don't implement setResolution / once; the production code path
+  // (real Phaser scene with the GameObjectFactory) always provides both.
+  if (typeof text.setResolution !== "function") return;
+  const zoom = scene.scale?.zoom ?? 1;
+  text.setResolution(Math.max(1, Math.round(zoom)));
+  trackedTexts.add(text);
+  // Garbage-collect the tracking set when the object goes away. Phaser
+  // emits DESTROY on shutdown and scene change.
+  // "destroy" is the canonical Phaser GameObject lifecycle event (see
+  // Phaser.GameObjects.Events.DESTROY = "destroy"). Hard-code the string
+  // so we don't pull a runtime Phaser global into a module that should be
+  // tree-shakeable.
+  if (typeof text.once === "function") {
+    text.once("destroy", () => trackedTexts.delete(text));
+  }
+}
+
+/**
+ * Live set of every Text object created through `addText`. The main game
+ * file walks this on resize to re-apply `setResolution` at the new zoom.
+ * `WeakSet` would be nicer but we need to iterate.
+ */
+const trackedTexts = new Set<Phaser.GameObjects.Text>();
+
+/**
+ * Re-snap every active Text object to a new integer zoom. Called from the
+ * window-resize handler in `main.ts` after the canvas zoom has been
+ * recomputed. Without this, text rendered at one zoom keeps its (now-wrong)
+ * internal canvas resolution and looks blurry until the scene restarts.
+ */
+export function refreshCrispResolution(zoom: number): void {
+  const z = Math.max(1, Math.round(zoom));
+  for (const t of trackedTexts) {
+    // `setResolution` triggers a re-rasterise of the internal canvas, so
+    // this is safe to call even when the value is unchanged — but skip
+    // anyway for the common no-op case (resize fires for non-zoom-changing
+    // viewport tweaks too, e.g. devtools open).
+    if (t.style.resolution !== z) t.setResolution(z);
+  }
+}
+
+/**
  * Block on the browser confirming the PressStart2P face has actually loaded
  * its glyph data. Phaser's TextStyle resolves the family at the moment we
  * call `add.text(...)`; if the .ttf is still fetching the text will paint

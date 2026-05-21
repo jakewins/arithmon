@@ -4,7 +4,7 @@ import { session } from "../session";
 import { MONSTERS, type MonsterDef } from "../data/monsters";
 import { getStatus, type RegistrationStatus } from "../model/monsterRegistry";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY, withColor } from "../ui/textStyle";
+import { addText, BODY, withColor } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -105,14 +105,15 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
 
     // Title — anchored left so it can't collide with the longer count text
     // on the right. At 256 px wide there isn't room to centre both.
-    this.titleText = this.add.text(6, 4, "Journal", BODY);
+    this.titleText = addText(this, 6, 4, "Journal", BODY);
     this.titleText.setDepth(5);
 
     // Seen/caught count
     const seenCount = session.monsterRegistry.seen.size;
     const caughtCount = session.monsterRegistry.caught.size;
     const totalCount = this.entries.length;
-    this.countText = this.add.text(
+    this.countText = addText(
+      this,
       WIDTH - 6,
       4,
       `${seenCount}/${totalCount} seen, ${caughtCount} caught`,
@@ -122,7 +123,7 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     this.countText.setDepth(5);
 
     // List cursor
-    this.listCursor = this.add.text(LIST_X - 8, LIST_Y, CURSOR_CHAR, BODY);
+    this.listCursor = addText(this, LIST_X - 8, LIST_Y, CURSOR_CHAR, BODY);
     this.listCursor.setDepth(5);
 
     // Detail container
@@ -242,7 +243,7 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
         color = CAUGHT_COLOR;
       }
 
-      const label = this.add.text(LIST_X, LIST_Y + i * LIST_ITEM_H, text, withColor(BODY, color));
+      const label = addText(this, LIST_X, LIST_Y + i * LIST_ITEM_H, text, withColor(BODY, color));
       label.setDepth(5);
       this.listLabels.push(label);
     }
@@ -331,7 +332,8 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     const isCaught = entry.status === "caught";
 
     // Title
-    const title = this.add.text(
+    const title = addText(
+      this,
       WIDTH / 2,
       2,
       `#${String(entry.index).padStart(2, "0")} ${entry.def.name}`,
@@ -373,14 +375,15 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
         `Base SPD: ${entry.def.baseStats.speed}`,
       ];
       for (let i = 0; i < statLines.length; i++) {
-        const label = this.add.text(statsX, statsY + i * lineH, statLines[i], BODY);
+        const label = addText(this, statsX, statsY + i * lineH, statLines[i], BODY);
         this.detailContainer.add(label);
       }
     } else {
       // Seen but not caught — hide stats
       const statLines = ["Base HP:  ???", "Base ATK: ???", "Base DEF: ???", "Base SPD: ???"];
       for (let i = 0; i < statLines.length; i++) {
-        const label = this.add.text(
+        const label = addText(
+          this,
           statsX,
           statsY + i * lineH,
           statLines[i],
@@ -393,13 +396,14 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     // Moves section — right column.
     const movesX = 90;
     const movesY = 16;
-    const movesHeader = this.add.text(movesX, movesY, "Moves:", BODY);
+    const movesHeader = addText(this, movesX, movesY, "Moves:", BODY);
     this.detailContainer.add(movesHeader);
 
     if (isCaught) {
       for (let i = 0; i < entry.def.moveset.length; i++) {
         const move = entry.def.moveset[i];
-        const label = this.add.text(
+        const label = addText(
+          this,
           movesX,
           movesY + (i + 1) * 8,
           `Lv${move.learnedAt}: ${move.slug}`,
@@ -408,14 +412,15 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
         this.detailContainer.add(label);
       }
     } else {
-      const hidden = this.add.text(movesX, movesY + 9, "???", withColor(BODY, GRAY_COLOR));
+      const hidden = addText(this, movesX, movesY + 9, "???", withColor(BODY, GRAY_COLOR));
       this.detailContainer.add(hidden);
     }
 
     // Catch rate (only if caught) \u2014 under the stat column.
     const infoY = statsY + 6 * lineH + 2;
     if (isCaught) {
-      const catchLabel = this.add.text(
+      const catchLabel = addText(
+        this,
         statsX,
         infoY,
         `Catch: ${entry.def.catchRate}`,
@@ -425,7 +430,8 @@ export class JournalScene extends Scene implements DebugStateProvider, DebugComm
     }
 
     // Navigation hint
-    const navHint = this.add.text(
+    const navHint = addText(
+      this,
       WIDTH / 2,
       HEIGHT - 8,
       "\u25c4 \u25ba Cycle   ESC Back",

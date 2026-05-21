@@ -5,7 +5,7 @@ import { session } from "../session";
 import { addItem, removeItem, getInventoryItems } from "../item/inventory";
 import { debugBridge, type DebugStateProvider } from "../debug";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY, withColor } from "../ui/textStyle";
+import { addText, BODY, withColor } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -85,27 +85,27 @@ export class ShopScene extends Scene implements DebugStateProvider {
     this.panel.setDepth(1);
 
     // Tab labels
-    const buyTab = this.add.text(12, 8, "BUY", BODY);
+    const buyTab = addText(this, 12, 8, "BUY", BODY);
     buyTab.setDepth(2);
-    const sellTab = this.add.text(40, 8, "SELL", withColor(BODY, GRAY_COLOR));
+    const sellTab = addText(this, 40, 8, "SELL", withColor(BODY, GRAY_COLOR));
     sellTab.setDepth(2);
     this.tabLabels = [buyTab, sellTab];
 
     // Gold display
-    this.goldLabel = this.add.text(WIDTH - 12, 8, "", BODY);
+    this.goldLabel = addText(this, WIDTH - 12, 8, "", BODY);
     this.goldLabel.setOrigin(1, 0);
     this.goldLabel.setDepth(2);
 
     // Cursor
-    this.cursor = this.add.text(8, 22, CURSOR_CHAR, BODY);
+    this.cursor = addText(this, 8, 22, CURSOR_CHAR, BODY);
     this.cursor.setDepth(2);
 
     // Message area at bottom
-    this.messageLabel = this.add.text(12, HEIGHT - 22, "", BODY);
+    this.messageLabel = addText(this, 12, HEIGHT - 22, "", BODY);
     this.messageLabel.setDepth(2);
 
     // Hint
-    const hint = this.add.text(WIDTH - 12, HEIGHT - 22, "ESC: Close", withColor(BODY, GRAY_COLOR));
+    const hint = addText(this, WIDTH - 12, HEIGHT - 22, "ESC: Close", withColor(BODY, GRAY_COLOR));
     hint.setOrigin(1, 0);
     hint.setDepth(2);
 
@@ -197,7 +197,8 @@ export class ShopScene extends Scene implements DebugStateProvider {
         const def = ITEMS[entry.slug];
         if (!def) continue;
         const canAfford = session.player.money >= entry.price;
-        const label = this.add.text(
+        const label = addText(
+          this,
           18,
           startY + i * lineH,
           `${def.name}  ${entry.price}G`,
@@ -211,7 +212,8 @@ export class ShopScene extends Scene implements DebugStateProvider {
       for (let i = 0; i < playerItems.length; i++) {
         const { item, count } = playerItems[i];
         const sellPrice = Math.floor(item.buyPrice * this.shop.sellMultiplier);
-        const label = this.add.text(
+        const label = addText(
+          this,
           18,
           startY + i * lineH,
           `${item.name} x${count}  ${sellPrice}G`,

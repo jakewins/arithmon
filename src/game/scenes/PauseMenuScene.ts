@@ -2,7 +2,7 @@ import { Scene } from "phaser";
 import { debugBridge } from "../debug";
 import { session } from "../session";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY } from "../ui/textStyle";
+import { addText, BODY } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -114,7 +114,8 @@ export class PauseMenuScene extends Scene {
 
     // Option labels
     for (let i = 0; i < this.visibleOptions.length; i++) {
-      const label = this.add.text(
+      const label = addText(
+        this,
         PANEL_X + PAD_X + 8,
         PAD_Y + PAD_Y + i * OPTION_H,
         this.visibleOptions[i].label,
@@ -125,7 +126,7 @@ export class PauseMenuScene extends Scene {
     }
 
     // Cursor
-    this.cursor = this.add.text(PANEL_X + PAD_X, PAD_Y + PAD_Y, CURSOR_CHAR, BODY);
+    this.cursor = addText(this, PANEL_X + PAD_X, PAD_Y + PAD_Y, CURSOR_CHAR, BODY);
     this.cursor.setDepth(202);
 
     // Keys
@@ -186,7 +187,7 @@ export class PauseMenuScene extends Scene {
       this.stubTimer = null;
     }
 
-    this.stubMessage = this.add.text(4, HEIGHT - 18, message, {
+    this.stubMessage = addText(this, 4, HEIGHT - 18, message, {
       ...BODY,
       backgroundColor: "#ffffff",
       padding: { x: 3, y: 2 },

@@ -4,7 +4,7 @@ import { t } from "../../i18n";
 import { formatText } from "../../textFormatter";
 import { debugBridge } from "../../debug";
 import { SCREEN_W, SCREEN_H } from "../../screen";
-import { BODY } from "../../ui/textStyle";
+import { addText, BODY } from "../../ui/textStyle";
 
 // Choice overlay sizing — mirrors the conventions in `event/ui/dialogBox.ts`
 // so the choice box visually matches the dialog box that almost always
@@ -73,7 +73,8 @@ class TranslatedDialogChoiceAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     for (let i = 0; i < this.options.length; i++) {
-      const label = scene.add.text(
+      const label = addText(
+        scene,
         PAD_X + 8,
         boxY + PAD_Y + i * OPTION_H,
         formatText(t(this.options[i])),
@@ -83,7 +84,7 @@ class TranslatedDialogChoiceAction implements EventAction {
       this.labels.push(label);
     }
 
-    this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", BODY);
+    this.cursor = addText(scene, PAD_X, boxY + PAD_Y, "\u25b6", BODY);
     this.cursor.setDepth(101).setScrollFactor(0);
 
     this.upKey = scene.input.keyboard!.addKey(KEY_UP);

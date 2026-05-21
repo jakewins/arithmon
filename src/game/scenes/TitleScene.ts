@@ -3,7 +3,7 @@ import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "
 import { clearSave, hasSave } from "../save";
 import { PLAYER_SPRITE_TEMPLATES } from "../data/npcs";
 import { SCREEN_W } from "../screen";
-import { BODY, BODY_LIGHT, TITLE } from "../ui/textStyle";
+import { addText, BODY, BODY_LIGHT, TITLE } from "../ui/textStyle";
 
 // Mirrors upstream Tuxemon's StartState — the first thing the player sees on
 // boot. Shows the title plus "New Game" and (when a save exists) "Load Game".
@@ -82,9 +82,9 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
     // Title text — sized to fit the 256×144 viewport without dominating it.
     // PressStart2P at 16 px (TITLE) is a clean 2× of the body grid; 20 px
     // would scale to fractional pixels and fuzz at integer zoom.
-    this.add.text(WIDTH / 2, 20, "Arithmon", TITLE).setOrigin(0.5, 0);
+    addText(this, WIDTH / 2, 20, "Arithmon", TITLE).setOrigin(0.5, 0);
 
-    this.add.text(WIDTH / 2, 48, "A Tuxemon clone with math", BODY_LIGHT).setOrigin(0.5, 0);
+    addText(this, WIDTH / 2, 48, "A Tuxemon clone with math", BODY_LIGHT).setOrigin(0.5, 0);
 
     // Build menu options. "Load Game" only appears when a save exists.
     this.options = [];
@@ -122,7 +122,8 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
     const optionsStartY = panelY - panelH / 2 + PANEL_PAD_Y;
     const labelX = panelX - PANEL_W / 2 + 16;
     for (let i = 0; i < this.options.length; i++) {
-      const label = this.add.text(
+      const label = addText(
+        this,
         labelX,
         optionsStartY + i * PANEL_H_PER_OPT,
         this.options[i].label,
@@ -131,7 +132,7 @@ export class TitleScene extends Scene implements DebugStateProvider, DebugComman
       this.labels.push(label);
     }
 
-    this.cursor = this.add.text(labelX - 8, optionsStartY, CURSOR_CHAR, BODY);
+    this.cursor = addText(this, labelX - 8, optionsStartY, CURSOR_CHAR, BODY);
 
     this.keys = {
       up: this.input.keyboard!.addKey(KEY_UP),

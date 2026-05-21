@@ -1,6 +1,6 @@
 import type { Scene } from "phaser";
 import type { Monster } from "../model/Monster";
-import { BODY, withColor } from "./textStyle";
+import { addText, BODY, withColor } from "./textStyle";
 
 export interface PortraitObjects {
   container: Phaser.GameObjects.Container;
@@ -75,7 +75,7 @@ export function createStatsDisplay(
   ];
 
   for (let i = 0; i < lines.length; i++) {
-    const label = scene.add.text(0, i * lineH, lines[i], BODY);
+    const label = addText(scene, 0, i * lineH, lines[i], BODY);
     labels.push(label);
     container.add(label);
   }
@@ -86,7 +86,7 @@ export function createStatsDisplay(
   const XP_BAR_W = 48;
   const XP_BAR_H = 3;
 
-  const xpLabel = scene.add.text(0, xpY, "XP", withColor(BODY, "#4488ff"));
+  const xpLabel = addText(scene, 0, xpY, "XP", withColor(BODY, "#4488ff"));
   labels.push(xpLabel);
   container.add(xpLabel);
 
@@ -113,19 +113,19 @@ export function createTechniqueList(
   const container = scene.add.container(x, y);
   container.setDepth(depth);
 
-  const header = scene.add.text(0, 0, "Moves:", BODY);
+  const header = addText(scene, 0, 0, "Moves:", BODY);
   container.add(header);
 
   for (let i = 0; i < monster.techniques.length; i++) {
     const tech = monster.techniques[i];
     // Drop the parens — at 8 px PressStart2P, every glyph counts and the
     // techniques column has to fit inside a ~70 px gutter on the party screen.
-    const label = scene.add.text(0, 10 + i * 9, `${tech.name} ${tech.dpCost}DP`, BODY);
+    const label = addText(scene, 0, 10 + i * 9, `${tech.name} ${tech.dpCost}DP`, BODY);
     container.add(label);
   }
 
   if (monster.techniques.length === 0) {
-    const none = scene.add.text(0, 10, "None", withColor(BODY, "#999999"));
+    const none = addText(scene, 0, 10, "None", withColor(BODY, "#999999"));
     container.add(none);
   }
 

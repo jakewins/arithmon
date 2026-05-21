@@ -1,6 +1,6 @@
 import type { Scene } from "phaser";
 import type { Monster } from "../model/Monster";
-import { BODY, withColor } from "./textStyle";
+import { addText, BODY, withColor } from "./textStyle";
 
 // Slot widget sized for the 256×144 viewport: ~80 px wide total (bar + label).
 // The bar shrank from 50 → 36 px to leave room for "99/99" at 8 px PressStart2P
@@ -44,7 +44,7 @@ export function createMonsterSlot(
     ? `${monster.name} Lv${monster.level} KO`
     : `${monster.name} Lv${monster.level}`;
 
-  const nameLabel = scene.add.text(0, 0, nameText, style);
+  const nameLabel = addText(scene, 0, 0, nameText, style);
   container.add(nameLabel);
 
   // HP bar + text on a second row below the name. PressStart2P glyphs are
@@ -60,7 +60,7 @@ export function createMonsterSlot(
   container.add(hpBarFg);
 
   // HP text — same row as the bar, just to its right.
-  const hpLabel = scene.add.text(HP_BAR_W + 3, 10, `${monster.currentHp}/${monster.maxHp}`, style);
+  const hpLabel = addText(scene, HP_BAR_W + 3, 10, `${monster.currentHp}/${monster.maxHp}`, style);
   container.add(hpLabel);
 
   return { container, nameLabel, hpBarBg, hpBarFg, hpLabel };
@@ -76,7 +76,7 @@ export function createEmptySlot(
   const container = scene.add.container(x, y);
   container.setDepth(depth);
 
-  const label = scene.add.text(0, 4, "- - - - -", withColor(BODY, DISABLED_COLOR));
+  const label = addText(scene, 0, 4, "- - - - -", withColor(BODY, DISABLED_COLOR));
   container.add(label);
 
   return container;

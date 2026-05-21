@@ -3,7 +3,7 @@ import { registerAction } from "../registry";
 import { MONSTERS } from "../../data/monsters";
 import { debugBridge } from "../../debug";
 import { SCREEN_W, SCREEN_H } from "../../screen";
-import { BODY } from "../../ui/textStyle";
+import { addText, BODY } from "../../ui/textStyle";
 
 // Sized to match `event/ui/dialogBox.ts` + `translatedDialogChoice.ts` so the
 // three overlays render at the same scale on the 256×144 logical canvas.
@@ -65,12 +65,12 @@ class ChoiceMonsterAction implements EventAction {
     this.bg.setDepth(100).setScrollFactor(0);
 
     for (let i = 0; i < names.length; i++) {
-      const label = scene.add.text(PAD_X + 8, boxY + PAD_Y + i * OPTION_H, names[i], BODY);
+      const label = addText(scene, PAD_X + 8, boxY + PAD_Y + i * OPTION_H, names[i], BODY);
       label.setDepth(101).setScrollFactor(0);
       this.labels.push(label);
     }
 
-    this.cursor = scene.add.text(PAD_X, boxY + PAD_Y, "\u25b6", BODY);
+    this.cursor = addText(scene, PAD_X, boxY + PAD_Y, "\u25b6", BODY);
     this.cursor.setDepth(101).setScrollFactor(0);
 
     this.upKey = scene.input.keyboard!.addKey(KEY_UP);

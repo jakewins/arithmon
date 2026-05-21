@@ -5,7 +5,7 @@ import { getInventoryItems, removeItem } from "../item/inventory";
 import type { ItemDef, ItemEffect } from "../item/item";
 import type { Monster } from "../model/Monster";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY, withColor, withWrap } from "../ui/textStyle";
+import { addText, BODY, withColor, withWrap } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
@@ -114,22 +114,23 @@ export class BagScene extends Scene implements DebugStateProvider {
       .setDepth(1);
 
     // Title
-    this.add.text(6, 4, "BAG", BODY).setDepth(2);
+    addText(this, 6, 4, "BAG", BODY).setDepth(2);
 
     // Cursor
-    this.cursor = this.add.text(4, ITEM_START_Y, CURSOR_CHAR, BODY);
+    this.cursor = addText(this, 4, ITEM_START_Y, CURSOR_CHAR, BODY);
     this.cursor.setDepth(3);
 
     // Description area (right panel)
-    this.descLabel = this.add.text(LEFT_W + 6, 6, "", withWrap(BODY, RIGHT_W - 12));
+    this.descLabel = addText(this, LEFT_W + 6, 6, "", withWrap(BODY, RIGHT_W - 12));
     this.descLabel.setDepth(2);
 
     // Message area at bottom of right panel
-    this.messageLabel = this.add.text(LEFT_W + 6, HEIGHT - 22, "", BODY);
+    this.messageLabel = addText(this, LEFT_W + 6, HEIGHT - 22, "", BODY);
     this.messageLabel.setDepth(2);
 
     // Hint
-    this.hintLabel = this.add.text(
+    this.hintLabel = addText(
+      this,
       LEFT_W + 6,
       HEIGHT - 12,
       "ESC: Back",
@@ -262,13 +263,14 @@ export class BagScene extends Scene implements DebugStateProvider {
     this.targetContainer.add(bg);
 
     // Title
-    const title = this.add.text(6, 2, "Use on:", BODY);
+    const title = addText(this, 6, 2, "Use on:", BODY);
     this.targetContainer.add(title);
 
     for (let i = 0; i < party.length; i++) {
       const m = party[i];
       const y = 12 + i * 12;
-      const label = this.add.text(
+      const label = addText(
+        this,
         14,
         y,
         `${m.name} ${m.currentHp}/${m.maxHp}`,
@@ -277,7 +279,7 @@ export class BagScene extends Scene implements DebugStateProvider {
       this.targetContainer.add(label);
     }
 
-    const cursor = this.add.text(6, 12, CURSOR_CHAR, BODY);
+    const cursor = addText(this, 6, 12, CURSOR_CHAR, BODY);
     cursor.setName("targetCursor");
     this.targetContainer.add(cursor);
 
@@ -394,7 +396,8 @@ export class BagScene extends Scene implements DebugStateProvider {
     }
 
     if (this.itemList.length === 0) {
-      this.emptyLabel = this.add.text(
+      this.emptyLabel = addText(
+        this,
         14,
         ITEM_START_Y + 4,
         "No items.",
@@ -433,7 +436,8 @@ export class BagScene extends Scene implements DebugStateProvider {
       const displayIdx = i - this.scrollOffset;
       const y = ITEM_START_Y + displayIdx * ITEM_H;
       const usable = item.usableIn.includes("overworld");
-      const label = this.add.text(
+      const label = addText(
+        this,
         14,
         y,
         `${item.name} x${count}`,

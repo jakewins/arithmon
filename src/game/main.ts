@@ -1,6 +1,6 @@
 import { AUTO, Core, Game, Scale } from "phaser";
 import { SCREEN_W, SCREEN_H } from "./screen";
-import { ensureUiFontLoaded } from "./ui/textStyle";
+import { ensureUiFontLoaded, refreshCrispResolution } from "./ui/textStyle";
 import { TitleScene } from "./scenes/TitleScene";
 import { OverworldScene } from "./scenes/OverworldScene";
 import { CombatScene } from "./scenes/CombatScene";
@@ -74,6 +74,12 @@ function snapToIntegerZoom(game: Game) {
   const intZoom = Math.max(1, Math.floor(fitZoom));
   if (game.scale.zoom !== intZoom) {
     game.scale.setZoom(intZoom);
+    // Text objects rasterise their internal canvas at construction time
+    // against the then-current zoom. When the user resizes the window
+    // into a new integer-zoom band, every existing Text would render its
+    // old canvas at the new scale and pick up the same gray AA halo we
+    // worked around in textStyle.addText. Re-snap them to the new zoom.
+    refreshCrispResolution(intZoom);
   }
 }
 
