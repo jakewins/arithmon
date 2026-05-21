@@ -92,3 +92,14 @@ first-pass size pick).
 - `monster-info-after.png` — densest SMALL surface; all rows readable.
 - `combat-tech-menu.png`, `font-size-sweep.png`, `font-comparison.png` —
   investigation evidence kept in the story dir for reviewer reference.
+
+## 2026-05-21 — Reviewer findings
+
+- Pre-commit gates: format:check, lint, tsc --noEmit, npm test all pass
+- H1 confirmed via font-size sweep: PressStart2P crisp only at 8/16px; 6px produces ungridded rasterisation
+- Pizel.ttf vendored from upstream (CC-0); ATTRIBUTIONS.md present alongside OFL.txt for PressStart2P
+- @font-face for Pizel in public/style.css with font-display: block
+- combat-prompt-before/after screenshots confirm visibly crisper rendering at same screen footprint
+- combat-hud-after.png and monster-info-after.png confirm all SMALL/SMALL_HEADING surfaces updated
+- qa/text-fidelity.ts runs end-to-end; qa/pixel-font-readability.ts passes (no BODY/TITLE/NAME regression)
+- VERDICT: approved
