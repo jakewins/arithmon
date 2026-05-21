@@ -74,3 +74,148 @@ events:
     actions:
       - transition_teleport player,spyder_brideswood.tmx,37,0,0.3
       - char_face player,down
+
+  # --- Trainers ---
+  # Ports of upstream's three Route 2 trainers from
+  # `upstream/mods/tuxemon/maps/spyder_route2.tmx` (events 158-163, 188-190,
+  # 211-213). Each trainer has three event objects:
+  #   * Create — spawns the NPC once on map load (gated on `not char_exists`).
+  #   * Talk (interact) — fires when player presses INTERACT facing the NPC.
+  #   * Talk (sight) — multi-tile rect that auto-triggers when the player steps
+  #     into the NPC's line of sight.
+  #   * Post Talk — replaces the interact dialog after the player has won.
+  # Trainer parties are seeded dynamically by `add_monster <mon>,<lvl>,<npc>`
+  # right before `start_battle` (fully replaces the static fallback list in
+  # `src/game/data/npcParties.ts`).
+
+  Create Roddick:
+    conditions:
+      - not char_exists spyder_route2_roddick
+    actions:
+      - create_npc spyder_route2_roddick,5,3
+
+  Create Marion:
+    conditions:
+      - not char_exists spyder_route2_marion
+    actions:
+      - create_npc spyder_route2_marion,22,9
+
+  Create Graf:
+    conditions:
+      - not char_exists spyder_route2_graf
+    actions:
+      - create_npc spyder_route2_graf,29,3
+
+  Talk Roddick:
+    behav: talk spyder_route2_roddick
+    conditions:
+      - not battle_outcome player,won,spyder_route2_roddick
+    actions:
+      - char_talk spyder_route2_roddick,pre_battle
+      - add_monster spighter,8,spyder_route2_roddick,5,10
+      - start_battle player,spyder_route2_roddick
+      - char_talk spyder_route2_roddick,post_battle_lose
+
+  Talk Marion:
+    behav: talk spyder_route2_marion
+    conditions:
+      - not battle_outcome player,won,spyder_route2_marion
+    actions:
+      - char_talk spyder_route2_marion,pre_battle
+      - add_monster aardorn,7,spyder_route2_marion,5,10
+      - add_monster aardorn,7,spyder_route2_marion,5,10
+      - start_battle player,spyder_route2_marion
+      - char_talk spyder_route2_marion,post_battle_lose
+
+  Talk Graf:
+    behav: talk spyder_route2_graf
+    conditions:
+      - not battle_outcome player,won,spyder_route2_graf
+    actions:
+      - char_talk spyder_route2_graf,pre_battle
+      - add_monster cardiling,7,spyder_route2_graf,5,10
+      - add_monster cataspike,5,spyder_route2_graf,5,10
+      - add_monster cataspike,5,spyder_route2_graf,5,10
+      - start_battle player,spyder_route2_graf
+      - char_talk spyder_route2_graf,post_battle_lose
+
+  Talk Roddick Sight:
+    x: 5
+    y: 4
+    width: 1
+    height: 5
+    conditions:
+      - not battle_outcome player,won,spyder_route2_roddick
+      - is char_at player
+      - not char_defeated player
+    actions:
+      - lock_controls
+      - pathfind_to_char player,spyder_route2_roddick
+      - char_face player,spyder_route2_roddick
+      - char_talk spyder_route2_roddick,pre_battle
+      - unlock_controls
+      - add_monster spighter,8,spyder_route2_roddick,5,10
+      - start_battle player,spyder_route2_roddick
+      - char_talk spyder_route2_roddick,post_battle_lose
+
+  Talk Marion Sight:
+    x: 22
+    y: 10
+    width: 1
+    height: 4
+    conditions:
+      - not battle_outcome player,won,spyder_route2_marion
+      - is char_at player
+      - not char_defeated player
+    actions:
+      - lock_controls
+      - pathfind_to_char player,spyder_route2_marion
+      - char_face player,spyder_route2_marion
+      - char_talk spyder_route2_marion,pre_battle
+      - unlock_controls
+      - add_monster aardorn,7,spyder_route2_marion,5,10
+      - add_monster aardorn,7,spyder_route2_marion,5,10
+      - start_battle player,spyder_route2_marion
+      - char_talk spyder_route2_marion,post_battle_lose
+
+  Talk Graf Sight:
+    x: 29
+    y: 4
+    width: 1
+    height: 5
+    conditions:
+      - not battle_outcome player,won,spyder_route2_graf
+      - is char_at player
+      - not char_defeated player
+    actions:
+      - lock_controls
+      - pathfind_to_char player,spyder_route2_graf
+      - char_face player,spyder_route2_graf
+      - char_talk spyder_route2_graf,pre_battle
+      - unlock_controls
+      - add_monster cardiling,7,spyder_route2_graf,5,10
+      - add_monster cataspike,5,spyder_route2_graf,5,10
+      - add_monster cataspike,5,spyder_route2_graf,5,10
+      - start_battle player,spyder_route2_graf
+      - char_talk spyder_route2_graf,post_battle_lose
+
+  Post Talk Roddick:
+    behav: talk spyder_route2_roddick
+    conditions:
+      - is battle_outcome player,won,spyder_route2_roddick
+    actions:
+      - char_talk spyder_route2_roddick,post_battle_lose
+
+  Post Talk Marion:
+    behav: talk spyder_route2_marion
+    conditions:
+      - is battle_outcome player,won,spyder_route2_marion
+    actions:
+      - char_talk spyder_route2_marion,post_battle_lose
+
+  Post Talk Graf:
+    behav: talk spyder_route2_graf
+    conditions:
+      - is battle_outcome player,won,spyder_route2_graf
+    actions:
+      - char_talk spyder_route2_graf,post_battle_lose

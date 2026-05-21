@@ -315,6 +315,65 @@ events:
     expect(condTypes).toContain("party_size");
   });
 
+  it("loads the spyder_route2.yaml trainer events (STORY-0218)", async () => {
+    // Route 2's three sight-line trainers (Roddick, Marion, Graf) each ship as
+    // a Create / Talk / Talk-Sight / Post-Talk quartet ported from
+    // `upstream/mods/tuxemon/maps/spyder_route2.tmx`. Regression-guard the
+    // parse: a malformed event would silently fail to spawn a trainer in-game.
+    const fs = await import("fs");
+    const path = await import("path");
+    const text = fs.readFileSync(
+      path.resolve(__dirname, "../../public/assets/events/spyder_route2.yaml"),
+      "utf-8",
+    );
+    const events = loadEventsFromYaml(text);
+    const names = new Set(events.map((e) => e.name));
+
+    for (const trainer of ["Roddick", "Marion", "Graf"]) {
+      expect(names.has(`Create ${trainer}`)).toBe(true);
+      expect(names.has(`Talk ${trainer}`)).toBe(true);
+      expect(names.has(`Talk ${trainer} Sight`)).toBe(true);
+      expect(names.has(`Post Talk ${trainer}`)).toBe(true);
+    }
+
+    // Sight-line rects come straight from the TMX pixel coords (÷16). Roddick
+    // is a 1×5 column at (5,4)..(5,8), drawing the player northward toward
+    // Roddick's spawn at (5,3) when they walk south down the path.
+    const sight = events.find((e) => e.name === "Talk Roddick Sight")!;
+    expect(sight.x).toBe(5);
+    expect(sight.y).toBe(4);
+    expect(sight.width).toBe(1);
+    expect(sight.height).toBe(5);
+
+    // Sight-line actions must include lock_controls + pathfind_to_char +
+    // unlock_controls before start_battle — losing any of those softlocks the
+    // player. Spot-check Roddick's full chain.
+    const actionTypes = sight.actions.map((a) => a.type);
+    expect(actionTypes).toEqual([
+      "lock_controls",
+      "pathfind_to_char",
+      "char_face",
+      "char_talk",
+      "unlock_controls",
+      "add_monster",
+      "start_battle",
+      "char_talk",
+    ]);
+
+    // Post Talk events should fire on interact-after-win (upstream form:
+    // `is battle_outcome player,won,<slug>`).
+    const postRoddick = events.find((e) => e.name === "Post Talk Roddick")!;
+    expect(
+      postRoddick.conditions.some(
+        (c) =>
+          c.operator === "is" &&
+          c.type === "battle_outcome" &&
+          c.args[1] === "won" &&
+          c.args[2] === "spyder_route2_roddick",
+      ),
+    ).toBe(true);
+  });
+
   it("accepts behav as a YAML list (the upstream form)", () => {
     // Upstream events serialize `behav: [- talk slug]` rather than a bare
     // string. The loader must accept both shapes.

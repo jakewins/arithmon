@@ -1,29 +1,66 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
+import { t } from "../../i18n";
+import { formatText } from "../../textFormatter";
+import { debugBridge } from "../../debug";
+import { DialogBox } from "../ui/dialogBox";
+import { getNpcSprite, type NpcSpeech } from "../../data/npcs";
 
+/**
+ * Upstream:
+ *
+ *   char_talk <character>,<field>[,location]
+ *
+ * Looks up the NPC's `speech.profile.default[field]` translation key and shows
+ * it in a standard dialog box. We mirror upstream's `db/npc/*.yaml` shape via
+ * the optional `speech` map on each NPC registry entry (`src/game/data/npcs.ts`).
+ *
+ * `location` overrides are accepted in the args list but not yet wired — none
+ * of our currently-ported maps use them.
+ */
 class CharTalkAction implements EventAction {
   type = "char_talk";
   done = false;
+
   private npcSlug: string;
-  private speechType: string;
+  private field: keyof NpcSpeech;
+  private text = "";
+  private box?: DialogBox;
 
   constructor(args: string[]) {
-    // Format: npc_slug,speech_type
     this.npcSlug = args[0];
-    this.speechType = args[1] ?? "default";
+    this.field = (args[1] ?? "greeting") as keyof NpcSpeech;
   }
 
   start(ctx: EventContext): void {
-    // Look up NPC speech profile from variables (set by event YAML)
-    const dialogKey = ctx.variables.get(`dialog_${this.npcSlug}_${this.speechType}`);
-    if (dialogKey) {
-      console.log(`char_talk: ${this.npcSlug} says "${dialogKey}" (${this.speechType})`);
+    const def = getNpcSprite(this.npcSlug);
+    const msgid = def.speech?.[this.field];
+    if (!msgid) {
+      console.warn(`char_talk: ${this.npcSlug} has no "${this.field}" line`);
+      this.done = true;
+      return;
     }
-    this.done = true;
+    this.text = formatText(t(msgid));
+    this.box = new DialogBox(ctx.scene, this.text);
+    this.box.start();
+    debugBridge.emit("dialog_opened", { text: this.text });
   }
 
-  update(): void {}
-  cleanup(): void {}
+  update(ctx: EventContext, dt: number): void {
+    if (!this.box) {
+      this.done = true;
+      return;
+    }
+    this.box.update(dt, ctx.interactPressed);
+    if (this.box.isDone) this.done = true;
+  }
+
+  cleanup(): void {
+    if (this.box) {
+      this.box.destroy();
+      debugBridge.emit("dialog_closed", {});
+    }
+  }
 }
 
 registerAction("char_talk", (args) => new CharTalkAction(args));

@@ -22,8 +22,14 @@ class PathfindToCharAction implements EventAction {
   private currentTargetPixelY = 0;
 
   constructor(args: string[]) {
-    this.slug = args[0];
-    this.targetSlug = args[1];
+    // Upstream syntax: `pathfind_to_char <target>,<mover>[,direction][,distance]`
+    // — the mover walks toward the target. e.g. for trainer sight-lines the
+    // TMX says `pathfind_to_char player,spyder_route2_roddick`, meaning
+    // Roddick walks up to the player. args[2] (direction) and args[3]
+    // (distance) are accepted but unused; we always approach by the shortest
+    // path and stop one tile away (see findPath's stop-adjacent semantics).
+    this.targetSlug = args[0];
+    this.slug = args[1];
   }
 
   start(ctx: EventContext): void {
@@ -70,6 +76,13 @@ class PathfindToCharAction implements EventAction {
       this.slug,
       ctx.directionalGrid,
     );
+
+    // Stop one tile short of the target so the mover doesn't end up on top of
+    // it. Mirrors upstream `pathfind_to_char`'s default approach behaviour
+    // (distance defaults to 1).
+    if (this.waypoints.length > 0) {
+      this.waypoints = this.waypoints.slice(0, -1);
+    }
 
     if (this.waypoints.length === 0) {
       this.done = true;

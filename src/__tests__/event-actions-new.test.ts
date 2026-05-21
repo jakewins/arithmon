@@ -573,6 +573,27 @@ describe("battle_outcome condition", () => {
     });
     expect(gameVariables.has("result")).toBe(false);
   });
+
+  it("accepts upstream <fighter>,<outcome>,<opponent> argument order", () => {
+    // Upstream Tuxemon emits `battle_outcome player,won,<npc_slug>` (see
+    // `upstream/tuxemon/event/conditions/battle_outcome.py`). Verbatim-ported
+    // maps (e.g. spyder_route2 trainers) rely on this ordering being honored.
+    session.battleOutcomes.set("spyder_route2_roddick", "won");
+    triggerEvent({
+      id: 252,
+      name: "Roddick won upstream-form",
+      conditions: [
+        {
+          operator: "is",
+          type: "battle_outcome",
+          args: ["player", "won", "spyder_route2_roddick"],
+        },
+      ],
+      actions: [{ type: "set_variable", args: ["result:yes"] }],
+    });
+    expect(gameVariables.get("result")).toBe("yes");
+    gameVariables.remove("result");
+  });
 });
 
 describe("char_defeated condition", () => {

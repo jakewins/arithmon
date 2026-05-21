@@ -1,3 +1,19 @@
+/**
+ * Optional dialogue lines surfaced by the `char_talk` event action. Keyed by
+ * the upstream "field" name (greeting, pre_battle, post_battle_lose, ...).
+ * Each value is a translation key resolved via `t()` at display time. Mirrors
+ * the `speech.profile.default` block in `upstream/mods/tuxemon/db/npc/*.yaml`.
+ */
+export interface NpcSpeech {
+  greeting?: string;
+  idle?: string;
+  farewell?: string;
+  pre_battle?: string;
+  post_battle_win?: string;
+  post_battle_lose?: string;
+  post_battle_draw?: string;
+}
+
 export interface NpcSpriteDef {
   spritesheet: string;
   /** Static props use a single-frame sprite (no walk animation). */
@@ -5,6 +21,8 @@ export interface NpcSpriteDef {
   /** Override frame dimensions for non-standard sprites (default 16x32). */
   frameWidth?: number;
   frameHeight?: number;
+  /** Default speech profile — see NpcSpeech. */
+  speech?: NpcSpeech;
 }
 
 export interface NpcSpritesheetInfo {
@@ -21,7 +39,13 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_papermart_miles: { spritesheet: "tennisplayer_green" },
   spyder_papermart_shirley: { spritesheet: "picnicker" },
   spyder_route1_bjorn: { spritesheet: "beachcomber" },
-  spyder_route2_roddick: { spritesheet: "tennisplayer_fiery" },
+  spyder_route2_roddick: {
+    spritesheet: "tennisplayer_fiery",
+    speech: {
+      pre_battle: "spyder_route2_roddick1",
+      post_battle_lose: "spyder_route2_roddick2",
+    },
+  },
   spyder_papermart_harith: { spritesheet: "beachcomber_copper" },
   spyder_billie: { spritesheet: "fashionista" },
   spyder_grannypiper: { spritesheet: "granny_yellow" },
@@ -45,8 +69,20 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_route4_rosamund: { spritesheet: "picnicker" },
   spyder_route4_super: { spritesheet: "box", staticProp: true },
   spyder_route4_wulf: { spritesheet: "maniac" },
-  spyder_route2_graf: { spritesheet: "tennisplayer_green" },
-  spyder_route2_marion: { spritesheet: "picnicker" },
+  spyder_route2_graf: {
+    spritesheet: "tennisplayer_green",
+    speech: {
+      pre_battle: "spyder_route2_graf1",
+      post_battle_lose: "spyder_route2_graf2",
+    },
+  },
+  spyder_route2_marion: {
+    spritesheet: "picnicker",
+    speech: {
+      pre_battle: "spyder_route2_marion1",
+      post_battle_lose: "spyder_route2_marion2",
+    },
+  },
   spyder_cottontunnel_box1: { spritesheet: "box", staticProp: true },
   spyder_cottontunnel_box2: { spritesheet: "box", staticProp: true },
   spyder_cottoncenter_ada: { spritesheet: "nurse_green" },

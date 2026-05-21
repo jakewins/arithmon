@@ -40,13 +40,33 @@ const NPC_PARTIES: Record<string, NpcPartyDef> = {
     monsters: [{ slug: "aardorn", level: 3 }],
     goldReward: 100,
   },
+  // Route 2 trainers — upstream's TMX uses `add_monster ...,<npc_slug>` calls
+  // to seed each trainer's party at battle start (see
+  // `upstream/mods/tuxemon/maps/spyder_route2.tmx` events 161/162/163). The
+  // dynamic seeding fully replaces the static `monsters` slot in startBattle,
+  // so the lists below are just safety fallbacks if a sight-line event ever
+  // fires without its `add_monster` prelude (shouldn't happen).
   spyder_route2_roddick: {
     name: "Roddick",
+    monsters: [{ slug: "spighter", level: 8 }],
+    goldReward: 100,
+  },
+  spyder_route2_marion: {
+    name: "Marion",
     monsters: [
-      { slug: "cardiling", level: 6 },
-      { slug: "eyenemy", level: 5 },
+      { slug: "aardorn", level: 7 },
+      { slug: "aardorn", level: 7 },
     ],
-    goldReward: 250,
+    goldReward: 200,
+  },
+  spyder_route2_graf: {
+    name: "Graf",
+    monsters: [
+      { slug: "cardiling", level: 7 },
+      { slug: "cataspike", level: 5 },
+      { slug: "cataspike", level: 5 },
+    ],
+    goldReward: 300,
   },
   spyder_cottoncafe_cayden: {
     name: "Cayden",
