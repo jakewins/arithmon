@@ -61,6 +61,7 @@ interface DebugBridgeAPI {
   startCombat(): Promise<void>;
   setForceStatusApply(on: boolean): void;
   setForceEncounterRoll(on: boolean): void;
+  setSuppressEncounters(on: boolean): void;
   spawnBattle(
     playerSlug: string,
     enemySlug: string,

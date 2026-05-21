@@ -101,10 +101,13 @@ async function testSignInteract(sign: SignCase): Promise<void> {
   try {
     // Spawn directly south of the sign — the only walkable adjacency for all
     // four upstream signs (they sit at the top of a row in each case).
+    // Pre-set `route2billie:yes` so the Sign: Route 2 spawn at (1,8) doesn't
+    // step into the STORY-0221 cutscene's trigger column.
     await setupGame(page, {
       map: "spyder_route2",
       tileX: sign.signTileX,
       tileY: sign.signTileY + 1,
+      variables: { route2billie: "yes" },
     });
     await waitForIdle(page);
 

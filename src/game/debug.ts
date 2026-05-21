@@ -335,6 +335,16 @@ export class DebugBridge {
     encounterDebugFlags.forceRoll = on;
   }
 
+  /**
+   * Suppress all wild `random_encounter` rolls. Lets cutscene QA opt out of
+   * the per-step probability check on grass rects that overlap a scripted
+   * event trigger (e.g. route2's Billie column on (1,8) sits inside
+   * `random battle28`). Reset to `false` when done.
+   */
+  setSuppressEncounters(on: boolean): void {
+    encounterDebugFlags.suppress = on;
+  }
+
   /** Trigger a wild combat encounter immediately. */
   async startCombat(): Promise<void> {
     const handler = this.getCommandHandler();

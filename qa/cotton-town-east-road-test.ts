@@ -57,7 +57,14 @@ async function testMapSanity(): Promise<void> {
   console.log("[route2 sanity] launching...");
   const { page, close } = await launchGame();
   try {
-    await setupGame(page, { map: "spyder_route2", tileX: 1, tileY: 8 });
+    // Pre-set `route2billie:yes` so the STORY-0221 Billie encounter at
+    // (1,8)-(1,9) doesn't intercept this map-transition / sanity test.
+    await setupGame(page, {
+      map: "spyder_route2",
+      tileX: 1,
+      tileY: 8,
+      variables: { route2billie: "yes" },
+    });
     await waitForIdle(page);
 
     const meta = (await page.evaluate(async () => {
@@ -178,7 +185,14 @@ async function testWestBackToCottonTown(): Promise<void> {
   console.log("[route2 west back to cotton_town] launching...");
   const { page, close } = await launchGame();
   try {
-    await setupGame(page, { map: "spyder_route2", tileX: 1, tileY: 8 });
+    // Pre-set `route2billie:yes` so the STORY-0221 Billie encounter at
+    // (1,8)-(1,9) doesn't intercept this map-transition / sanity test.
+    await setupGame(page, {
+      map: "spyder_route2",
+      tileX: 1,
+      tileY: 8,
+      variables: { route2billie: "yes" },
+    });
     await waitForIdle(page);
     walkTo(page, 0, 8, "left").catch(() => undefined);
     await waitForMap(page, "spyder_cotton_town");

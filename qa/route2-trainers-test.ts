@@ -144,7 +144,11 @@ async function testRoddickInteract(): Promise<void> {
     // reach of normal foot traffic so the sight-line / pre-battle dance is
     // what brings the player and trainer together. The interact path is only
     // reachable for QA by teleporting onto the adjacent tile.
-    await setupGame(page, { map: "spyder_route2", tileX: 1, tileY: 8 });
+    //
+    // Spawn at (2,8) — clear of the Billie cutscene trigger column at
+    // (1,8)–(1,9) (STORY-0221) — so this test doesn't accidentally fire that
+    // cutscene before getting to Roddick.
+    await setupGame(page, { map: "spyder_route2", tileX: 2, tileY: 8 });
     await waitForIdle(page);
 
     const initial = (await getState(page)) as PlayerState;

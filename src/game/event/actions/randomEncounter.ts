@@ -37,7 +37,13 @@ class RandomEncounterAction implements EventAction {
   start(ctx: EventContext): void {
     // Roll against probability — QA can short-circuit via the debug flag so
     // tests don't need to monkey-patch Math.random (which would also break
-    // crypto/UUID code paths inside CombatScene init).
+    // crypto/UUID code paths inside CombatScene init). `suppress` is the
+    // mirror image: cutscene QA can pin encounters off when both an event
+    // trigger and a grass rect share a tile.
+    if (encounterDebugFlags.suppress) {
+      this.done = true;
+      return;
+    }
     if (!encounterDebugFlags.forceRoll) {
       const roll = Math.random() * 100;
       if (roll >= this.probability) {

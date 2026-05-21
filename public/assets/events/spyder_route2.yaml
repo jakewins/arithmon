@@ -667,3 +667,44 @@ events:
       - is button_pressed INTERACT
     actions:
       - translated_dialog welcome_location_route
+
+  # --- Scripted Billie encounter (STORY-0221) ---
+  # Verbatim port of `<object id="156" name="Billie encounter">` in
+  # `upstream/mods/tuxemon/maps/spyder_route2.tmx`. Trigger is the 1x2 column
+  # one tile east of the cotton_town landing tiles ((1,8) & (1,9)) — the first
+  # step the player takes into route2 from cotton_town. Once Billie's defeated
+  # the act90 `set_variable route2billie:yes` permanently gates this off.
+  #
+  # Action order mirrors upstream's zero-padded keys (act01..act08, then jumps
+  # to act20..act25, act30, act71, act75, act80, act90). `billie_choice` is a
+  # variable-driven monster slug resolved against `session.variables` by our
+  # `add_monster` action (see `src/game/event/actions/addMonster.ts`); it
+  # holds the starter that paper_town's scoop cutscene assigned to Billie.
+  "Billie encounter":
+    x: 1
+    y: 8
+    width: 1
+    height: 2
+    conditions:
+      - not variable_set route2billie:yes
+      - is char_at player
+    actions:
+      - char_stop player
+      - lock_controls
+      - create_npc spyder_billie,3,15
+      - pathfind spyder_billie,1,10
+      - unlock_controls
+      - char_face player,down
+      - char_face spyder_billie,up
+      - translated_dialog spyder_route2_billie1
+      - add_monster billie_choice,6,spyder_billie,5,10
+      - set_monster_attribute add_monster,gender,male
+      - add_monster eyenemy,6,spyder_billie,5,10
+      - set_monster_attribute add_monster,gender,female
+      - add_monster cardiling,3,spyder_billie,5,10
+      - set_monster_attribute add_monster,gender,female
+      - start_battle player,spyder_billie
+      - translated_dialog spyder_route2_billie2
+      - pathfind spyder_billie,3,15
+      - remove_npc spyder_billie
+      - set_variable route2billie:yes

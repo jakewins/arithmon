@@ -173,12 +173,15 @@ export function rollEncounter(
 }
 
 /**
- * QA-only override: when set, `random_encounter` skips its per-step
- * probability check and always rolls. Reset to `false` after the test
- * to avoid leaking into adjacent runs. Lives next to `rollEncounter` so
- * the test code path and override sit in one file.
+ * QA-only overrides for `random_encounter`:
+ *   - `forceRoll`: skip the per-step probability check and ALWAYS trigger
+ *     an encounter (lets tests fire a wild battle deterministically).
+ *   - `suppress`: skip the probability check and NEVER trigger (lets tests
+ *     drive cutscenes that overlap a grass tile without race-condition flakes
+ *     when both events live on the same trigger column).
+ * Reset both to `false` after the test to avoid leaking into adjacent runs.
  */
-export const encounterDebugFlags = { forceRoll: false };
+export const encounterDebugFlags = { forceRoll: false, suppress: false };
 
 /**
  * Map a `GameSession.timeStage` value to upstream's `daytime` boolean.
