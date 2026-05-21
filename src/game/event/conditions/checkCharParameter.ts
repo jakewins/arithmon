@@ -25,6 +25,11 @@ class CheckCharParameterCondition implements EventCondition {
         return ctx.session.player.gender === this.value;
       case "template":
         return ctx.session.player.template === this.value;
+      case "moving":
+        // Upstream uses this to gate random-encounter Threats events on
+        // active movement. `playerMoved` is true on the frame the player
+        // transitions to a new tile, matching upstream's per-step polling.
+        return (this.value === "1" || this.value === "true") === ctx.playerMoved;
       default:
         return false;
     }

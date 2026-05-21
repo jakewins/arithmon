@@ -1,6 +1,8 @@
 events:
   # --- Music & environment ---
 
+  # TODO(STORY-0215): upstream uses `music_omnichannel`. We use the cathedral
+  # stub until audio is wired up; the play_music handler is a no-op logger.
   Play Music:
     conditions:
       - not music_playing music_cathedral_theme
@@ -9,9 +11,9 @@ events:
 
   Set Environment:
     conditions:
-      - not variable_set omnichannel1_env:yes
+      - not environment_is interior
     actions:
-      - set_variable omnichannel1_env:yes
+      - set_environment interior
 
   # --- NPC spawns ---
 
@@ -41,6 +43,18 @@ events:
     actions:
       - create_npc spyder_omnichannel_danita,2,17
 
+  # The screen NPC is a static prop sitting on top of an existing collision
+  # rect (key=screen) at tiles (7,17)-(8,18). The prop is visual; the
+  # collision rect is what actually blocks the doorway. Upstream's
+  # `Remove Screen` event drops the rect via `remove_collision screen` once
+  # `omnichannel1wall:yes` is set — see TODO on that event below.
+  Create Screen:
+    conditions:
+      - not char_exists spyder_screen
+      - not variable_set omnichannel1wall:yes
+    actions:
+      - create_npc spyder_screen,7,18
+
   # --- NPC dialogue ---
 
   Talk Ethan:
@@ -69,6 +83,20 @@ events:
     actions:
       - dialog Be careful up there. Not everyone in Omnichannel is as friendly as me.
 
+  # Upstream Pass1 (object id 53): tile-facing interact on the screen prop
+  # rejects the player until the omnichannel2 puzzle is solved. The screen
+  # sits at (7,18)/(8,18); facing-tile checks against the event rectangle.
+  Pass1:
+    x: 7
+    y: 18
+    width: 2
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not variable_set omnichannel1wall:yes
+    actions:
+      - dialog Screen active!
+
   # --- William trainer battle ---
 
   Talk William Pre Battle:
@@ -90,6 +118,11 @@ events:
 
   # --- Enforcer cutscene and battle ---
 
+  # Upstream Spot Enforcer (object id 32). The cutscene fires every time the
+  # player crosses (1,12)/(2,12) until the hospital cure quest sets
+  # `hospitalcure:yes` in spyder_candy_hospital3 — NOT here. (Earlier port
+  # incorrectly set hospitalcure:yes inside this cutscene, which both skipped
+  # this guard on re-entry and silently unlocked downstream content.)
   Spot Enforcer:
     x: 1
     y: 12
@@ -98,17 +131,23 @@ events:
       - not variable_set hospitalcure:yes
       - is char_at player
     actions:
+      - char_stop player
       - lock_controls
       - create_npc spyder_omnichannel_enforcer,8,7
       - pathfind spyder_omnichannel_enforcer,3,12
+      - unlock_controls
       - char_face player,right
-      - "dialog Hey! You're not supposed to be in here. This is Omnichannel property!"
+      - "dialog Butt out of it, kid, this is private property!"
       - char_face player,down
       - pathfind player,2,13
       - remove_npc spyder_omnichannel_enforcer
-      - set_variable hospitalcure:yes
-      - unlock_controls
 
+  # Upstream Battle Enforcer (object id 33). One linear event — spawn,
+  # pathfind, dialog, battle, post-battle dialog, retreat, despawn. Upstream
+  # `add_monster rabbitosaur,35,...` is omitted; we define the enforcer party
+  # statically in npcParties.ts per Arithmon convention. Triggered by walking
+  # onto (1,10)/(2,10) after the first kick-out (the player must be wandering
+  # north of the doormat).
   Battle Enforcer:
     x: 1
     y: 10
@@ -116,23 +155,39 @@ events:
     conditions:
       - not battle_outcome player,spyder_omnichannel_enforcer,won
       - is char_at player
+      - not char_defeated player
     actions:
+      - char_stop player
       - lock_controls
       - create_npc spyder_omnichannel_enforcer,4,3
       - pathfind spyder_omnichannel_enforcer,3,10
+      - unlock_controls
       - char_face player,right
-      - "dialog Back again? This time I won't go easy on you!"
+      - "dialog I told you before - scram!"
       - start_battle spyder_omnichannel_enforcer
-
-  Enforcer Post Battle:
-    conditions:
-      - is battle_outcome player,spyder_omnichannel_enforcer,won
-      - is char_exists spyder_omnichannel_enforcer
-    actions:
-      - "dialog Tch... fine. You've earned your way in. But don't think this is over."
+      - "dialog It is I who must scram!"
       - pathfind spyder_omnichannel_enforcer,2,12
       - remove_npc spyder_omnichannel_enforcer
-      - unlock_controls
+
+  # --- Random encounters ---
+
+  # Upstream Threats (object id 48). Gated on the puzzle-solved flag so the
+  # north half of HQ only spawns wild battles after the player can actually
+  # reach it. `check_char_parameter player,moving,1` fires once per tile step.
+  Threats:
+    conditions:
+      - is variable_set omnichannel1wall:yes
+      - is check_char_parameter player,moving,1
+    actions:
+      - random_encounter spyder_omnichannel,0.6
+
+  # TODO(STORY-0215 follow-up): port upstream `Remove Screen` (object id 51)
+  # — needs a `remove_collision <key>` action handler. Today our engine
+  # doesn't track collision-rect keys, so we cannot remove the static screen
+  # blocker once the omnichannel2 puzzle is solved. Without it, the puzzle is
+  # unwinnable — but the `omnichannel1wall:yes` flag is also unset anywhere
+  # in our codebase yet, so this is dormant content. Revisit when omnichannel2
+  # is ported.
 
   # --- Map connections ---
 

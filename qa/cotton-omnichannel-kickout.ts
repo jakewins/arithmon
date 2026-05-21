@@ -29,6 +29,7 @@ interface OverworldState {
   player?: { tileX: number; tileY: number; facing: string };
   blocking?: boolean;
   npcs?: { slug: string; tileX: number; tileY: number }[];
+  session?: { variables?: Record<string, string> };
 }
 
 interface BridgeEvent {
@@ -100,7 +101,69 @@ async function main() {
       `expected teleport event to spyder_cotton_town (17,10); events=${JSON.stringify(events.map((e) => `${e.type} ${JSON.stringify(e.data)}`))}`,
     );
 
+    // STORY-0215 regression check: the kick-out cutscene must NOT silently
+    // flip the hospitalcure quest flag. (Earlier the Spot Enforcer event
+    // ran `set_variable hospitalcure:yes` at the end, which both skipped
+    // this guard on re-entry and unlocked unrelated downstream content.)
+    assert(
+      after.session?.variables?.hospitalcure !== "yes",
+      `hospitalcure must NOT be "yes" after kick-out; got ${after.session?.variables?.hospitalcure}`,
+    );
+
     console.log("[STORY-0207] kick-out OK");
+
+    // ---------------------------------------------------------------------
+    // STORY-0215: second-visit re-encounter. Walking back into HQ before the
+    // hospital cure must replay the guard cutscene — upstream gates Spot
+    // Enforcer on `not hospitalcure:yes`, which we just confirmed is still
+    // unset. Direct-teleport back to (2,12) (same approach as the first
+    // visit) and assert we land in cotton_town a second time.
+    // ---------------------------------------------------------------------
+    await page.evaluate(() => window.A!.clearEvents());
+    await teleport(page, "spyder_omnichannel1", 2, 12);
+    await page.evaluate(() => window.A!.face("up"));
+    await page.waitForTimeout(300);
+
+    const beforeRevisit = (await getState(page)) as OverworldState;
+    assert(
+      beforeRevisit.mapKey === "spyder_omnichannel1",
+      `revisit: expected to start in spyder_omnichannel1, got ${beforeRevisit.mapKey}`,
+    );
+
+    // Snap a screenshot once the enforcer has pathfound to his dialog
+    // position (3,12) — that's the frame where the upstream `act07`
+    // dialog plays, so it's the most legible "guard is back" frame for
+    // the reviewer.
+    let dialogShot = false;
+    for (let i = 0; i < 100; i++) {
+      const state = (await getState(page)) as OverworldState;
+      const enforcerAtPost = state.npcs?.find(
+        (n) =>
+          n.slug === "spyder_omnichannel_enforcer" && n.tileX === 3 && n.tileY === 12,
+      );
+      if (state.blocking && enforcerAtPost && !dialogShot) {
+        await screenshot(page, "cotton-omnichannel-kickout-revisit");
+        dialogShot = true;
+      }
+      if (state.mapKey === "spyder_cotton_town") break;
+      if (state.blocking) {
+        await page.evaluate(() => window.A!.interact());
+      }
+      await page.waitForTimeout(100);
+    }
+    assert(dialogShot, "revisit: expected enforcer to reach (3,12) on second visit");
+
+    const afterRevisit = (await getState(page)) as OverworldState;
+    assert(
+      afterRevisit.mapKey === "spyder_cotton_town",
+      `revisit: expected to land in spyder_cotton_town, got ${afterRevisit.mapKey}`,
+    );
+    assert(
+      afterRevisit.session?.variables?.hospitalcure !== "yes",
+      `revisit: hospitalcure must still NOT be "yes"; got ${afterRevisit.session?.variables?.hospitalcure}`,
+    );
+
+    console.log("[STORY-0215] revisit kick-out OK");
   } finally {
     await close();
   }

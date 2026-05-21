@@ -109,6 +109,13 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "ouroboutlet", minLevel: 42, maxLevel: 50, weight: 0.8 },
     { slug: "sockeserp", minLevel: 40, maxLevel: 48, weight: 1.0 },
   ],
+  // Upstream db/encounter/spyder_omnichannel.yaml — gated on the
+  // "omnichannel1wall:yes" puzzle-solved flag (set in spyder_omnichannel2 once
+  // the screen is dismantled).
+  spyder_omnichannel: [
+    { slug: "dark_robo", minLevel: 30, maxLevel: 31, weight: 0.5 },
+    { slug: "xeon_2", minLevel: 30, maxLevel: 31, weight: 0.5 },
+  ],
 };
 
 /** Get the encounter table for a map, or undefined if none exists. */
