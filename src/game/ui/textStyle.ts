@@ -50,10 +50,11 @@ export const SMALL: Phaser.Types.GameObjects.Text.TextStyle = {
   color: "#1a1a1a",
 };
 
-/** Section heading inside a panel — same 8 px as BODY but bold weight. */
-export const HEADING: Phaser.Types.GameObjects.Text.TextStyle = {
+/** Bold variant of SMALL — section headings inside compact panels (e.g. the
+ * journal/info screen's "Evolution" label). 6 px to match SMALL's body text. */
+export const SMALL_HEADING: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: UI_FONT_FAMILY,
-  fontSize: "8px",
+  fontSize: "6px",
   color: "#1a1a1a",
   fontStyle: "bold",
 };
@@ -73,10 +74,15 @@ export const BIG_LIGHT: Phaser.Types.GameObjects.Text.TextStyle = {
   color: "#ffffff",
 };
 
-/** Monster-info screen — monster name (between BODY and TITLE). */
+/**
+ * Monster-info screen — monster name, rendered bold on the cream panel.
+ * 8 px matches upstream `journal_info.py`'s `FONT_SIZE_BIGGEST = 8` for the
+ * name label; at this size the longest shipped name ("ROCKITTEN", 9 chars)
+ * fits the ~126 px right column with room to spare.
+ */
 export const NAME: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: UI_FONT_FAMILY,
-  fontSize: "16px",
+  fontSize: "8px",
   color: "#1a1a1a",
   fontStyle: "bold",
 };

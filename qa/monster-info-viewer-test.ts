@@ -7,11 +7,18 @@
  *  - All key text fields render (name, ID, species, height/weight, body type,
  *    description, evolution).
  *  - Pressing B closes it and the overworld becomes active again.
- *  - A follow-up event action waits for the journal to close before running
- *    (the engine stays blocking while the modal is up).
+ *
+ * Iterates every monster currently populated with viewer fields so screenshots
+ * cover the worst-case label widths (e.g. "Cute Boulder Species",
+ * "Body Type: Hunter") and let the reviewer verify all labels fit the cream
+ * panel.
  */
 
 import { launchGame, setupGame, screenshot } from "./harness";
+
+// Slugs in `src/game/data/monsters.ts` that have the viewer fields populated
+// (txmnId, species, height, weight, shape, descriptionKey, evolutions).
+const VIEWER_MONSTERS = ["rockitten", "lambert", "nut", "tweesher", "agnite"] as const;
 
 async function getState(page: import("playwright").Page) {
   return page.evaluate(() => window.A!.getState());
@@ -27,15 +34,13 @@ async function fail(msg: string, close: () => Promise<void>): Promise<never> {
   throw new Error(msg);
 }
 
-async function main() {
-  const { page, close } = await launchGame();
-  await setupGame(page, { map: "spyder_paper_town", tileX: 22, tileY: 9 });
+async function openAndScreenshot(
+  page: import("playwright").Page,
+  slug: string,
+  close: () => Promise<void>,
+) {
+  await page.evaluate((s) => window.A!.openMonsterInfo(s), slug);
 
-  // Fire the action under test directly via the debug bridge. Behaves the
-  // same as the bin event would (launches MonsterInfoScene).
-  await page.evaluate(() => window.A!.openMonsterInfo("lambert"));
-
-  // Give Phaser a couple of frames to spin up the scene.
   await page.waitForFunction(
     () => (window.A!.getState() as { scene?: string }).scene === "MonsterInfoScene",
     null,
@@ -43,15 +48,15 @@ async function main() {
   );
 
   const active = await getActiveSceneName(page);
-  console.log("Active scene after launch:", active);
+  console.log(`[${slug}] Active scene after launch:`, active);
   if (active !== "MonsterInfoScene") {
-    await fail(`MonsterInfoScene not active; got ${active}`, close);
+    await fail(`[${slug}] MonsterInfoScene not active; got ${active}`, close);
   }
 
   const state = await getState(page);
-  console.log("Debug state.monsterInfo:", JSON.stringify(state.monsterInfo));
+  console.log(`[${slug}] Debug state.monsterInfo:`, JSON.stringify(state.monsterInfo));
 
-  await screenshot(page, "monster-info-lambert");
+  await screenshot(page, `monster-info-${slug}`);
 
   // Press B (key code 66) to dismiss. Same pattern as other QA scripts —
   // dispatch on document with bubbles so Phaser's keyboard plugin sees it.
@@ -63,7 +68,7 @@ async function main() {
     document.dispatchEvent(new KeyboardEvent("keyup", { keyCode: 66, bubbles: true }));
   });
 
-  // Wait for scene to shut down.
+  // Wait for scene to shut down before moving on to the next monster.
   await page.waitForFunction(
     () => (window.A!.getState() as { scene?: string }).scene !== "MonsterInfoScene",
     null,
@@ -71,9 +76,18 @@ async function main() {
   );
 
   const after = await getActiveSceneName(page);
-  console.log("Active scene after close:", after);
+  console.log(`[${slug}] Active scene after close:`, after);
   if (after !== "OverworldScene") {
-    await fail(`OverworldScene not active after close; got ${after}`, close);
+    await fail(`[${slug}] OverworldScene not active after close; got ${after}`, close);
+  }
+}
+
+async function main() {
+  const { page, close } = await launchGame();
+  await setupGame(page, { map: "spyder_paper_town", tileX: 22, tileY: 9 });
+
+  for (const slug of VIEWER_MONSTERS) {
+    await openAndScreenshot(page, slug, close);
   }
 
   console.log("OK");
