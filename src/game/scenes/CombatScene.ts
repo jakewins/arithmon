@@ -243,6 +243,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
   // Technique submenu
   private techLabels: Phaser.GameObjects.Text[] = [];
+  // Per-row filled DP-cost pips, right-aligned inside each technique row.
+  // Torn down alongside the labels in clearTechLabels().
+  private techPips: Phaser.GameObjects.Rectangle[] = [];
   private techCursor!: Phaser.GameObjects.Text;
   private techSelected = 0;
   private techRechargeLabel!: Phaser.GameObjects.Text;
@@ -257,7 +260,9 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private infoCardName!: Phaser.GameObjects.Text;
   private infoCardAccuracy!: Phaser.GameObjects.Text;
   private infoCardPower!: Phaser.GameObjects.Text;
-  private infoCardCost!: Phaser.GameObjects.Text;
+  // DP-cost pips drawn in the info card's top-right corner. Recreated each
+  // time renderInfoCard runs against a new technique.
+  private infoCardPips: Phaser.GameObjects.Rectangle[] = [];
   // Range pill (melee/ranged) and small element badge — STORY-0203 swapped in
   // the upstream pixel-art for what were plain text labels in STORY-0202.
   private infoCardRangeIcon!: Phaser.GameObjects.Image;
@@ -616,19 +621,14 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     // screenshot: "RANGED  Power 15").
     this.infoCardPower = addText(this, infoX + 38, infoY + infoRowH * 2, "", SMALL);
     this.infoCardPower.setDepth(101);
-    this.infoCardCost = addText(this, infoX, infoY + infoRowH * 3, "", withColor(SMALL, "#7733aa"));
-    this.infoCardCost.setDepth(101);
+    // DP-cost is rendered as filled pips in the top-right corner (see
+    // renderInfoCard), so no Text object is reserved for the cost row.
     // Element badge: 12x12 leaf/flame/etc. Right edge of the info-card panel,
     // vertically aligned with the Cost/Recharge line per upstream screenshot.
     this.infoCardElementIcon = this.add.image(LEFT_W - PAD_X - 12, infoY + infoRowH * 2, "");
     this.infoCardElementIcon.setOrigin(0, 0);
     this.infoCardElementIcon.setDepth(101);
-    for (const t of [
-      this.infoCardName,
-      this.infoCardAccuracy,
-      this.infoCardPower,
-      this.infoCardCost,
-    ]) {
+    for (const t of [this.infoCardName, this.infoCardAccuracy, this.infoCardPower]) {
       t.setVisible(false);
     }
     this.infoCardRangeIcon.setVisible(false);
@@ -1025,18 +1025,25 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     const showRecharge = this.machine.darkPower < this.machine.maxDarkPower;
     const lineCount = techniques.length + (showRecharge ? 1 : 0);
 
-    // Size the popup to fit the longest move name plus the cursor + DP suffix.
-    // Lower-bound at RIGHT_W so it visually anchors with the main-menu panel.
+    // Size the popup to fit the longest move name plus the cursor gutter
+    // and a right-side reservation for the DP-cost pips. Lower-bound at
+    // RIGHT_W so it visually anchors with the main-menu panel.
     let widestChars = 0;
+    let maxDpCost = 0;
     for (const t of techniques) {
-      const len = `${t.name} ${t.dpCost}DP`.length;
-      if (len > widestChars) widestChars = len;
+      if (t.name.length > widestChars) widestChars = t.name.length;
+      if (t.dpCost > maxDpCost) maxDpCost = t.dpCost;
     }
     if (showRecharge) widestChars = Math.max(widestChars, "\u26a1 RECHARGE".length);
     // ~6 px per glyph at SMALL (PressStart2P 6 px in the browser renders
     // each glyph at roughly its declared point size in monospace), plus
-    // cursor gutter + padding.
-    const contentW = Math.ceil(widestChars * 6) + 10 + PAD_X * 2;
+    // cursor gutter + padding + pip reservation. The pip block is
+    // `maxDpCost * (size + gap) - gap` wide; we add a 4 px gap between the
+    // text right-edge and the pip block so a long name doesn't visually
+    // touch the pips.
+    const maxPipsWidth = maxDpCost > 0 ? maxDpCost * (DP_PIP_SIZE + DP_PIP_GAP) - DP_PIP_GAP : 0;
+    const PIP_TEXT_GAP = 4;
+    const contentW = Math.ceil(widestChars * 6) + 10 + PAD_X * 2 + maxPipsWidth + PIP_TEXT_GAP;
     const popupW = Math.max(RIGHT_W, Math.min(contentW, WIDTH - 4));
     const popupH = lineCount * OPTION_H + PAD_Y * 2;
     const popupRight = WIDTH;
@@ -1053,11 +1060,12 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     for (let i = 0; i < techniques.length; i++) {
       const tech = techniques[i];
       const canAfford = this.machine.canAfford(tech);
+      const rowY = this.techPopupOriginY + i * OPTION_H;
       const label = addText(
         this,
         this.techPopupOriginX,
-        this.techPopupOriginY + i * OPTION_H,
-        `${tech.name} ${tech.dpCost}DP`,
+        rowY,
+        tech.name,
         canAfford ? SMALL : withColor(SMALL, DISABLED_COLOR),
       );
       label.setDepth(101);
@@ -1069,6 +1077,15 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.confirmTechMenu();
       });
       this.techLabels.push(label);
+
+      // Right-aligned DP-cost pips inside the row. Anchor to popup's right
+      // edge minus PAD_X, grow leftward by `tech.dpCost` pips, and centre
+      // the pip block vertically within the ~10 px row.
+      const pipBlockWidth = tech.dpCost * (DP_PIP_SIZE + DP_PIP_GAP) - DP_PIP_GAP;
+      const pipOriginX = popupX + popupW - PAD_X - pipBlockWidth;
+      const pipOriginY = rowY + Math.floor((OPTION_H - DP_PIP_SIZE) / 2);
+      const pips = this.drawFilledDpPips(pipOriginX, pipOriginY, tech.dpCost);
+      this.techPips.push(...pips);
     }
 
     // Recharge option at bottom of popup
@@ -1096,6 +1113,38 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private clearTechLabels() {
     for (const label of this.techLabels) label.destroy();
     this.techLabels = [];
+    for (const p of this.techPips) p.destroy();
+    this.techPips = [];
+  }
+
+  /**
+   * Create `count` filled purple DP-cost pips laid out left-to-right starting
+   * at (originX, originY). Reuses the same visual constants as the player
+   * HUD's remaining-DP pip widget (`DP_PIP_SIZE`, `DP_PIP_GAP`, fill
+   * `0xbb66ff`, stroke `0x8833cc`) but always filled — empty-pip rendering
+   * lives only in `updateDpPips()` for the HUD's remaining-power display.
+   * Returns the array so callers can `destroy()` them on teardown.
+   */
+  private drawFilledDpPips(
+    originX: number,
+    originY: number,
+    count: number,
+  ): Phaser.GameObjects.Rectangle[] {
+    const pips: Phaser.GameObjects.Rectangle[] = [];
+    for (let i = 0; i < count; i++) {
+      const pip = this.add
+        .rectangle(
+          originX + i * (DP_PIP_SIZE + DP_PIP_GAP) + DP_PIP_SIZE / 2,
+          originY + DP_PIP_SIZE / 2,
+          DP_PIP_SIZE,
+          DP_PIP_SIZE,
+          0xbb66ff,
+        )
+        .setStrokeStyle(1, 0x8833cc)
+        .setDepth(101);
+      pips.push(pip);
+    }
+    return pips;
   }
 
   private getTechOptionCount(): number {
@@ -1158,11 +1207,15 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
    * Passing null restores the regular messageText prompt.
    */
   private renderInfoCard(tech: TechniqueDef | null) {
+    // Tear down any pre-existing DP pips first — both branches need a clean
+    // slate (the populated branch will draw a fresh `tech.dpCost` count).
+    for (const p of this.infoCardPips) p.destroy();
+    this.infoCardPips = [];
+
     if (tech === null) {
       this.infoCardName.setVisible(false);
       this.infoCardAccuracy.setVisible(false);
       this.infoCardPower.setVisible(false);
-      this.infoCardCost.setVisible(false);
       this.infoCardRangeIcon.setVisible(false);
       this.infoCardElementIcon.setVisible(false);
       this.messageText.setVisible(true);
@@ -1186,8 +1239,17 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.infoCardPower.setVisible(false);
     }
 
-    this.infoCardCost.setText(`Cost ${tech.dpCost} DP`);
-    this.infoCardCost.setVisible(true);
+    // DP-cost pips in the top-right corner of the left bottom panel. The
+    // info-card name sits at (infoX = PAD_X, infoY) with no explicit width
+    // cap; today every technique name comfortably fits within
+    // `LEFT_W - PAD_X*2 - 5*(DP_PIP_SIZE + DP_PIP_GAP) ≈ 117 px`, so the
+    // right-aligned pip block doesn't collide with it. If a future longer
+    // name ever bumps into the pips, that's a layout adjustment for that
+    // story.
+    const pipBlockWidth = tech.dpCost * (DP_PIP_SIZE + DP_PIP_GAP) - DP_PIP_GAP;
+    const pipOriginX = LEFT_W - PAD_X - pipBlockWidth;
+    const pipOriginY = BOX_Y + PAD_Y;
+    this.infoCardPips = this.drawFilledDpPips(pipOriginX, pipOriginY, tech.dpCost);
 
     // Range pill and element badge: upstream pixel-art, same path scheme as
     // combat_menus.py's show() closure (gfx/ui/icons/{range,element}/...).
