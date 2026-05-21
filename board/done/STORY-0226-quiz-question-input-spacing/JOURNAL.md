@@ -60,3 +60,16 @@ question text.
 - `HEADLESS=1 ARITHMON_PORT=8081 npx tsx qa/quiz-widget-spacing.ts` —
   generates `qa/screenshots/quiz-spacing-{widget}-{short|long}.png`
   (12 files). Reviewer visually inspects each.
+
+## 2026-05-21 — Reviewer findings
+
+- Pre-commit gates (format:check, lint, tsc --noEmit, npm test 483/483) all pass.
+- `QUESTION_GAP = 10` constant introduced at the top of `MathProblemScene.ts` and used in the `contentY` calculation.
+- All six widget helpers verified in code: numeric-input (`inputY = contentY + 7`), dual-input (labels at `labelY = contentY` with `setOrigin(0.5, 0)`), radio (buttons at `startY = contentY` with `setOrigin(0.5, 0)`), comparison (row at `rowY = contentY` with `setOrigin(0.5, 0)`), number-line (`valueLabelTopY = contentY` with `setOrigin(0.5, 0)`), dropdown (`dropY = contentY + 9`). All topmost elements at `>= contentY`.
+- `qa/quiz-widget-spacing.ts` checked in, ran end-to-end against dev server on port 8082, all 12 screenshots generated without error.
+- Visual inspection of all 12 screenshots: clear whitespace between question bottom and widget top on both short and long variants for every widget type. No overlap observed.
+- SUBMIT and HINT buttons visible and inside the panel on all screenshots. On number-line-long the HINT button is close to the panel bottom but not clipped.
+- The "long" question wraps to 4 lines (not 2 as the story estimated), which validates the spacing fix more rigorously; all widgets still fit within the panel.
+- Code is clean and maintainable: one constant, one-line formula change for `contentY`, per-widget anchor fixes use consistent origin-based approach.
+- No unnecessary new tests; the QA script matches the pattern of existing curated scripts (e.g. `pixel-font-readability.ts`).
+- **Decision: APPROVED.**
