@@ -151,3 +151,38 @@ Screenshots saved into this story dir:
 - [x] Screenshots checked into the story directory.
 - [x] `npm run format:check && npm run lint && npx tsc --noEmit && npm test`
       all pass (see commit).
+
+## 2026-05-21 — Reviewer findings
+
+**Outcome: bounce back (one todo)**
+
+### What was validated
+
+- Pre-commit gates re-run in the reviewer worktree: format, lint, tsc, tests
+  all pass (43 test files, 483 tests).
+- Upstream fidelity: all three new `.tsx` files (`core_city_and_country.tsx`,
+  `core_buildings.tsx`, `Superpowers_Tilesheet.tsx`) diff identically to
+  their counterparts in `upstream/mods/tuxemon/gfx/tilesets/` — verbatim
+  copies confirmed.
+- `blockedTiles.ts` diff is purely additive: `core_city_and_country` (105
+  RAW + 99 DIR_RAW) and `Superpowers_Tilesheet` (6 RAW) are net-new;
+  pre-existing entries are byte-identical.
+- QA script run against the reviewer dev server (port 8082), four test cases:
+  1. `(5,16) → walk left into end-cap (4,16)` — BLOCKED (PASS)
+  2. `(3,16) → walk right into end-cap (4,16)` — BLOCKED (PASS)
+  3. `(4,17) → walk up into (4,16)` (allowed direction) — MOVED (PASS)
+  4. `spyder_route1 (11,1) → walk up to (11,0)` (positive control, move
+     allowed from south) — MOVED (PASS)
+- The core collision fix is correct; the engine required no change.
+
+### Why bouncing
+
+The `.gitignore` carve-out works but is unnecessarily narrow. The
+implementation used 8 lines of gitignore gymnastics to track only `*.tsx`
+files under `mods/tuxemon/gfx/tilesets/`, leaving the door closed to any
+future non-tsx metadata files in that directory. Since the directory contains
+only tileset metadata (no large binaries — those live in
+`public/assets/maps/`), the right fix is to un-ignore the entire directory.
+That is 2 fewer gitignore lines and no ongoing maintenance hazard.
+
+Todo added: `todos/open/01-simplify-gitignore-for-tilesets-dir.md`.
