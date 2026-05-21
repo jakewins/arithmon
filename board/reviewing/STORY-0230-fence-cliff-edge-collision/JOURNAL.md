@@ -186,3 +186,14 @@ only tileset metadata (no large binaries — those live in
 That is 2 fewer gitignore lines and no ongoing maintenance hazard.
 
 Todo added: `todos/open/01-simplify-gitignore-for-tilesets-dir.md`.
+
+## 2026-05-21 — Gitignore simplification (review-bounce fix)
+
+Replaced the 6-line `mods/tuxemon/gfx/tilesets/*` + `!*.tsx` carve-out with a
+simpler version that fully un-ignores the `tilesets/` directory. The directory
+holds only `.tsx` collision metadata (no large binaries — PNGs live under
+`public/assets/maps/`), so the narrow `*.tsx` filter was unnecessary
+complexity and a future hazard for any non-tsx sidecar. `git status
+mods/tuxemon/gfx/tilesets/` after the change is clean — tracking is
+unchanged because the directory still contains only `.tsx` files. Todo moved
+to `todos/closed/`.
