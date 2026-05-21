@@ -7,6 +7,32 @@ events:
     actions:
       - play_music music_the_wild_places
 
+  # --- Environment (STORY-0222) ---
+  # Verbatim port of upstream's `<object id="187">` / `<object id="192">` in
+  # `upstream/mods/tuxemon/maps/spyder_route2.tmx`. These two passive events
+  # swap `session.environment` between `grass` (day) and `night_grass` (night)
+  # so combat picks the correct backdrop. They have no `char_at` gate — the
+  # engine evaluates them every frame, and the `not environment_is X` self-gate
+  # combined with the engine's cooldown system makes them edge-triggered.
+
+  "Environment Day":
+    x: 1
+    y: 0
+    conditions:
+      - not time_is stage_of_day,equals,night
+      - not environment_is grass
+    actions:
+      - set_environment grass
+
+  "Environment Night":
+    x: 2
+    y: 0
+    conditions:
+      - is time_is stage_of_day,equals,night
+      - not environment_is night_grass
+    actions:
+      - set_environment night_grass
+
   # --- Map connections: north to City Park ---
   # City Park is not yet ported — these teleports lead to a placeholder map
   # until the follow-up story lands. QA does NOT walk off the north edge.

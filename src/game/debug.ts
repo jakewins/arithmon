@@ -214,6 +214,12 @@ export class DebugBridge {
         money: p.money,
         bills: { ...session.bills },
         darkPower: session.skillEncounter,
+        // Exposed for QA scripts (e.g. STORY-0222 route2 env test) that need
+        // to read the live runtime `environment` after passive map events
+        // (`set_environment`) override the static `mapDef` default, plus the
+        // current `timeStage` (controlled via `A.setTimeStage`).
+        environment: session.environment,
+        timeStage: session.timeStage,
         monsters: p.monsters.map((m) => ({
           id: m.id,
           slug: m.slug,

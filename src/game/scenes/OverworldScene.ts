@@ -1160,13 +1160,15 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 
     this.scene.pause();
-    const mapDef = getMapDef(this.mapKey);
     this.scene.launch("CombatScene", {
       playerMonster: lead,
       enemyMonster,
       party: session.player.monsters,
       inventory: session.player.inventory,
-      environment: mapDef.environment,
+      // Use the live `session.environment` — passive map events like route2's
+      // Environment Day/Night (STORY-0222) override the static `mapDef`
+      // default. Reading from `mapDef` here would ignore the override.
+      environment: session.environment,
     });
 
     // Listen for combat scene to stop, then handle post-combat

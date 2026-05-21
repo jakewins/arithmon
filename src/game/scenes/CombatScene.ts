@@ -84,7 +84,11 @@ const KEY_ESC = 27;
 const KEY_X = 88;
 const KEY_BACKSPACE = 8;
 
-// Available battle backgrounds
+// Available battle backgrounds. Day variants live at
+// `assets/ui/combat/<env>_background.png` and load under the key `bg-<env>`.
+// Night variants (e.g. `night_grass`) live under matching `night_<env>_*`
+// filenames and load as `bg-night_<env>` so `set_environment night_grass`
+// picks them up automatically. Upstream uses the same naming convention.
 const BATTLE_ENVIRONMENTS = [
   "grass",
   "forest",
@@ -107,12 +111,28 @@ const BATTLE_ENVIRONMENTS = [
   "underwater",
   "valley",
   "arid",
+  "night_arid",
+  "night_beach",
+  "night_bridge",
+  "night_canyon",
+  "night_cliff",
+  "night_desert",
+  "night_forest",
+  "night_grass",
+  "night_ocean",
+  "night_plain",
+  "night_sand",
+  "night_sea",
+  "night_snow",
+  "night_snowplain",
+  "night_valley",
 ] as const;
 
 // Island sheets available
 const ISLAND_SHEETS = ["grass", "cave", "sand", "snow", "cobble", "water", "woodland"] as const;
 
-// Map environment to island sheet
+// Map environment to island sheet. Night variants share the day variant's
+// island sheet — upstream doesn't ship night-specific island art.
 const ENV_TO_ISLAND: Record<string, string> = {
   grass: "grass",
   forest: "woodland",
@@ -135,6 +155,21 @@ const ENV_TO_ISLAND: Record<string, string> = {
   canyon: "cobble",
   bridge: "cobble",
   arid: "sand",
+  night_grass: "grass",
+  night_forest: "woodland",
+  night_sand: "sand",
+  night_beach: "sand",
+  night_desert: "sand",
+  night_snow: "snow",
+  night_snowplain: "snow",
+  night_ocean: "water",
+  night_sea: "water",
+  night_plain: "grass",
+  night_valley: "grass",
+  night_cliff: "cobble",
+  night_canyon: "cobble",
+  night_bridge: "cobble",
+  night_arid: "sand",
 };
 
 // Party icon assets
