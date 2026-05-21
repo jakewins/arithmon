@@ -123,4 +123,22 @@ describe("CombatMachine", () => {
   it("player at level 5 has the rockitten L1-L4 moveset", () => {
     expect(player.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide"]);
   });
+
+  it("constructor accepts an initialDarkPower override", () => {
+    // STORY-0231: CombatScene seeds the machine from session.player.darkPower
+    // so DP carries between battles. Default must stay at MAX_DARK_POWER.
+    const seeded = new CombatMachine(
+      player,
+      enemy,
+      undefined,
+      undefined,
+      true,
+      undefined,
+      undefined,
+      2,
+    );
+    expect(seeded.darkPower).toBe(2);
+    const defaulted = new CombatMachine(player, enemy);
+    expect(defaulted.darkPower).toBe(5);
+  });
 });

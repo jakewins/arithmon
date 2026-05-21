@@ -380,6 +380,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       data.isWild ?? true,
       data.enemyParty,
       data.trainerName,
+      session.player.darkPower,
     );
     // Mark enemy species as seen in the journal
     markSeen(session.monsterRegistry, data.enemyMonster.slug);
@@ -714,6 +715,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     debugBridge.emit("scene_started", { scene: "CombatScene" });
 
     this.events.once("shutdown", () => {
+      // Persist post-battle Dark Power back to the player so the next combat
+      // starts where this one ended (covers win, lose, fled, and any debug
+      // teardown path). The machine clamps DP into [0, maxDarkPower] already.
+      session.player.darkPower = this.machine.darkPower;
       debugBridge.emit("scene_stopped", { scene: "CombatScene" });
     });
   }

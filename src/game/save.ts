@@ -1,4 +1,5 @@
 import { session, resetSession, type CombatOutcome } from "./session";
+import { MAX_DARK_POWER } from "./combat/machine";
 import { Monster } from "./model/Monster";
 import { createInventory, addItem } from "./item/inventory";
 import { createMonsterRegistry, markSeen, markCaught } from "./model/monsterRegistry";
@@ -33,6 +34,11 @@ interface SaveData {
     monsters: SavedMonster[];
     inventory: Record<string, number>;
     variables: Record<string, string>;
+    /**
+     * Persistent Dark Power. Optional on the wire so saves written before
+     * STORY-0231 still load — `loadGame` falls back to `MAX_DARK_POWER`.
+     */
+    darkPower?: number;
   };
   location: SavedLocation;
   faintTeleport?: { mapKey: string; tileX: number; tileY: number };
@@ -101,6 +107,7 @@ export function saveGame(): void {
       monsters: p.monsters.map(serializeMonster),
       inventory: Object.fromEntries(p.inventory),
       variables: p.gameVariables.toRecord(),
+      darkPower: p.darkPower,
     },
     location: currentLocation,
     faintTeleport: session.faintTeleport,
@@ -179,6 +186,7 @@ export function loadGame(): SavedLocation | null {
   p.gender = data.player.gender;
   p.template = data.player.template;
   p.money = data.player.money;
+  p.darkPower = data.player.darkPower ?? MAX_DARK_POWER;
 
   // Monsters
   p.monsters = data.player.monsters.map(deserializeMonster);

@@ -213,7 +213,7 @@ export class DebugBridge {
         variables: p.gameVariables.toRecord(),
         money: p.money,
         bills: { ...session.bills },
-        darkPower: session.skillEncounter,
+        darkPower: session.player.darkPower,
         // Exposed for QA scripts (e.g. STORY-0222 route2 env test) that need
         // to read the live runtime `environment` after passive map events
         // (`set_environment`) override the static `mapDef` default, plus the

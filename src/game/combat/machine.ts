@@ -68,7 +68,7 @@ export class CombatMachine {
   onCapture: ((monster: Monster) => void) | null = null;
   state: CombatState = "INTRO";
   outcome: CombatOutcome | null = null;
-  darkPower: number = MAX_DARK_POWER;
+  darkPower: number;
   readonly maxDarkPower: number = MAX_DARK_POWER;
   private fleeAttempts = 0;
 
@@ -80,6 +80,7 @@ export class CombatMachine {
     isWild = true,
     enemyParty?: Monster[],
     trainerName?: string,
+    initialDarkPower: number = MAX_DARK_POWER,
   ) {
     this.player = player;
     this.enemy = enemy;
@@ -88,6 +89,7 @@ export class CombatMachine {
     this.inventory = inventory ?? new Map();
     this.isWild = isWild;
     this.trainerName = trainerName ?? null;
+    this.darkPower = initialDarkPower;
   }
 
   canFight(): boolean {

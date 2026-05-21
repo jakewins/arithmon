@@ -20,6 +20,7 @@ function makeSession(): GameSession {
         remove: () => {},
         toRecord: () => ({}),
       },
+      darkPower: 5,
     },
     skillStates: {},
     skillEncounter: 0,

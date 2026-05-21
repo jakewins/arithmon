@@ -1,3 +1,4 @@
+import { MAX_DARK_POWER } from "./combat/machine";
 import type { GameVariables } from "./event/types";
 import { type Inventory, createInventory, addItem } from "./item/inventory";
 import { Monster } from "./model/Monster";
@@ -16,6 +17,13 @@ export interface PlayerState {
   inventory: Inventory;
   money: number;
   gameVariables: GameVariables;
+  /**
+   * Dark Power carried between battles. `CombatScene` seeds the in-battle
+   * `CombatMachine.darkPower` from this on init and writes the post-battle
+   * value back on shutdown, so spending DP in fight A persists into fight B
+   * (and forces a Recharge math problem if you ran it empty).
+   */
+  darkPower: number;
 }
 
 export interface FaintTeleport {
@@ -128,6 +136,7 @@ function createSession(): GameSession {
       inventory,
       money: 500,
       gameVariables: new GameVariablesImpl(),
+      darkPower: MAX_DARK_POWER,
     },
     skillStates: {},
     skillEncounter: 0,
