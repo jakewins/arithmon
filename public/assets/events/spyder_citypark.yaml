@@ -1,124 +1,79 @@
+# Verbatim port of upstream's spyder_citypark.tmx Events object layer (STORY-0223),
+# restricted to the map shell scope: route music + the five edge teleports + the
+# Maniac House door. All trainers, ~30 encounter rects, PC boxes, signs, env
+# day/night events and sight-line variants are deferred to follow-up stories
+# (STORY-0224..0230). Paired teleports that share an upstream `name` are
+# disambiguated A/B because our YAML loader uses the name as a unique key.
+
 events:
-  # --- Music ---
+  # --- Music (upstream object id 59) ---
 
-  Play Music:
-    conditions:
-      - not music_playing music_the_wild_places
-    actions:
-      - play_music music_the_wild_places
-
-  # --- NPC spawns ---
-
-  Create Ranger:
-    conditions:
-      - not char_exists spyder_citypark_ranger
-    actions:
-      - create_npc spyder_citypark_ranger,17,8
-      - char_face spyder_citypark_ranger,down
-
-  # --- Encounter zones ---
-
-  Encounters:
-    x: 2
-    y: 2
-    width: 31
-    height: 21
-    conditions:
-      - is char_moved player
-      - is char_at player
-    actions:
-      - random_encounter spyder_citypark,11
-
-  # --- Trainer battle ---
-
-  Talk Ranger Pre Battle:
-    conditions:
-      - is char_facing_char player,spyder_citypark_ranger
-      - is button_pressed INTERACT
-      - not battle_outcome player,spyder_citypark_ranger,won
-    actions:
-      - char_face spyder_citypark_ranger,player
-      - lock_controls
-      - dialog I patrol this park to keep it safe. Think you can handle my team?
-      - start_battle spyder_citypark_ranger
-      - unlock_controls
-
-  Talk Ranger Post Win:
-    conditions:
-      - is char_facing_char player,spyder_citypark_ranger
-      - is button_pressed INTERACT
-      - is battle_outcome player,spyder_citypark_ranger,won
-    actions:
-      - char_face spyder_citypark_ranger,player
-      - dialog Well fought! The path east leads to Route 3 and the old Mansion.
-
-  # --- Map connections ---
-
-  Go Route 2 11:
+  Route Music:
     x: 0
-    y: 11
+    y: 0
+    conditions:
+      - not music_playing music_city_park
+    actions:
+      - play_music music_city_park
+
+  # --- South edge -> spyder_route2 (upstream ids 39 + 38) ---
+
+  Teleport to Route 2 A:
+    x: 10
+    y: 39
     conditions:
       - is char_at player
-      - is char_facing player,left
+      - is char_facing player,down
     actions:
       - transition_teleport player,spyder_route2.tmx,10,0,0.3
-      - char_face player,left
+      - char_face player,down
 
-  Go Route 2 12:
+  Teleport to Route 2 B:
+    x: 11
+    y: 39
+    conditions:
+      - is char_at player
+      - is char_facing player,down
+    actions:
+      - transition_teleport player,spyder_route2.tmx,11,0,0.3
+      - char_face player,down
+
+  # --- West edge -> spyder_leather_town (upstream ids 40 + 41) ---
+  # Our spyder_leather_town is still a 35x25 fabricated stub so the teleport
+  # lands out-of-bounds (target tile 39,32-33). Acceptable per STORY-0223 —
+  # follow-up STORY-0231 ports leather_town and re-wires the east entry.
+
+  Teleport to Leather Town A:
     x: 0
     y: 12
     conditions:
       - is char_at player
       - is char_facing player,left
     actions:
-      - transition_teleport player,spyder_route2.tmx,11,0,0.3
+      - transition_teleport player,spyder_leather_town.tmx,39,32,0.3
       - char_face player,left
 
-  Go Route 3 11:
-    x: 33
-    y: 11
-    conditions:
-      - is char_at player
-      - is char_facing player,right
-    actions:
-      - transition_teleport player,spyder_route3.tmx,2,10,0.3
-      - char_face player,right
-
-  Go Route 3 12:
-    x: 33
-    y: 12
-    conditions:
-      - is char_at player
-      - is char_facing player,right
-    actions:
-      - transition_teleport player,spyder_route3.tmx,2,11,0.3
-      - char_face player,right
-
-  # --- Signs ---
-
-  Park Sign West:
-    x: 3
-    y: 10
-    conditions:
-      - is char_facing_tile player
-      - is button_pressed INTERACT
-    actions:
-      - dialog City Park — Route 2
-
-  Park Sign East:
-    x: 32
-    y: 10
-    conditions:
-      - is char_facing_tile player
-      - is button_pressed INTERACT
-    actions:
-      - dialog City Park — Route 3
-
-  Park Welcome:
-    x: 17
+  Teleport to Leather Town B:
+    x: 0
     y: 13
     conditions:
-      - is char_facing_tile player
-      - is button_pressed INTERACT
+      - is char_at player
+      - is char_facing player,left
     actions:
-      - dialog Welcome to City Park! A peaceful place to rest and train.
+      - transition_teleport player,spyder_leather_town.tmx,39,33,0.3
+      - char_face player,left
+
+  # --- Maniac House door (upstream id 289) ---
+  # Target map spyder_citypark_house1 isn't ported yet — teleport is wired
+  # one-way verbatim; the engine logs and stays put on missing-map (verified
+  # in QA). Follow-up STORY-0230 ports the house.
+
+  Teleport to Maniac House:
+    x: 36
+    y: 3
+    conditions:
+      - is char_at player
+      - is char_facing player,up
+    actions:
+      - transition_teleport player,spyder_citypark_house1.tmx,6,7,0.3
+      - char_face player,up

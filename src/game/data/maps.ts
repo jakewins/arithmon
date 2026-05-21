@@ -38,6 +38,14 @@ const CORE_OUTDOOR: TilesetAsset = {
   imageKey: "core_outdoor",
   imagePath: "assets/maps/core_outdoor.png",
 };
+// Used by spyder_citypark and a handful of other upstream maps. The PNG ships
+// with the same filename as upstream so the Tiled-exported JSON's `image`
+// field resolves correctly.
+const SUPERPOWERS_TILESHEET: TilesetAsset = {
+  name: "Superpowers_Tilesheet",
+  imageKey: "superpowers_tilesheet",
+  imagePath: "assets/maps/Superpowers_Tilesheet.png",
+};
 const CORE_BUILDINGS: TilesetAsset = {
   name: "core_buildings",
   imageKey: "core_buildings",
@@ -223,12 +231,15 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
   spyder_citypark: {
     jsonKey: "map-spyder_citypark",
     jsonPath: "assets/maps/spyder_citypark.json",
+    // Matches upstream spyder_citypark.tmx tileset list (STORY-0223 verbatim
+    // port). Order matters only insofar as the names must all be present —
+    // Phaser matches by tileset `name` against the JSON's embedded firstgids.
     tilesets: [
+      SUPERPOWERS_TILESHEET,
       CORE_OUTDOOR,
+      CORE_BUILDINGS,
       CORE_SET_PIECES,
-      CORE_OUTDOOR_WATER,
       CORE_OUTDOOR_NATURE,
-      CORE_CITY_AND_COUNTRY,
     ],
     environment: "grass",
   },

@@ -25,7 +25,6 @@ import {
   walkTo,
   waitForIdle,
   getState,
-  getEvents,
   screenshot,
   setVariable,
 } from "./harness";
@@ -263,34 +262,22 @@ async function testBrideswoodNorthReturn(): Promise<void> {
   }
 }
 
-/** Walk north off route2 (10, 0) into citypark.
- *  citypark is still the fabricated stub map (25 tiles tall), so the engine
- *  clamps the requested spawn y=39 to in-bounds — we assert the *intended*
- *  destination from the teleport debug event and only sanity-check that the
- *  player ended up on the citypark map. STORY-021F (citypark verbatim port)
- *  will let us assert the exact landing tile. */
+/** Walk north off route2 (10, 0) into citypark. STORY-0223 ported citypark's
+ *  full 40x40 shell, so the player now lands cleanly on (10, 39) facing up. */
 async function testNorthToCitypark(): Promise<void> {
   console.log("[route2 north to citypark] launching...");
   const { page, close } = await launchGame();
   try {
     await setupGame(page, { map: "spyder_route2", tileX: 10, tileY: 1 });
     await waitForIdle(page);
-    // Clear prior debug events so we only see this teleport.
-    await page.evaluate(() => window.A!.clearEvents());
     walkTo(page, 10, 0, "up").catch(() => undefined);
     await waitForMap(page, "spyder_citypark");
 
-    const evs = await getEvents(page);
-    const tele = evs.find(
-      (e) => e.type === "teleport" && (e.data as { map?: string }).map === "spyder_citypark",
-    );
-    const teleData = tele?.data as { x?: number; y?: number } | undefined;
-    assert(
-      tele !== undefined && teleData?.x === 10 && teleData?.y === 39,
-      `expected teleport debug event to citypark (10,39), got ${JSON.stringify(tele)}`,
-    );
-
     const s = (await getState(page)) as PlayerState;
+    assert(
+      s.player?.tileX === 10 && s.player?.tileY === 39,
+      `expected citypark (10,39), got (${s.player?.tileX},${s.player?.tileY})`,
+    );
     assert(s.player?.facing === "up", `expected facing up, got ${s.player?.facing}`);
 
     await screenshot(page, "route2-exit-to-citypark");
@@ -300,28 +287,28 @@ async function testNorthToCitypark(): Promise<void> {
   }
 }
 
-/** Walk west off citypark (0, 11) back into route2 (10, 0) — round-trip that
- *  exercises the in-flight citypark teleport-target fix. The citypark side
- *  uses a fabricated west-edge trigger at (0, 11)/(0, 12) facing left; only
- *  the destination was corrected this story (26,10/26,11 -> 10,0/11,0).
- *  The full citypark port (STORY-021F) will replace the fabricated triggers
- *  with the upstream south-edge ones. */
-async function testCityparkRoute2DestinationFix(): Promise<void> {
-  console.log("[citypark west -> route2 destination fix] launching...");
+/** Walk south off citypark (10, 39) back into route2 (10, 0) — round-trip
+ *  through the upstream south-edge teleport. STORY-0223 replaced the
+ *  fabricated west-edge triggers with the verbatim upstream south-edge ones
+ *  at (10, 39)/(11, 39). */
+async function testCityparkRoute2RoundTrip(): Promise<void> {
+  console.log("[citypark south -> route2 round-trip] launching...");
   const { page, close } = await launchGame();
   try {
-    await setupGame(page, { map: "spyder_citypark", tileX: 1, tileY: 11 });
+    // Spawn one tile north of the teleport so we walk south onto it facing
+    // down (matches the upstream condition `is char_facing player,down`).
+    await setupGame(page, { map: "spyder_citypark", tileX: 10, tileY: 38 });
     await waitForIdle(page);
-    walkTo(page, 0, 11, "left").catch(() => undefined);
+    walkTo(page, 10, 39, "down").catch(() => undefined);
     await waitForMap(page, "spyder_route2");
 
     const s = (await getState(page)) as PlayerState;
     assert(
       s.player?.tileX === 10 && s.player?.tileY === 0,
-      `expected route2 (10,0) after destination fix, got (${s.player?.tileX},${s.player?.tileY})`,
+      `expected route2 (10,0), got (${s.player?.tileX},${s.player?.tileY})`,
     );
 
-    console.log("[citypark west -> route2 destination fix] OK");
+    console.log("[citypark south -> route2 round-trip] OK");
   } finally {
     await close();
   }
@@ -374,7 +361,7 @@ async function main(): Promise<void> {
   await testSouthToBrideswood();
   await testBrideswoodNorthReturn();
   await testNorthToCitypark();
-  await testCityparkRoute2DestinationFix();
+  await testCityparkRoute2RoundTrip();
   await testNoEncountersOrNpcs();
   console.log("cotton-town-east-road-test: OK");
 }
