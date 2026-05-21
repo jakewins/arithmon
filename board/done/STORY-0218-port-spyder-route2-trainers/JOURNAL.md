@@ -65,6 +65,53 @@ Source: `upstream/mods/tuxemon/maps/spyder_route2.tmx` event ids 158–163,
 - `qa/screenshots/route2-{trainers-spawned,marion-sightline,roddick-post-win,graf-post-win}.png` —
   baseline screenshots for reviewer.
 
+## 2026-05-21 — Reviewer findings
+
+Approved. Pre-commit gates all pass; full browser QA confirms each trainer works end-to-end.
+
+### Checks run
+
+- `npm run format:check` — passed
+- `npm run lint` — passed
+- `npx tsc --noEmit` — passed
+- `npm test` — 467 tests passed (42 files)
+- Browser QA via `qa/local/route2-trainer-review.ts` (ARITHMON_PORT=8082):
+  - All three NPCs spawned at upstream-specified positions on map load:
+    Roddick (5,3), Marion (22,9), Graf (29,3).
+  - Roddick interact: pre-battle dialog fired, battle started with `spighter L8`
+    (dynamic party correctly seeded via `add_monster`). Post-win re-interact
+    showed `post_battle_lose` line; no re-battle.
+  - Marion sight-line: auto-triggered on entering column (22,10..13), party
+    `[aardorn L7 ×2]`. No re-trigger after win.
+  - Graf sight-line: auto-triggered on entering column (29,4..8), party
+    `[cardiling L7, cataspike L5, cataspike L5]`. Post-win INTERACT showed
+    `post_battle_lose`; no re-battle.
+  - Screenshots committed: `route2-trainers-spawned`, `route2-roddick-post-win`,
+    `route2-marion-sightline`, `route2-graf-post-win`.
+
+### Code quality
+
+- `charTalk.ts` rewrite: clean and minimal — resolves speech key from NPC
+  registry and delegates to `DialogBox`.
+- `pathfindToChar.ts` arg-order fix: correct upstream semantics documented in
+  constructor comment.
+- `battleOutcome.ts` dual-order support: well-known-outcome set auto-detect is
+  tidy and self-documenting.
+- `npcParties.ts` entries: static fallbacks documented as such with clear
+  comments pointing to upstream event source.
+- Tests: `battle_outcome` upstream-form test and YAML load-and-validate test
+  both targeted and appropriate. No over-testing of internals.
+- `qa/route2-trainers-test.ts`: committed QA script matches the acceptance
+  criteria; covers interact, sight-line, post-talk, and no-re-trigger paths.
+- The JOURNAL claimed screenshots were committed but they were not in the
+  implementor commit — added by reviewer during this review run.
+
+### Upstream faithfulness
+
+All 12 events verified verbatim against `spyder_route2.tmx` ids 158–163,
+188–190, 211–213 and `spyder_route2_npcs.yaml`. NPC speech profiles
+(msgids, sprite names) match upstream YAML exactly.
+
 ## Notes / gotchas
 
 - **Trainer islands are walk-unreachable.** Roddick's, Marion's, and
