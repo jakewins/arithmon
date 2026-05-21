@@ -1,0 +1,122 @@
+# STORY-0213 — Journal
+
+## 2026-05-21 — Implementation
+
+### Files changed
+
+- `public/assets/maps/spyder_paper_manor.json` — replaced the 9×9
+  hand-rolled stub (wrong slug `paper_manor`, wrong firstgids
+  `1/1170/2362`) with a verbatim Tiled export of
+  `upstream/mods/tuxemon/maps/spyder_paper_manor.tmx`. New shape:
+  10×8, four tile layers `Tile Layer 1 / Tile Layer 2 / Tile Layer 3
+  / Above player` (note lowercase `p`, all opacity 1), three
+  tilesets at upstream firstgids `1 / 3865 / 7729` against the
+  already-shipped `core_indoor_floors.png`,
+  `core_indoor_walls.png`, `core_set pieces.png`. Map properties
+  set to `edges=clamped`, `inside=true`, `scenario=spyder`,
+  `slug=manor`, `map_type=notype`.
+
+  Following STORY-0212's resolution (the loader at
+  `src/game/scenes/OverworldScene.ts:401` reads collisions
+  exclusively from the JSON's `Collisions` objectgroup), the 7
+  upstream YAML collision rects were promoted into a `Collisions`
+  objectgroup in the JSON (pixel coords = tile × 16). The 7 rects:
+  `(2,4) 2×2`, `(0,7) 1×1`, `(9,7) 1×1`, `(9,2) 1×1`, `(7,3) 1×3`,
+  `(0,1) 10×1`, `(0,2) 1×1`.
+
+  Export procedure: `tiled --export-map json --embed-tilesets`
+  against the upstream TMX (no copy/path-rewrite needed; the
+  in-place export resolves the relative `../gfx/tilesets/...tsx`
+  sources). The exported JSON had base64+zlib-compressed layer
+  data and absolute tileset image paths; a one-shot Python script
+  decoded each layer into the int array shape our loader expects
+  and stripped tileset `image` paths to bare filenames matching
+  the daycare-export shape.
+
+- `public/assets/events/spyder_paper_manor.yaml` — `cp`-verbatim
+  from `upstream/mods/tuxemon/maps/spyder_paper_manor.yaml`. `diff`
+  is clean (0 byte differences). Replaces the hand-written stub
+  with fabricated `Talk Princeton Early/Has Monster/Post Timber`
+  branches, fake `Kitchen Counter` and `Bookshelf` interactables,
+  and the wrong `music_town_theme` route. Final shape: the 7
+  collision rects plus 4 events — `Create Princeton`,
+  `Go Outside`, `Route Music`, `Talk Princeton`.
+
+  The YAML collision block is now redundant with the JSON
+  `Collisions` layer — kept in YAML anyway to preserve byte-
+  identity with upstream, since the YAML loader silently ignores
+  the `collisions:` key (only the `events:` map is consumed).
+
+- `qa/paper-manor-test.ts` — new 4-test puppeteer suite (see
+  Verification below).
+
+- `qa/screenshots/paper-manor-upstream-reference.png` — committed
+  via `git add -f` (the screenshots dir is gitignored). Rendered
+  by drawing the manor's three upstream tilesets onto an HTML
+  canvas in a headless chromium (script in `qa/local/`, gitignored).
+
+### Engine-side notes
+
+- All actions and conditions used in the manor YAML
+  (`create_npc`, `char_face`, `transition_teleport`, `play_music`,
+  `translated_dialog`; conditions `char_exists`, `char_at`,
+  `char_facing`, `music_playing`; behav `talk`) are already
+  registered. No engine changes needed.
+
+- `music_cathedral_theme` is a console-log stub (we don't ship
+  audio assets) — harmless, the `play_music` action resolves
+  immediately.
+
+- Princeton's `Create Princeton` event spawns him with a
+  collision body on `(1,5)`, so the QA `talk princeton` test
+  spawns the player directly at `(2,5)` and uses `debug.face` to
+  turn left rather than `walkTo` (pathfinder rejects routes
+  blocked by Princeton's own body).
+
+### Sprite / l10n verification
+
+- `cmp public/assets/sprites/maniac_yellow.png upstream/mods/tuxemon/sprites/maniac_yellow.png` — 0 byte diff.
+- `file` confirms dimensions are 48×128.
+- Both manor msgids resolve in `public/assets/l10n/en_US.po`:
+  `spyder_papermanor_princeton` → "Princeton";
+  `spyder_papermanor_oldman` → "I have two sons and a niece. The
+  first is a sailor, and last year he went to the Archipelago.\n
+  The second is a Captain and he transports people. My niece is
+  playing outside."
+
+### Verification
+
+- `npm run format:check && npm run lint && npx tsc --noEmit && npm test` — all green (465 tests).
+- `qa/paper-manor-test.ts` — all 4 sub-tests pass against dev server on port 8081:
+  1. Front-door entry from `spyder_paper_town (10,13)` → `manor (6,7)`,
+     Princeton auto-spawned at `(1,5)` facing right; map fetch
+     confirms `width=10, height=8, slug="manor"`, layer names
+     `Tile Layer 1/2/3 + Above player`, `Collisions` objectgroup
+     present.
+  2. Talk Princeton at `(2,5)` facing left — dialog text contains
+     "sons/sailor/Archipelago"; re-talk fires the identical line
+     (no variable gating).
+  3. Front-door exit at `(6,7)` facing down → `paper_town (10,13)`
+     facing down.
+  4. Collision sanity — `walkTo(2,4)` and `walkTo(7,3)` both
+     blocked (player tile unchanged).
+
+- `qa/paper-town-buildings-test.ts` still passes — the
+  `Teleport to Manor` row now lands at the upstream-correct
+  `(6,7)` instead of the stub's wrong tile.
+- `qa/smoke.ts` still passes.
+
+### Reference screenshot
+
+Generated by rendering our exported JSON (verbatim mirror of upstream
+TMX) on an HTML canvas in headless chromium, then capturing the
+canvas. Script: `qa/local/render-manor-upstream.ts` (gitignored).
+Output committed at `qa/screenshots/paper-manor-upstream-reference.png`.
+
+Comparing with `qa/screenshots/paper-manor-entry.png` (engine
+screenshot): same kitchen counter + stove + fridge in the upper-left,
+same picture frame on the north wall, same single bed center-right,
+same potted plants in the four corners, same doormat at the south
+exit. The engine screenshot is uniformly darker than the upstream
+reference — same indoor-render concern noted in STORY-0212's journal;
+not addressed here (out of scope).
