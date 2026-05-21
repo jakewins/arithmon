@@ -24,6 +24,27 @@ export interface LevelUpResult {
   newMoves: TechniqueDef[];
 }
 
+/**
+ * Aggregate of a single `addXp` call that crossed one or more level
+ * boundaries. Mirrors upstream's `consume_levelup_summary()`
+ * (`upstream/tuxemon/monster/monster.py:629-649`): a multi-level jump
+ * collapses to ONE summary covering `startLevel → endLevel` with stats
+ * snapshotted before the first level-up and after the last. Drives the
+ * post-battle level-up popup; `null` when `addXp` granted no levels.
+ */
+export interface LevelUpSummary {
+  startLevel: number;
+  endLevel: number;
+  oldStats: MonsterStatsSnapshot;
+  newStats: MonsterStatsSnapshot;
+  newMoves: TechniqueDef[];
+}
+
+export interface AddXpResult {
+  levelUps: LevelUpResult[];
+  summary: LevelUpSummary | null;
+}
+
 export class Monster {
   readonly id: string;
   readonly slug: string;
@@ -128,18 +149,35 @@ export class Monster {
   }
 
   /**
-   * Add XP and process any level-ups. Returns an array of level-up results
-   * (empty if no level-ups occurred).
+   * Add XP and process any level-ups. Returns the per-level results plus a
+   * single aggregated `summary` covering the whole grant — `null` if no
+   * level was gained. The summary mirrors upstream's
+   * `consume_levelup_summary()` (one popup per XP grant, even when
+   * multiple level boundaries are crossed).
    */
-  addXp(amount: number): LevelUpResult[] {
+  addXp(amount: number): AddXpResult {
     this.totalXp += amount;
-    const results: LevelUpResult[] = [];
+    const levelUps: LevelUpResult[] = [];
 
     while (this.totalXp >= xpForLevel(this.level + 1)) {
-      results.push(this.levelUp());
+      levelUps.push(this.levelUp());
     }
 
-    return results;
+    if (levelUps.length === 0) {
+      return { levelUps, summary: null };
+    }
+
+    const first = levelUps[0];
+    const last = levelUps[levelUps.length - 1];
+    const summary: LevelUpSummary = {
+      startLevel: first.newLevel - 1,
+      endLevel: last.newLevel,
+      oldStats: first.oldStats,
+      newStats: last.newStats,
+      // All moves learned across every level gained in this grant.
+      newMoves: levelUps.flatMap((lu) => lu.newMoves),
+    };
+    return { levelUps, summary };
   }
 
   private levelUp(): LevelUpResult {

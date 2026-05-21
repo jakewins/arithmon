@@ -1,4 +1,4 @@
-import { Monster } from "../model/Monster";
+import { Monster, type LevelUpSummary } from "../model/Monster";
 import { MONSTERS } from "../data/monsters";
 import { TECHNIQUES, type TechniqueDef } from "../data/techniques";
 import { ITEMS } from "../data/items";
@@ -51,6 +51,14 @@ export interface CombatEvent {
     | "heal"
     | "stat_stage";
   message: string;
+  /**
+   * On `level_up` events only, the LAST per-level event of a grant carries
+   * the aggregated `LevelUpSummary` (start→end level, before/after stats).
+   * CombatScene reads this off the dequeued event and shows the popup once
+   * the end-of-battle message has displayed. See upstream
+   * `combat_state.py:858-880` for the equivalent push-popup hook.
+   */
+  levelUpSummary?: LevelUpSummary;
 }
 
 export const MAX_DARK_POWER = 5;
@@ -412,12 +420,18 @@ export class CombatMachine {
     });
     debugBridge.emit("xp_gained", { monster: this.player.slug, xp });
 
-    const levelUps = this.player.addXp(xp);
+    // TODO: multi-monster popups when XP-share is added. Today only the
+    // active player monster gains XP (single-monster award), so awardXp
+    // produces at most one summary per battle.
+    const { levelUps, summary } = this.player.addXp(xp);
+    const levelUpEvents: CombatEvent[] = [];
     for (const lu of levelUps) {
-      events.push({
+      const ev: CombatEvent = {
         type: "level_up",
         message: `${this.player.name} grew to Lv ${lu.newLevel}!`,
-      });
+      };
+      levelUpEvents.push(ev);
+      events.push(ev);
       debugBridge.emit("level_up", {
         monster: this.player.slug,
         level: lu.newLevel,
@@ -431,6 +445,12 @@ export class CombatMachine {
         });
         debugBridge.emit("move_learned", { monster: this.player.slug, move: move.slug });
       }
+    }
+
+    // Stamp the aggregated summary onto the LAST `level_up` event only — we
+    // don't want CombatScene to launch the popup once per crossed boundary.
+    if (summary && levelUpEvents.length > 0) {
+      levelUpEvents[levelUpEvents.length - 1].levelUpSummary = summary;
     }
 
     return events;

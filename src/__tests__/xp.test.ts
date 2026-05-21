@@ -53,10 +53,10 @@ describe("Monster XP system", () => {
   it("levels up when XP crosses the threshold", () => {
     const m = Monster.spawn("rockitten", 5);
     const xpNeeded = xpForLevel(6) - xpForLevel(5); // 91
-    const results = m.addXp(xpNeeded);
+    const { levelUps } = m.addXp(xpNeeded);
     expect(m.level).toBe(6);
-    expect(results).toHaveLength(1);
-    expect(results[0].newLevel).toBe(6);
+    expect(levelUps).toHaveLength(1);
+    expect(levelUps[0].newLevel).toBe(6);
   });
 
   it("recalculates stats on level-up", () => {
@@ -85,18 +85,18 @@ describe("Monster XP system", () => {
     const m = Monster.spawn("rockitten", 6);
     expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide"]);
     const xpNeeded = xpForLevel(7) - xpForLevel(6);
-    const results = m.addXp(xpNeeded);
+    const { levelUps } = m.addXp(xpNeeded);
     expect(m.techniques.map((t) => t.slug)).toEqual(["ram", "boulder", "mudslide", "assault"]);
-    expect(results[0].newMoves).toHaveLength(1);
-    expect(results[0].newMoves[0].slug).toBe("assault");
+    expect(levelUps[0].newMoves).toHaveLength(1);
+    expect(levelUps[0].newMoves[0].slug).toBe("assault");
   });
 
   it("handles multiple level-ups at once", () => {
     const m = Monster.spawn("rockitten", 1);
     const xpNeeded = xpForLevel(5) - xpForLevel(1); // 125 - 1 = 124
-    const results = m.addXp(xpNeeded);
+    const { levelUps } = m.addXp(xpNeeded);
     expect(m.level).toBe(5);
-    expect(results).toHaveLength(4); // levels 2, 3, 4, 5
+    expect(levelUps).toHaveLength(4); // levels 2, 3, 4, 5
   });
 
   it("learns mudslide at level 4 during multi-level jump", () => {

@@ -69,7 +69,10 @@ interface DebugBridgeAPI {
     enemyLevel?: number,
     environment?: string,
   ): Promise<void>;
+  clearParty(): void;
   setEnemyHp(hp: number): void;
+  setMonsterHp(index: number, hp: number): void;
+  setMonsterXp(index: number, xp: number): void;
   submitCombatAction(action: unknown): { type: string; message: string }[];
   waitForIdle(): Promise<void>;
   waitForEvent(type: string): Promise<DebugEvent>;

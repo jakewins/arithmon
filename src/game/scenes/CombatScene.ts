@@ -1,6 +1,6 @@
 import { Scene } from "phaser";
 import { CombatMachine, CombatEvent, MAX_DARK_POWER, PlayerAction } from "../combat/machine";
-import { Monster, PARTY_LIMIT } from "../model/Monster";
+import { Monster, PARTY_LIMIT, type LevelUpSummary } from "../model/Monster";
 import { TechniqueDef } from "../data/techniques";
 import { MONSTERS } from "../data/monsters";
 import { ELEMENT_SLUGS } from "../data/elements";
@@ -218,6 +218,14 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private environment = "grass";
   private eventQueue: CombatEvent[] = [];
   private processing = false;
+  /**
+   * The aggregated level-up summary picked off the LAST `level_up` event of
+   * the current battle, if any. Consumed by `showEndMessage()` to launch
+   * the level-up popup before tearing down the scene. TODO: when XP-share
+   * is added, switch to an array so multi-monster level-ups can queue
+   * popups one after another.
+   */
+  private pendingLevelUpSummary: LevelUpSummary | null = null;
 
   // Menu panels
   private leftBorder!: Phaser.GameObjects.NineSlice;
@@ -1634,9 +1642,15 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.updateNameLabels();
     }
 
-    // Update name label when leveling up (shows new level)
+    // Update name label when leveling up (shows new level). Per-level events
+    // also carry the aggregated `levelUpSummary` on the LAST one of the
+    // grant; stash it so `showEndMessage` can launch the popup after the
+    // win/lose line has displayed.
     if (event.type === "level_up") {
       this.updateNameLabels();
+      if (event.levelUpSummary) {
+        this.pendingLevelUpSummary = event.levelUpSummary;
+      }
     }
 
     // Update party tray on faint events
@@ -1841,9 +1855,37 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       this.data.set("outcome", outcome);
     }
 
-    this.time.delayedCall(2000, () => {
-      this.scene.stop("CombatScene");
-      this.scene.resume("OverworldScene");
-    });
+    // On a win with a pending level-up summary, show the popup before
+    // returning to the overworld. The popup BLOCKS the teardown; its
+    // dismissal handler then calls returnToOverworld(). Lose/flee skip the
+    // popup entirely (no level-up on a loss; flee doesn't award XP).
+    if (outcome === "win" && this.pendingLevelUpSummary) {
+      const summary = this.pendingLevelUpSummary;
+      this.pendingLevelUpSummary = null;
+      this.time.delayedCall(1000, () => {
+        this.scene.launch("LevelUpPopupScene", {
+          monsterName: this.machine.player.name,
+          startLevel: summary.startLevel,
+          endLevel: summary.endLevel,
+          oldStats: summary.oldStats,
+          newStats: summary.newStats,
+          onDismiss: () => this.returnToOverworld(),
+        });
+      });
+      return;
+    }
+
+    this.time.delayedCall(2000, () => this.returnToOverworld());
+  }
+
+  /**
+   * Shared teardown — stop CombatScene and resume the OverworldScene the
+   * battle was launched from. Called from both the no-popup path
+   * (delayedCall in showEndMessage) and the popup-dismissed path
+   * (LevelUpPopupScene onDismiss callback).
+   */
+  private returnToOverworld() {
+    this.scene.stop("CombatScene");
+    this.scene.resume("OverworldScene");
   }
 }

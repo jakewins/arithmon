@@ -477,6 +477,15 @@ export class DebugBridge {
     addItem(session.player.inventory, slug, count);
   }
 
+  /**
+   * Clear the active party. Useful for QA scripts that want to re-run
+   * `setupGame` cleanly without doubling up on seed monsters from the
+   * previous scenario.
+   */
+  clearParty(): void {
+    session.player.monsters.length = 0;
+  }
+
   /** Add a monster to the player's party. Returns false if party is full. */
   addMonster(slug: string, level: number): boolean {
     if (session.player.monsters.length >= PARTY_LIMIT) return false;
@@ -504,7 +513,9 @@ export class DebugBridge {
   setMonsterXp(index: number, xp: number): void {
     const monster = session.player.monsters[index];
     if (!monster) throw new Error(`No monster at index ${index}`);
-    // Set XP directly, then trigger level-up processing via addXp(0)
+    // Set XP directly, then trigger level-up processing via addXp(0).
+    // addXp returns { levelUps, summary } — ignored here; we only care
+    // that the side effect of stat recomputation happens.
     monster.totalXp = xp;
     while (monster.totalXp >= xpForLevel(monster.level + 1)) {
       monster.addXp(0);
