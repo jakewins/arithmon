@@ -11,6 +11,12 @@ const C_ACCENT = "#4488cc";
 const C_HINT = "#88aacc";
 const C_INPUT = "#ffcc00";
 
+// Minimum clear vertical whitespace (in px) between the rendered bottom edge
+// of the question text and the top edge of the widget's first visible element.
+// PressStart2P is a chunky 8 px grid font; less than this and multi-line
+// questions visually collide with input boxes, labels, or buttons.
+const QUESTION_GAP = 10;
+
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
 
@@ -131,8 +137,9 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       })
       .setOrigin(0.5, 0);
 
-    // Position UI elements below the question text
-    const contentY = questionObj.y + questionObj.height + 6;
+    // Position UI elements below the question text. Every widget helper
+    // anchors its topmost visible pixel at y >= contentY.
+    const contentY = questionObj.y + questionObj.height + QUESTION_GAP;
 
     if (widget.type === "radio") {
       this.createRadioUI(widget, contentY, panelW);
@@ -236,8 +243,9 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
   }
 
   private createNumericInputUI(contentY: number, panelW: number) {
-    // Answer input area
-    const inputY = contentY;
+    // Answer input area. Box is 14 px tall, centered on inputY — offset by
+    // half-height so its top edge sits at contentY (no overlap with question).
+    const inputY = contentY + 7;
     this.add.rectangle(WIDTH / 2, inputY, 56, 14, 0x222244).setStrokeStyle(1, 0x6666aa);
 
     this.answerText = this.add
@@ -302,7 +310,12 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     // Dummy answerText so updateAnswerDisplay() doesn't crash if called
     this.answerText = addText(this, 0, 0, "").setVisible(false);
 
-    const inputY = contentY + 6;
+    // Labels sit above the input boxes. Using origin (0.5, 0) so labelY is
+    // the top edge of the label text — anchoring it exactly at contentY (Phaser
+    // text bounding boxes include line-leading, which makes centered origins
+    // creep a few px above the visible glyphs).
+    const labelY = contentY;
+    const inputY = labelY + 18;
     const boxW = 40;
     const gap = 12;
     const leftX = WIDTH / 2 - gap - boxW / 2;
@@ -310,8 +323,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Labels
     const labels = widget.options.labels;
-    addText(this, leftX, inputY - 10, labels[0], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
-    addText(this, rightX, inputY - 10, labels[1], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5);
+    addText(this, leftX, labelY, labels[0], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5, 0);
+    addText(this, rightX, labelY, labels[1], withColor(BODY_LIGHT, C_HINT)).setOrigin(0.5, 0);
 
     // Input boxes
     this.dualBoxes[0] = this.add
@@ -450,6 +463,8 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     for (let i = 0; i < choices.length; i++) {
       const y = startY + i * spacing;
+      // Origin (0.5, 0) so the button's top edge sits at y; the first
+      // button's top is then exactly at contentY (no overlap with question).
       const btn = this.add
         .text(WIDTH / 2, y, choices[i].content, {
           ...BODY_LIGHT,
@@ -458,7 +473,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
           fixedWidth: panelW - 32,
           align: "center",
         })
-        .setOrigin(0.5)
+        .setOrigin(0.5, 0)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => this.selectChoice(i));
 
@@ -497,15 +512,19 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.answerText = addText(this, 0, 0, "").setVisible(false);
     this.hintText = addText(this, 0, 0, "").setVisible(false);
 
-    const rowY = contentY + 12;
+    // BIG_LIGHT is 16 px tall. Anchor top of the row at contentY directly
+    // (origin 0.5/0) — Phaser text-bounding boxes include line leading, which
+    // makes a centered origin creep above contentY. Buttons share rowY so their
+    // top edges line up with the values.
+    const rowY = contentY;
     const { left, right } = widget.options;
 
     // Left value — BIG_LIGHT is 16 px (2× the body grid), the "big number" we're comparing.
     const bigBold: Phaser.Types.GameObjects.Text.TextStyle = { ...BIG_LIGHT, fontStyle: "bold" };
-    addText(this, WIDTH / 2 - 60, rowY, left, bigBold).setOrigin(0.5);
+    addText(this, WIDTH / 2 - 60, rowY, left, bigBold).setOrigin(0.5, 0);
 
     // Right value
-    addText(this, WIDTH / 2 + 60, rowY, right, bigBold).setOrigin(0.5);
+    addText(this, WIDTH / 2 + 60, rowY, right, bigBold).setOrigin(0.5, 0);
 
     // Three comparison buttons in the middle
     const symbols: Array<">" | "=" | "<"> = [">", "=", "<"];
@@ -521,7 +540,7 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
           padding: { x: 4, y: 3 },
           align: "center",
         })
-        .setOrigin(0.5)
+        .setOrigin(0.5, 0)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => this.selectComparison(i));
 
@@ -572,7 +591,12 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.nlRange = range;
     this.nlValue = range[0];
 
-    const lineY = contentY + 16;
+    // Value label sits above the line. Origin (0.5, 0) so valueLabelTopY is
+    // the top edge of the label (Phaser text bboxes include leading, so a
+    // centered origin would creep above contentY). The horizontal line drops
+    // below with ~4 px between the label's bottom and the marker top.
+    const valueLabelTopY = contentY;
+    const lineY = contentY + 18;
     const margin = 12;
     const lineX = (WIDTH - panelW) / 2 + margin;
     const lineW = panelW - margin * 2;
@@ -605,11 +629,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
 
     // Value label above marker
     this.nlValueText = this.add
-      .text(markerX, lineY - 10, String(range[0]), {
+      .text(markerX, valueLabelTopY, String(range[0]), {
         ...withColor(BODY_LIGHT, C_INPUT),
         fontStyle: "bold",
       })
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 0);
 
     // Hit zone handles both click-to-place and drag
     const snapPointer = (px: number) => {
@@ -638,8 +662,11 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
       dragging = false;
     });
 
-    // Submit button
-    const submitY = lineY + 20;
+    // Submit button — sits below both the line (lineY + ~8 tick-label height)
+    // with breathing room. lineY+24 keeps SUBMIT clear of the labelStep tick
+    // labels rendered at lineY+8 (≤ ~16 tall once Phaser text bbox leading
+    // is accounted for).
+    const submitY = lineY + 24;
     this.add
       .text(WIDTH / 2, submitY, "▶ SUBMIT", {
         ...withColor(BODY_LIGHT, C_INPUT),
@@ -813,7 +840,10 @@ export class MathProblemScene extends Scene implements DebugStateProvider, Debug
     this.answerText = addText(this, 0, 0, "").setVisible(false);
     this.hintText = addText(this, 0, 0, "").setVisible(false);
 
-    const dropY = contentY + 8;
+    // Box is 16 px tall, centered on dropY; +9 puts the top edge at contentY+1
+    // for a 1 px extra cushion beyond QUESTION_GAP (chunky stroked box reads
+    // tighter than a bare text run, so the extra px helps).
+    const dropY = contentY + 9;
 
     // Tappable placeholder box
     const placeholderBg = this.add
