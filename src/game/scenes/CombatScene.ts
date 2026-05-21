@@ -11,30 +11,28 @@ import { debugBridge, type DebugCommandHandler, type DebugStateProvider } from "
 import { session } from "../session";
 import { markSeen, markCaught } from "../model/monsterRegistry";
 import { SCREEN_W, SCREEN_H } from "../screen";
-import { BODY, withColor, withWrap } from "../ui/textStyle";
+import { SMALL, withColor, withWrap } from "../ui/textStyle";
 
 const WIDTH = SCREEN_W;
 const HEIGHT = SCREEN_H;
-// Bottom action bar — roughly the lower third of the 144 px viewport,
-// matching the upstream combat layout where the prompt/menu area occupies
-// y ≈ 96..144.
-const BOX_H = 48;
+// Bottom band — upstream Tuxemon sizes the prompt/menu region as
+// `screen_h // 4` = 36 px (combat_state.py:357-359). The action menu inside
+// the right half is a fixed 102×36 rect (combat_menus.py:118-122) anchored
+// to the bottom-right corner, leaving 154×36 for the prompt on the left.
+const BOX_H = 36;
 const BOX_Y = HEIGHT - BOX_H;
 const HP_BAR_W = 50;
 const HP_BAR_H = 3;
 const PLAYER_HP_BAR_W = 62;
-const DP_PIP_SIZE = 5;
+const DP_PIP_SIZE = 4;
 const DP_PIP_GAP = 1;
 const BORDER_TEXTURE = "dialog-border";
 const BORDER_SLICE = 3;
 
-// Layout: left panel ~47%, right panel ~53% of the 256 px width.
-// LEFT_W shrank 152 → 120 in STORY-0208 so the 2×2 main menu fits
-// "TUXEMON" (7 chars × 8 px PressStart2P = 56 px) in each column with a
-// 4 px right-edge buffer. The technique-info card on the left still fits
-// (longest line is name @ ~10 chars = 80 px).
-const LEFT_W = 120;
-const RIGHT_W = WIDTH - LEFT_W;
+// Bottom-band split: action menu is a fixed 102×36 rect bottom-right,
+// prompt panel takes the remaining left portion (154×36).
+const RIGHT_W = 102;
+const LEFT_W = WIDTH - RIGHT_W;
 
 // --- Battle layout (derived from upstream Tuxemon combat_layouts.yaml,
 // which uses the same 256×144 NATIVE_RESOLUTION). The yaml puts the player's
@@ -52,8 +50,12 @@ const ENEMY_ISLAND_BOTTOM = 78;
 const ENEMY_SPRITE_X = 188;
 // Feet on island surface (~45% up from island bottom)
 const ENEMY_SPRITE_Y = ENEMY_ISLAND_BOTTOM - Math.round(57 * ENEMY_ISLAND_SCALE * 0.45);
-const ENEMY_HUD_X = 4;
-const ENEMY_HUD_Y = 2;
+// Enemy HUD anchored at upstream's RIGHT_COMBAT.hud origin (18, 0). The
+// 100×29 sprite asset sits within the 85×30 layout rect with its baked-in
+// transparent margin — origin at (18,0) keeps the inner content where
+// combat_layouts.yaml places it.
+const ENEMY_HUD_X = 18;
+const ENEMY_HUD_Y = 0;
 
 // Player (lower-left, maps to LEFT_COMBAT — home [0, 62, 96, 70]).
 // Centre-x at 48; feet just above the action bar.
@@ -427,21 +429,19 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.playerHudPanel.setDepth(3);
 
     // --- Name labels on HUD panels ---
-    // Enemy name: fits inside opponent panel (100x29), offset from top-left.
-    // PressStart2P (BODY) replaces the prior monospace fallback — the HUD
-    // panel art was sized assuming a fixed-width 8 px glyph.
-    this.enemyNameText = this.add.text(ENEMY_HUD_X + 6, ENEMY_HUD_Y + 4, "", BODY);
+    // Upstream layout (combat_layouts.yaml): hud_line1 at (5, 5) relative to
+    // the opponent HUD origin and (12, 11) relative to the player HUD origin.
+    // SMALL (6 px) replaces BODY (8 px) so "Pairagrin Lv2" fits inside the
+    // 85 px-wide rect with room to spare, matching upstream's render.
+    this.enemyNameText = this.add.text(ENEMY_HUD_X + 5, ENEMY_HUD_Y + 5, "", SMALL);
     this.enemyNameText.setDepth(4);
-
-    // Player name: fits inside player panel (104x37), offset from top-left
-    // Panel has an angled left edge, so text needs extra inset at the top
-    this.playerNameText = this.add.text(PLAYER_HUD_X + 12, PLAYER_HUD_Y + 9, "", BODY);
+    this.playerNameText = this.add.text(PLAYER_HUD_X + 12, PLAYER_HUD_Y + 11, "", SMALL);
     this.playerNameText.setDepth(4);
 
     // --- HP bars on HUD panels ---
-    // Enemy HP bar: inside opponent panel, below name text
-    const enemyHpX = ENEMY_HUD_X + 6;
-    const enemyHpY = ENEMY_HUD_Y + 16;
+    // Upstream hud_line2 sits at (5, 13) (opponent) / (12, 19) (player).
+    const enemyHpX = ENEMY_HUD_X + 5;
+    const enemyHpY = ENEMY_HUD_Y + 13;
     this.enemyHpBg = this.add.rectangle(enemyHpX, enemyHpY, HP_BAR_W, HP_BAR_H, 0x555555);
     this.enemyHpBg.setOrigin(0, 0);
     this.enemyHpBg.setDepth(4);
@@ -451,7 +451,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
 
     // Player HP bar: inside player panel, after built-in "HP" label
     const playerHpX = PLAYER_HUD_X + 16;
-    const playerHpY = PLAYER_HUD_Y + 22;
+    const playerHpY = PLAYER_HUD_Y + 19;
     this.playerHpBg = this.add.rectangle(playerHpX, playerHpY, PLAYER_HP_BAR_W, HP_BAR_H, 0x555555);
     this.playerHpBg.setOrigin(0, 0);
     this.playerHpBg.setDepth(4);
@@ -465,19 +465,24 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.playerHpBar.setOrigin(0, 0);
     this.playerHpBar.setDepth(4);
 
-    // --- Dark Power pips — below player HUD panel ---
+    // --- Dark Power pips — below player HUD panel, above the party tray ---
+    // Player HUD asset ends at PLAYER_HUD_Y + 37 = 82; BOX_Y = 108 with the
+    // new 36 px-tall bottom band, giving 26 px of stack room beneath the
+    // panel. We pack a SMALL "DP" + 5 pips on the first line and the party
+    // tray on the line below. Upstream uses this band for an XP bar; we
+    // documented in JOURNAL.md that we chose "between HUD and tray" so the
+    // DP indicator stays visually grouped with the player's HP card without
+    // overlapping the asset's baked-in "XP" label.
     const dpStartX = PLAYER_HUD_X + 8;
     const dpY = PLAYER_HUD_Y + 39;
-    // "DP" label sits to the left of the pip row. At 8 px PressStart2P "DP"
-    // is 16 px wide; the pip row starts 18 px right so the label clears the
-    // first pip with a 2 px gap.
-    this.add.text(dpStartX, dpY - 1, "DP", withColor(BODY, "#bb66ff")).setDepth(4);
+    this.add.text(dpStartX, dpY - 1, "DP", withColor(SMALL, "#bb66ff")).setDepth(4);
     this.dpPips = [];
+    const pipRowOffsetX = 14; // clears the "DP" prefix
     for (let i = 0; i < MAX_DARK_POWER; i++) {
       const pip = this.add
         .rectangle(
-          dpStartX + i * (DP_PIP_SIZE + DP_PIP_GAP) + DP_PIP_SIZE / 2 + 18,
-          dpY + 3,
+          dpStartX + pipRowOffsetX + i * (DP_PIP_SIZE + DP_PIP_GAP) + DP_PIP_SIZE / 2,
+          dpY + DP_PIP_SIZE / 2,
           DP_PIP_SIZE,
           DP_PIP_SIZE,
           0xbb66ff,
@@ -491,7 +496,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.buildPartyTray();
 
     // --- Two-panel bottom bar ---
-    // Left panel: prompt/message area
+    // Left panel: prompt/message area (154×36, bottom-left).
     this.leftBorder = this.add.nineslice(
       LEFT_W / 2,
       BOX_Y + BOX_H / 2,
@@ -506,7 +511,8 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     );
     this.leftBorder.setDepth(100);
 
-    // Right panel: menu area
+    // Right panel: action menu (102×36, bottom-right) — fixed size and
+    // anchor per upstream combat_menus.py.
     this.rightBorder = this.add.nineslice(
       LEFT_W + RIGHT_W / 2,
       BOX_Y + BOX_H / 2,
@@ -539,38 +545,38 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.techPopupBorder.setDepth(100);
     this.techPopupBorder.setVisible(false);
 
-    // Message text in left panel
-    this.messageText = this.add.text(PAD_X, BOX_Y + PAD_Y, "", withWrap(BODY, LEFT_W - PAD_X * 2));
+    // Message text in left panel. SMALL keeps the "What will X do?" prompt
+    // on a single line inside the 154 px wide bottom-left panel.
+    this.messageText = this.add.text(PAD_X, BOX_Y + PAD_Y, "", withWrap(SMALL, LEFT_W - PAD_X * 2));
     this.messageText.setDepth(101);
 
     // --- Attack info card (bottom-left panel during technique selection) ---
     // Layout: name on top, then a 2x2 grid of {accuracy,range},{power,cost}.
     // Created hidden; renderInfoCard toggles visibility.
+    // Info-card layout: name on top, then accuracy, then range pill + power,
+    // then cost. SMALL gives us ~7 px per row which packs cleanly into the
+    // 36 px-tall band (4 rows × ~8 px = 32 px).
+    const infoRowH = 8;
     const infoX = PAD_X;
     const infoY = BOX_Y + PAD_Y;
-    this.infoCardName = this.add.text(infoX, infoY, "", BODY);
+    this.infoCardName = this.add.text(infoX, infoY, "", SMALL);
     this.infoCardName.setDepth(101);
-    this.infoCardAccuracy = this.add.text(infoX, infoY + OPTION_H + 1, "", BODY);
+    this.infoCardAccuracy = this.add.text(infoX, infoY + infoRowH, "", SMALL);
     this.infoCardAccuracy.setDepth(101);
     // Range pill: 34x9 upstream art. Sits where the plain "RANGED" text used
-    // to live (left column, middle row), origin top-left to align with text.
-    this.infoCardRangeIcon = this.add.image(infoX, infoY + OPTION_H + 1 + 9, "");
+    // to live (left column, third row), origin top-left to align with text.
+    this.infoCardRangeIcon = this.add.image(infoX, infoY + infoRowH * 2, "");
     this.infoCardRangeIcon.setOrigin(0, 0);
     this.infoCardRangeIcon.setDepth(101);
-    // Power line is now to the right of the range pill (matches upstream
+    // Power line is to the right of the range pill (matches upstream
     // screenshot: "RANGED  Power 15").
-    this.infoCardPower = this.add.text(infoX + 38, infoY + OPTION_H + 1 + 9, "", BODY);
+    this.infoCardPower = this.add.text(infoX + 38, infoY + infoRowH * 2, "", SMALL);
     this.infoCardPower.setDepth(101);
-    this.infoCardCost = this.add.text(
-      infoX,
-      infoY + OPTION_H + 1 + 19,
-      "",
-      withColor(BODY, "#7733aa"),
-    );
+    this.infoCardCost = this.add.text(infoX, infoY + infoRowH * 3, "", withColor(SMALL, "#7733aa"));
     this.infoCardCost.setDepth(101);
     // Element badge: 12x12 leaf/flame/etc. Right edge of the info-card panel,
     // vertically aligned with the Cost/Recharge line per upstream screenshot.
-    this.infoCardElementIcon = this.add.image(LEFT_W - PAD_X - 12, infoY + OPTION_H + 1 + 17, "");
+    this.infoCardElementIcon = this.add.image(LEFT_W - PAD_X - 12, infoY + infoRowH * 2, "");
     this.infoCardElementIcon.setOrigin(0, 0);
     this.infoCardElementIcon.setDepth(101);
     for (const t of [
@@ -585,39 +591,41 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
     this.infoCardElementIcon.setVisible(false);
 
     // --- Main menu labels (2x2 grid in right panel) ---
+    // Panel is 102 px wide; SMALL "TUXEMON" (7 chars × ~6 px) is ~42 px so
+    // two columns @ ~46 px each fit with the cursor gutter and padding.
     this.mainMenuLabels = [];
     const colW = (RIGHT_W - PAD_X * 2) / MAIN_COLS;
     for (let r = 0; r < MAIN_ROWS; r++) {
       for (let c = 0; c < MAIN_COLS; c++) {
-        const x = LEFT_W + PAD_X + 8 + c * colW;
-        const y = BOX_Y + PAD_Y + r * (OPTION_H + 2);
-        const label = this.add.text(x, y, MAIN_MENU_ITEMS[r][c], BODY);
+        const x = LEFT_W + PAD_X + 7 + c * colW;
+        const y = BOX_Y + PAD_Y + r * (OPTION_H + 1);
+        const label = this.add.text(x, y, MAIN_MENU_ITEMS[r][c], SMALL);
         label.setDepth(101);
         this.mainMenuLabels.push(label);
       }
     }
-    this.mainCursor = this.add.text(0, 0, CURSOR_CHAR, BODY);
+    this.mainCursor = this.add.text(0, 0, CURSOR_CHAR, SMALL);
     this.mainCursor.setDepth(101);
 
     // --- Technique submenu labels (vertical list in right panel) ---
     // Created dynamically, but we pre-create the cursor
-    this.techCursor = this.add.text(0, 0, CURSOR_CHAR, BODY);
+    this.techCursor = this.add.text(0, 0, CURSOR_CHAR, SMALL);
     this.techCursor.setDepth(101);
 
     // Recharge label (shown at bottom of technique list)
-    this.techRechargeLabel = this.add.text(0, 0, "", withColor(BODY, "#bb66ff"));
+    this.techRechargeLabel = this.add.text(0, 0, "", withColor(SMALL, "#bb66ff"));
     this.techRechargeLabel.setDepth(101);
 
     // Party cursor
-    this.partyCursor = this.add.text(0, 0, CURSOR_CHAR, BODY);
+    this.partyCursor = this.add.text(0, 0, CURSOR_CHAR, SMALL);
     this.partyCursor.setDepth(101);
 
     // Item cursor
-    this.itemCursor = this.add.text(0, 0, CURSOR_CHAR, BODY);
+    this.itemCursor = this.add.text(0, 0, CURSOR_CHAR, SMALL);
     this.itemCursor.setDepth(101);
 
     // Item target cursor
-    this.itemTargetCursor = this.add.text(0, 0, CURSOR_CHAR, BODY);
+    this.itemTargetCursor = this.add.text(0, 0, CURSOR_CHAR, SMALL);
     this.itemTargetCursor.setDepth(101);
 
     // Setup keyboard
@@ -903,7 +911,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
   private updateMainCursorPosition() {
     const idx = this.mainRow * MAIN_COLS + this.mainCol;
     const label = this.mainMenuLabels[idx];
-    this.mainCursor.setPosition(label.x - 12, label.y);
+    this.mainCursor.setPosition(label.x - 7, label.y);
   }
 
   private confirmMainMenu() {
@@ -969,8 +977,10 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       if (len > widestChars) widestChars = len;
     }
     if (showRecharge) widestChars = Math.max(widestChars, "\u26a1 RECHARGE".length);
-    // ~4.5 px per glyph at 8 px monospace, plus cursor gutter + padding.
-    const contentW = Math.ceil(widestChars * 4.5) + 10 + PAD_X * 2;
+    // ~6 px per glyph at SMALL (PressStart2P 6 px in the browser renders
+    // each glyph at roughly its declared point size in monospace), plus
+    // cursor gutter + padding.
+    const contentW = Math.ceil(widestChars * 6) + 10 + PAD_X * 2;
     const popupW = Math.max(RIGHT_W, Math.min(contentW, WIDTH - 4));
     const popupH = lineCount * OPTION_H + PAD_Y * 2;
     const popupRight = WIDTH;
@@ -991,7 +1001,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         this.techPopupOriginX,
         this.techPopupOriginY + i * OPTION_H,
         `${tech.name} ${tech.dpCost}DP`,
-        canAfford ? BODY : withColor(BODY, DISABLED_COLOR),
+        canAfford ? SMALL : withColor(SMALL, DISABLED_COLOR),
       );
       label.setDepth(101);
       label.setInteractive({ useHandCursor: true });
@@ -1168,7 +1178,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       if (isFainted) text += " KO";
 
       const color = isFainted || isActive ? DISABLED_COLOR : TEXT_COLOR;
-      const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, withColor(BODY, color));
+      const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, withColor(SMALL, color));
       label.setDepth(101);
       this.partyLabels.push(label);
     }
@@ -1246,7 +1256,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
         baseX,
         baseY + i * OPTION_H,
         `${entry.item.name} x${entry.count}`,
-        BODY,
+        SMALL,
       );
       label.setDepth(101);
       this.itemLabels.push(label);
@@ -1331,7 +1341,7 @@ export class CombatScene extends Scene implements DebugStateProvider, DebugComma
       if (mon.fainted) text += " KO";
 
       const color = valid ? TEXT_COLOR : DISABLED_COLOR;
-      const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, withColor(BODY, color));
+      const label = this.add.text(baseX, baseY + i * PARTY_ROW_H, text, withColor(SMALL, color));
       label.setDepth(101);
       this.itemTargetLabels.push(label);
     }

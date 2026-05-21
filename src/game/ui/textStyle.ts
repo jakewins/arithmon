@@ -9,8 +9,11 @@
  * Tuxemon ships in `upstream/mods/tuxemon/font/PressStart2P.ttf`. PressStart2P
  * is an 8×8 bitmap, designed to render crisp at single-digit pixel sizes;
  * rendering at 8 px on our 256×144 viewport keeps every glyph on a whole
- * pixel after integer-zoom scaling. Anything smaller (e.g. 6 px) breaks
- * legibility — there's no smaller bitmap data to sample.
+ * pixel after integer-zoom scaling. Upstream's combat HUD uses a 5 px size
+ * (FONT_SIZE in upstream/tuxemon/platform/const/graphics.py); we expose
+ * that as SMALL — at 6 px in the browser it still anti-aliases acceptably
+ * and matches upstream's glyph footprint inside the 100×29 / 104×37 HUD
+ * panel art.
  *
  * Loading: `@font-face` in `public/style.css` declares the family; the
  * browser starts fetching the .ttf during initial HTML parse. We additionally
@@ -32,6 +35,19 @@ export const BODY_LIGHT: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: UI_FONT_FAMILY,
   fontSize: "8px",
   color: "#ffffff",
+};
+
+/**
+ * Compact body text — combat HUD names, action menu, in-combat prompt.
+ * Targets upstream Tuxemon's 5 px FONT_SIZE used by combat_menus.py; at 6 px
+ * the glyphs still anti-alias acceptably while fitting inside upstream's
+ * tighter HUD-panel rectangles (name+level inside 85×30 / 110×50 boxes).
+ * Used anywhere we'd otherwise overflow at the 8 px BODY size.
+ */
+export const SMALL: Phaser.Types.GameObjects.Text.TextStyle = {
+  fontFamily: UI_FONT_FAMILY,
+  fontSize: "6px",
+  color: "#1a1a1a",
 };
 
 /** Section heading inside a panel — same 8 px as BODY but bold weight. */
