@@ -120,3 +120,16 @@ same potted plants in the four corners, same doormat at the south
 exit. The engine screenshot is uniformly darker than the upstream
 reference — same indoor-render concern noted in STORY-0212's journal;
 not addressed here (out of scope).
+
+## 2026-05-21 — Reviewer findings
+
+- Map JSON verified: 10×8, slug=manor, firstgids 1/3865/7729, four correct layer names (`Tile Layer 1`, `Tile Layer 2`, `Tile Layer 3`, `Above player`), all 7 collision rects present in `Collisions` objectgroup — matches upstream TMX exactly.
+- Event YAML verified: `cp`-verbatim from upstream, diff clean (0 byte differences); 4 events (`Create Princeton`, `Go Outside`, `Route Music`, `Talk Princeton`), no fabricated branches.
+- Sprite byte check: `cmp maniac_yellow.png upstream/...` returned 0 diff; dimensions confirmed 48×128.
+- Both dialog msgids resolve to non-empty translations: `spyder_papermanor_princeton` and `spyder_papermanor_oldman`.
+- `qa/paper-manor-test.ts` all 4 sub-tests passed: entry at `(6,7)`, Princeton at `(1,5)` facing right, dialog fires correctly with no variable gating, exit to town `(10,13)`, collision blocks at `(2,4)` and `(7,3)` confirmed.
+- `qa/smoke.ts` and `qa/paper-town-buildings-test.ts` still pass — no regressions.
+- `npm run format:check && npm run lint && npx tsc --noEmit && npm test` — all green.
+- Visual layout matches upstream reference screenshot.
+
+**APPROVED.**
