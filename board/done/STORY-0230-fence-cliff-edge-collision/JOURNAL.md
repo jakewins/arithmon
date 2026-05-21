@@ -197,3 +197,17 @@ complexity and a future hazard for any non-tsx sidecar. `git status
 mods/tuxemon/gfx/tilesets/` after the change is clean — tracking is
 unchanged because the directory still contains only `.tsx` files. Todo moved
 to `todos/closed/`.
+
+## 2026-05-21 — Reviewer findings (round 2 — approved)
+
+- `.gitignore` fix verified: the 4 narrow carve-out lines (`tilesets/*` +
+  `!*.tsx` plus their comments) have been removed; the directory is now
+  fully un-ignored by a single `!mods/tuxemon/gfx/tilesets` line already
+  present from round 1. Clean, minimal diff.
+- Todo `01-simplify-gitignore-for-tilesets-dir.md` confirmed moved from
+  `todos/open/` to `todos/closed/`; no open todos remain.
+- Pre-commit gates all pass: `format:check`, `lint`, `tsc --noEmit`,
+  `vitest run` (43 files, 483 tests).
+- Collision logic unchanged from previously-verified state; no re-run of QA
+  script required.
+- Story moved to `board/done/`.
