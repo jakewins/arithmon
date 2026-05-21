@@ -24,7 +24,16 @@ dist-ssr
 *.sw?
 .devenv
 devenv.local.nix
-mods
+mods/*
+!mods/tuxemon
+mods/tuxemon/*
+!mods/tuxemon/gfx
+mods/tuxemon/gfx/*
+!mods/tuxemon/gfx/tilesets
+# Only the .tsx files are tracked — they're the collision-metadata source for
+# scripts/generate-blocked-tiles.py. PNGs live in public/assets/maps/.
+mods/tuxemon/gfx/tilesets/*
+!mods/tuxemon/gfx/tilesets/*.tsx
 trees
 .envrc
 qa/screenshots
