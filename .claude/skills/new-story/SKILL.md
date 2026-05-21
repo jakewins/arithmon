@@ -1,5 +1,5 @@
 ---
-name: plan
+name: new-story
 description: Take a free-form feature/bugfix description and dispatch a planning agent to research the change, draft a STORY.md, and hand the story off to board/next/ ready for /pickup. The story lives in board/planning/ while the planner is working.
 user-invocable: true
 allowed-tools: Bash Read Agent
@@ -13,7 +13,7 @@ Work happens in the **`trees/planner`** worktree (branch `plan-wip`) so `/pickup
 
 ## Shared state model
 
-`/plan`, `/pickup`, and `/review` all coordinate via the `main` branch in the root checkout (`/home/jake/Code/toy/arithmon`). **`main` is the single source of truth for board state.** Each run **resets its worktree to `main` on entry** and **fast-forwards `main` from its wip branch on exit** — that's the entire hand-off protocol. Between runs the *other* roles' worktrees stay on their own old heads and will look stale; don't read board state from them. Always invoke this skill from the root checkout, not from inside a worktree — the skill's `git -C trees/planner ...` commands assume that.
+`/new-story`, `/pickup`, and `/review` all coordinate via the `main` branch in the root checkout (`/home/jake/Code/toy/arithmon`). **`main` is the single source of truth for board state.** Each run **resets its worktree to `main` on entry** and **fast-forwards `main` from its wip branch on exit** — that's the entire hand-off protocol. Between runs the *other* roles' worktrees stay on their own old heads and will look stale; don't read board state from them. Always invoke this skill from the root checkout, not from inside a worktree — the skill's `git -C trees/planner ...` commands assume that.
 
 ## Args
 
@@ -21,9 +21,9 @@ One argument, required: **a free-form natural-language description of the featur
 
 Examples:
 
-- `/plan add a settings menu that lets the player remap controls`
-- `/plan the wild encounter rate in spyder_paper_town feels too high — reduce it to match upstream`
-- `/plan port the spyder_arena_indoor map and its NPCs from upstream`
+- `/new-story add a settings menu that lets the player remap controls`
+- `/new-story the wild encounter rate in spyder_paper_town feels too high — reduce it to match upstream`
+- `/new-story port the spyder_arena_indoor map and its NPCs from upstream`
 
 The skill itself does not flesh out the plan — it just scaffolds a new story directory and dispatches the planner agent. The planner agent owns the contents of `STORY.md`.
 
@@ -180,5 +180,5 @@ Run all skill commands from the **main checkout** (`/home/jake/Code/toy/arithmon
 
 - The skill itself does not write the plan; that's the sub-agent's job. The skill only scaffolds the directory and handles the git hand-off.
 - If the planner reports a blocker (e.g. the description is so vague no useful plan can be drafted), pass that back to the user without forcing a plan.
-- Don't auto-plan another story when this one finishes — `/plan` is a single hand-off, not a loop. For batch planning, the user can call `/plan` multiple times.
+- Don't auto-plan another story when this one finishes — `/new-story` is a single hand-off, not a loop. For batch planning, the user can call `/new-story` multiple times.
 - The `trees/planner` worktree must be on branch `plan-wip` and have its own `node_modules` (one-time `npm install`). If the planner decides to run the harness, prefix with `ARITHMON_PORT=8083`. The implementor runs in parallel in `trees/implementor` on port 8081; the reviewer in `trees/reviewer` on port 8082.
