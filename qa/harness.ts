@@ -60,6 +60,7 @@ interface DebugBridgeAPI {
   submitAnswer(): Promise<void>;
   startCombat(): Promise<void>;
   setForceStatusApply(on: boolean): void;
+  setForceEncounterRoll(on: boolean): void;
   spawnBattle(
     playerSlug: string,
     enemySlug: string,
@@ -74,6 +75,7 @@ interface DebugBridgeAPI {
   teleport(mapKey: string, tileX: number, tileY: number): Promise<void>;
   setVariable(key: string, value: string): void;
   setPlayerName(name: string): void;
+  setTimeStage(stage: "dawn" | "morning" | "day" | "dusk" | "night"): void;
   setLayer(rgba?: string): void;
   openJournal(): void;
   openMonsterInfo(slug: string): void;
@@ -255,6 +257,14 @@ export async function teleport(
 /** Set a game variable via the debug bridge. */
 export async function setVariable(page: Page, key: string, value: string): Promise<void> {
   await page.evaluate(({ key, value }) => window.A!.setVariable(key, value), { key, value });
+}
+
+/** Override the session time-of-day stage (drives day/night event branches). */
+export async function setTimeStage(
+  page: Page,
+  stage: "dawn" | "morning" | "day" | "dusk" | "night",
+): Promise<void> {
+  await page.evaluate((s) => window.A!.setTimeStage(s), stage);
 }
 
 /** Take a screenshot, saved to qa/screenshots/<name>.png. Returns the file path. */

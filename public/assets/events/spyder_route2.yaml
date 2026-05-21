@@ -219,3 +219,410 @@ events:
       - is battle_outcome player,won,spyder_route2_graf
     actions:
       - char_talk spyder_route2_graf,post_battle_lose
+
+  # --- Wild encounters ---
+  # Verbatim port of upstream's 33 `random battle*` objectgroup entries from
+  # `upstream/mods/tuxemon/maps/spyder_route2.tmx`. Each rect blankets a patch
+  # of tall grass and rolls `random_encounter spyder_route2,11` (11% per step)
+  # whenever the player walks into it. The encounter table itself
+  # (`src/game/data/encounters.ts`) does the day/night filtering off
+  # `session.timeStage`. Coordinates here are TILE units (TMX pixels ÷ 16);
+  # the dimensions match upstream exactly so safe paths through dirt road
+  # are preserved. Names mirror upstream; two collisions on `random battle16`
+  # (TMX ids 116 & 176) are disambiguated with an A/B suffix.
+
+  random battle:
+    x: 10
+    y: 12
+    width: 1
+    height: 3
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle2:
+    x: 8
+    y: 11
+    width: 2
+    height: 3
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle3:
+    x: 11
+    y: 13
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle4:
+    x: 7
+    y: 12
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle8:
+    x: 32
+    y: 2
+    width: 3
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle9:
+    x: 34
+    y: 13
+    width: 2
+    height: 5
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle10:
+    x: 35
+    y: 12
+    width: 2
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle11:
+    x: 36
+    y: 14
+    width: 2
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle12:
+    x: 16
+    y: 10
+    width: 2
+    height: 3
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle13:
+    x: 18
+    y: 9
+    width: 1
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle14:
+    x: 21
+    y: 12
+    width: 1
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle15:
+    x: 18
+    y: 13
+    width: 3
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle16 A:
+    x: 20
+    y: 11
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle17:
+    x: 17
+    y: 9
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle18:
+    x: 14
+    y: 11
+    width: 2
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle19:
+    x: 33
+    y: 3
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle22:
+    x: 29
+    y: 11
+    width: 6
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle23:
+    x: 28
+    y: 10
+    width: 3
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle24:
+    x: 2
+    y: 7
+    width: 2
+    height: 3
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle25:
+    x: 4
+    y: 8
+    width: 1
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle26:
+    x: 5
+    y: 9
+    width: 1
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle27:
+    x: 7
+    y: 8
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle28:
+    x: 1
+    y: 8
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle29:
+    x: 6
+    y: 7
+    width: 4
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle30:
+    x: 8
+    y: 8
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle31:
+    x: 9
+    y: 6
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle32:
+    x: 33
+    y: 16
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle33:
+    x: 36
+    y: 16
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle16 B:
+    x: 22
+    y: 14
+    width: 1
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle35:
+    x: 32
+    y: 8
+    width: 7
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle34:
+    x: 32
+    y: 5
+    width: 3
+    height: 3
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle36:
+    x: 13
+    y: 16
+    width: 10
+    height: 2
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player
+
+  random battle37:
+    x: 15
+    y: 15
+    width: 6
+    height: 1
+    conditions:
+      - is char_at player
+      - is char_moved player
+    actions:
+      - random_encounter spyder_route2,11
+      - play_map_animation grass,0.1,noloop,player

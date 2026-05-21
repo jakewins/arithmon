@@ -1,6 +1,11 @@
 import type { EventAction, EventContext } from "../types";
 import { registerAction } from "../registry";
-import { getEncounterTable, rollEncounter } from "../../data/encounters";
+import {
+  encounterDebugFlags,
+  getEncounterTable,
+  isDaytime,
+  rollEncounter,
+} from "../../data/encounters";
 import { Monster, getLeadMonster } from "../../model/Monster";
 import { session } from "../../session";
 import { debugBridge } from "../../debug";
@@ -30,11 +35,15 @@ class RandomEncounterAction implements EventAction {
   }
 
   start(ctx: EventContext): void {
-    // Roll against probability
-    const roll = Math.random() * 100;
-    if (roll >= this.probability) {
-      this.done = true;
-      return;
+    // Roll against probability — QA can short-circuit via the debug flag so
+    // tests don't need to monkey-patch Math.random (which would also break
+    // crypto/UUID code paths inside CombatScene init).
+    if (!encounterDebugFlags.forceRoll) {
+      const roll = Math.random() * 100;
+      if (roll >= this.probability) {
+        this.done = true;
+        return;
+      }
     }
 
     const table = getEncounterTable(this.encounterSlug);
@@ -51,7 +60,10 @@ class RandomEncounterAction implements EventAction {
       return;
     }
 
-    const { slug: enemySlug, level: enemyLevel } = rollEncounter(table);
+    const { slug: enemySlug, level: enemyLevel } = rollEncounter(
+      table,
+      isDaytime(session.timeStage),
+    );
     const enemyMonster = Monster.spawn(enemySlug, enemyLevel);
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 

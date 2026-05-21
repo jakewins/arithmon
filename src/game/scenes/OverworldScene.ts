@@ -19,7 +19,7 @@ import {
 } from "../data/npcs";
 import { MAP_REGISTRY, allTilesetAssets, getMapDef } from "../data/maps";
 import { MONSTERS } from "../data/monsters";
-import { getEncounterTable, rollEncounter } from "../data/encounters";
+import { getEncounterTable, isDaytime, rollEncounter } from "../data/encounters";
 import { FACING_FRAMES } from "../event/actions/charFace";
 import { loadPO } from "../i18n";
 import { buildGrid, findPath, type CollisionRect } from "../event/pathfinding";
@@ -1117,7 +1117,10 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     this.player.setVelocity(0);
     this.player.anims.stop();
 
-    const { slug: enemySlug, level: enemyLevel } = rollEncounter(table);
+    const { slug: enemySlug, level: enemyLevel } = rollEncounter(
+      table,
+      isDaytime(session.timeStage),
+    );
     const enemyMonster = Monster.spawn(enemySlug, enemyLevel);
     debugBridge.emit("encounter_started", { monster: enemySlug, level: enemyLevel });
 

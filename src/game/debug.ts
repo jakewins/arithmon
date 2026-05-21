@@ -4,6 +4,7 @@ import { session } from "./session";
 import { Monster, PARTY_LIMIT } from "./model/Monster";
 import { xpForLevel } from "./combat/formula";
 import { debugFlags } from "./combat/techniqueExecutor";
+import { encounterDebugFlags } from "./data/encounters";
 import { getInventoryItems, addItem } from "./item/inventory";
 import { markSeen, markCaught } from "./model/monsterRegistry";
 
@@ -324,6 +325,16 @@ export class DebugBridge {
     debugFlags.forceStatusApply = on;
   }
 
+  /**
+   * Force every `random_encounter` action's probability check to pass.
+   * Lets QA deterministically trigger wild encounters by stepping onto a
+   * grass rect once. Reset to `false` when done so it doesn't leak across
+   * runs.
+   */
+  setForceEncounterRoll(on: boolean): void {
+    encounterDebugFlags.forceRoll = on;
+  }
+
   /** Trigger a wild combat encounter immediately. */
   async startCombat(): Promise<void> {
     const handler = this.getCommandHandler();
@@ -540,6 +551,15 @@ export class DebugBridge {
   /** Set the player's display name. Mirrors set_char_attribute name. */
   setPlayerName(name: string): void {
     session.player.name = name;
+  }
+
+  /**
+   * Override the session's time-of-day stage. Drives day/night branches in
+   * the event engine (random_encounter daytime filter, time_is condition,
+   * etc.) without waiting for the wall clock to roll over. QA only.
+   */
+  setTimeStage(stage: "dawn" | "morning" | "day" | "dusk" | "night"): void {
+    session.timeStage = stage;
   }
 
   /** Apply a screen overlay (set_layer action). Pass empty string to clear. */

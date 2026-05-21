@@ -1,12 +1,20 @@
 /**
  * Per-map encounter tables. Each entry lists the wild monsters that
  * can appear on that map, with level ranges and relative weights.
+ *
+ * Upstream models day/night splits by tagging each row with a `daytime`
+ * variable (`true` ⇔ morning/day, `false` ⇔ dusk/night). We mirror that
+ * verbatim: an entry's optional `daytime` flag, when set, gates inclusion
+ * during the corresponding stage of day. Entries with `daytime` unset are
+ * eligible at any time.
  */
 export interface EncounterEntry {
   slug: string;
   minLevel: number;
   maxLevel: number;
   weight: number;
+  /** True = morning/day only; false = dusk/night only; omit for all-day. */
+  daytime?: boolean;
 }
 
 const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
@@ -15,12 +23,20 @@ const ENCOUNTER_TABLES: Record<string, EncounterEntry[]> = {
     { slug: "aardorn", minLevel: 2, maxLevel: 4, weight: 3.5 },
     { slug: "cataspike", minLevel: 2, maxLevel: 4, weight: 3.5 },
   ],
+  // Verbatim port of upstream/mods/tuxemon/db/encounter/spyder_route2.yaml —
+  // 5 species × 2 daytimes = 10 entries. Levels & weights mirror upstream;
+  // day vs night gates are applied by `rollEncounter` at roll time.
   spyder_route2: [
-    { slug: "cardiling", minLevel: 3, maxLevel: 8, weight: 2.5 },
-    { slug: "aardorn", minLevel: 3, maxLevel: 8, weight: 2.5 },
-    { slug: "eyenemy", minLevel: 3, maxLevel: 6, weight: 1.5 },
-    { slug: "axolightl", minLevel: 4, maxLevel: 8, weight: 1.0 },
-    { slug: "cataspike", minLevel: 3, maxLevel: 7, weight: 2.0 },
+    { slug: "cardiling", minLevel: 3, maxLevel: 6, weight: 2.5, daytime: true },
+    { slug: "aardorn", minLevel: 3, maxLevel: 6, weight: 2.5, daytime: true },
+    { slug: "eyenemy", minLevel: 3, maxLevel: 6, weight: 2.5, daytime: true },
+    { slug: "axolightl", minLevel: 4, maxLevel: 7, weight: 1.0, daytime: true },
+    { slug: "cataspike", minLevel: 3, maxLevel: 6, weight: 2.5, daytime: true },
+    { slug: "cardiling", minLevel: 3, maxLevel: 6, weight: 2.5, daytime: false },
+    { slug: "aardorn", minLevel: 4, maxLevel: 8, weight: 2.5, daytime: false },
+    { slug: "eyenemy", minLevel: 4, maxLevel: 8, weight: 2.5, daytime: false },
+    { slug: "axolightl", minLevel: 5, maxLevel: 8, weight: 1.0, daytime: false },
+    { slug: "cataspike", minLevel: 4, maxLevel: 8, weight: 2.5, daytime: false },
   ],
   spyder_citypark: [
     { slug: "cardiling", minLevel: 5, maxLevel: 11, weight: 2.0 },
@@ -123,11 +139,27 @@ export function getEncounterTable(mapKey: string): EncounterEntry[] | undefined 
   return ENCOUNTER_TABLES[mapKey];
 }
 
-/** Pick a random encounter from a table using weighted selection. */
-export function rollEncounter(table: EncounterEntry[]): { slug: string; level: number } {
-  const totalWeight = table.reduce((sum, e) => sum + e.weight, 0);
+/**
+ * Pick a random encounter from a table using weighted selection.
+ *
+ * If `daytime` is provided, entries with a mismatching `daytime` flag are
+ * excluded from the roll. Entries without a `daytime` flag remain eligible
+ * regardless. If the resulting filtered table is empty, falls back to the
+ * unfiltered table so we never silently swallow encounters when a caller
+ * forgets to seed the time-of-day variable.
+ */
+export function rollEncounter(
+  table: EncounterEntry[],
+  daytime?: boolean,
+): { slug: string; level: number } {
+  const filtered =
+    daytime === undefined
+      ? table
+      : table.filter((e) => e.daytime === undefined || e.daytime === daytime);
+  const pool = filtered.length > 0 ? filtered : table;
+  const totalWeight = pool.reduce((sum, e) => sum + e.weight, 0);
   let roll = Math.random() * totalWeight;
-  for (const entry of table) {
+  for (const entry of pool) {
     roll -= entry.weight;
     if (roll <= 0) {
       const level =
@@ -136,6 +168,24 @@ export function rollEncounter(table: EncounterEntry[]): { slug: string; level: n
     }
   }
   // Fallback (shouldn't reach here)
-  const last = table[table.length - 1];
+  const last = pool[pool.length - 1];
   return { slug: last.slug, level: last.minLevel };
+}
+
+/**
+ * QA-only override: when set, `random_encounter` skips its per-step
+ * probability check and always rolls. Reset to `false` after the test
+ * to avoid leaking into adjacent runs. Lives next to `rollEncounter` so
+ * the test code path and override sit in one file.
+ */
+export const encounterDebugFlags = { forceRoll: false };
+
+/**
+ * Map a `GameSession.timeStage` value to upstream's `daytime` boolean.
+ * Mirrors Tuxemon: morning/day ⇒ daytime=true, dusk/night ⇒ daytime=false.
+ * Dawn is treated as daytime — see upstream's `change_state` discussion;
+ * our own `update_time` brackets dawn at 5–7am for symmetry with dusk.
+ */
+export function isDaytime(timeStage: string): boolean {
+  return timeStage === "dawn" || timeStage === "morning" || timeStage === "day";
 }

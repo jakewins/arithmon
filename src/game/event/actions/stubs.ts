@@ -35,3 +35,7 @@ stubAction("remove_step_tracker");
 // We don't have wander AI yet, so the NPC just stands wherever create_npc put it.
 // The NPC remains interactable; only the pacing is missing.
 stubAction("char_wander");
+// Map animation overlay (e.g. `play_map_animation grass,0.1,noloop,player` —
+// the grass-shake effect ride-along with random_encounter triggers). The full
+// per-frame overlay is not in scope yet; stubbing keeps the YAML loading.
+stubAction("play_map_animation");
