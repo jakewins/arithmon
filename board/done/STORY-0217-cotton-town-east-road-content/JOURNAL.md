@@ -79,3 +79,15 @@ Changes:
   before walking east — the cotton_town "Stop Cotton" gate at (38, 28-29)
   is left untouched per the story spec; QA just sets the same flag the
   cafe cutscene would.
+
+## 2026-05-21 — Reviewer findings
+
+Approved.
+
+- **Upstream fidelity:** verified map JSON (40x20, 3 tilesets with firstgids 1/2776/4326, 5 tile layers, 16 collision rects — IDs 40, 41, 42, 43, 45, 55, 58, 59, 76, 77, 138, 143, 144, 145, 177, 201) matches upstream `spyder_route2.tmx` exactly. No Events layer in JSON.
+- **YAML events:** 7 events (Route Music + 2 City Park + 2 Cotton Town + 2 Brideswood). All tile coords verified against upstream TMX pixel-to-tile conversion (px/16). Story description mis-states "8 events" — this is a typo in the narrative; the acceptance criteria list and implementation both have the correct 7. Not a defect.
+- **citypark fix:** `Go Route 2 11`/`12` destination updated from fabricated `(26,10)`/`(26,11)` to upstream `(10,0)`/`(11,0)`.
+- **maps.ts:** `CORE_OUTDOOR_WATER` removed from `spyder_route2` tileset list; upstream only has 3 tilesets.
+- **Pre-commit gates:** format:check, lint, tsc --noEmit, npm test (465/465) all pass.
+- **QA (9 cases):** all pass — map sanity, cotton_town east exits at (39,28)/(39,29), west round-trip back, brideswood south wiring (36,19)/(37,19), brideswood north return, citypark north wiring (teleport debug event), citypark→route2 destination-fix round-trip, quiescence (no NPCs, no encounters).
+- **Screenshots:** route2 entry from cotton-town, brideswood exit, citypark exit all render coherently with no garbled tiles. Upstream reference PNG matches layout.
