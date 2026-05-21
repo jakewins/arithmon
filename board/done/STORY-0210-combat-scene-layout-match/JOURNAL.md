@@ -37,3 +37,19 @@ See the four checked-in screenshots in this directory (also copied to `qa/screen
 ## Pre-commit gauntlet
 
 `npm run format:check && npm run lint && npx tsc --noEmit && npm test` — all green (465 unit tests).
+
+## 2026-05-21 — Reviewer findings
+
+Approved.
+
+- Pre-commit gates re-run clean: format, lint, tsc, 465 tests all pass.
+- Verified `SMALL` (6 px PressStart2P) added to `src/game/ui/textStyle.ts` with correct upstream rationale (upstream `FONT_SIZE = 5`).
+- All layout constants cross-checked against `upstream/mods/combat_layouts.yaml`:
+  - Enemy HUD at (18, 0), hud_line1 at (5, 5), hud_line2 at (5, 13) — exact match.
+  - Player HUD at (145, 45), hud_line1 at (12, 11), hud_line2 at (12, 19) — exact match.
+  - Bottom band `BOX_H = 36` = `screen_h // 4`; action menu `RIGHT_W = 102` — confirmed against `combat_menus.py:118-122`.
+- Ran `qa/combat-layout-vs-upstream.ts` against the reviewer dev server — all four screenshots produced cleanly.
+- Visual inspection: "Pairagrin Lv3" fits inside the enemy HUD panel; "Lambert Lv8" fits inside the player panel; "What will Lambert do?" on one line in the 154 px prompt band; FIGHT/ITEM/TUXEMON/RUN all visible in the 102 px action menu; DP pips and party tray do not overlap.
+- Technique popup with "Poison Courtship 2DP" (longest move) fits cleanly; info card renders within the 36 px band.
+- Attack message "2 Dark Power spent! (3/5)" wraps to two lines and stays inside the bottom band.
+- Code quality: clean constants, well-commented upstream references, no dead code.
