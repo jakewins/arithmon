@@ -44,3 +44,21 @@
   (480 tests, 43 files).
 - Moved todo `01-fix-quiescence-test-waitforidle-timeout.md` from
   `todos/open/` to `todos/done/`.
+
+## 2026-05-21 — Reviewer findings (approved)
+
+- Upstream faithfulness re-confirmed: `"Billie encounter"` in
+  `public/assets/events/spyder_route2.yaml` matches `<object id="156">` in
+  `upstream/mods/tuxemon/maps/spyder_route2.tmx` character-for-character —
+  trigger rect `(1,8)` 1×2, 19 actions + 2 conditions in upstream order.
+- Engine additions (`encounterDebugFlags.suppress` + `setSuppressEncounters`)
+  clean and minimal; pattern identical to existing `forceRoll` flag.
+- Pre-commit gates all green: `format:check`, `lint`, `tsc --noEmit`,
+  `npm test` (480 tests, 43 files).
+- `qa/route2-billie-test.ts` (ARITHMON_PORT=8082): 4/4 pass — win path
+  end-to-end, no re-trigger after `route2billie:yes`, `lock_controls` blocks
+  input mid-cutscene, loss path leaves gate open.
+- `qa/cotton-town-east-road-test.ts` (ARITHMON_PORT=8082): 9/9 pass —
+  including the previously failing `testNoEncountersOrNpcs` quiescence case.
+- Screenshots `route2-billie-prebattle.png`, `route2-billie-postbattle.png`,
+  `route2-billie-loss.png` committed and visually correct.
