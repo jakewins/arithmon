@@ -177,7 +177,9 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
   spyder_cotton_scoop: {
     jsonKey: "map-spyder_cotton_scoop",
     jsonPath: "assets/maps/spyder_cotton_scoop.json",
-    tilesets: [CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
+    // Upstream TMX firstgids: core_city_and_country(1), core_indoor_floors(1441),
+    // core_indoor_walls(5305), core_set pieces(9169). Order matches upstream.
+    tilesets: [CORE_CITY_AND_COUNTRY, CORE_INDOOR_FLOORS, CORE_INDOOR_WALLS, CORE_SET_PIECES],
     environment: "grass",
     inside: true,
     locationType: "shop",

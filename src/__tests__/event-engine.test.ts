@@ -2209,4 +2209,72 @@ events:
     engine.update(ctx, 0.016);
     expect(gameVariables.get("loaded_from_yaml")).toBe("yes");
   });
+
+  describe("open_shop action", () => {
+    /**
+     * Build a minimal scene-shaped stub. open_shop calls
+     * `scene.scene.pause/launch` to swap into ShopScene, then `.get("ShopScene")`
+     * to wire up the shutdown listener. We capture the launch args so the
+     * tests can assert which shop got opened.
+     */
+    function stubShopScene(): {
+      scene: Phaser.Scene;
+      launched: { key: string; data: unknown }[];
+    } {
+      const launched: { key: string; data: unknown }[] = [];
+      const shopEvents = { once: () => {} };
+      const sceneMgr = {
+        pause: () => {},
+        launch: (key: string, data: unknown) => launched.push({ key, data }),
+        get: () => ({ events: shopEvents }),
+        key: "OverworldScene",
+      };
+      return {
+        scene: { scene: sceneMgr } as unknown as Phaser.Scene,
+        launched,
+      };
+    }
+
+    it("resolves the economy slug directly when called with one arg (legacy form)", async () => {
+      const { createAction } = await import("../game/event/registry");
+      await import("../game/event/actions/openShop");
+      const { scene, launched } = stubShopScene();
+      const action = createAction("open_shop", ["spyder_paper_scoop"]);
+      action.start(makeCtx({ scene }));
+      expect(launched).toHaveLength(1);
+      expect(launched[0].key).toBe("ShopScene");
+      // ShopInventory has the paper-scoop items as registered
+      const data = launched[0].data as { shop: { items: { slug: string }[] } };
+      expect(data.shop.items.map((i) => i.slug)).toEqual(["potion", "tuxeball", "revive"]);
+    });
+
+    it("resolves the economy via `economy_<npc>` variable in upstream form", async () => {
+      const { createAction } = await import("../game/event/registry");
+      await import("../game/event/actions/openShop");
+      const { scene, launched } = stubShopScene();
+      // Upstream wiring: `set_economy spyder_shopkeeper,spyder_cotton_scoop`
+      // writes `economy_spyder_shopkeeper -> spyder_cotton_scoop`, then
+      // `open_shop spyder_shopkeeper,both_item` reads it back.
+      gameVariables.set("economy_spyder_shopkeeper", "spyder_cotton_scoop");
+      const action = createAction("open_shop", ["spyder_shopkeeper", "both_item"]);
+      action.start(makeCtx({ scene }));
+      expect(launched).toHaveLength(1);
+      const data = launched[0].data as { shop: { items: { slug: string; price: number }[] } };
+      expect(data.shop.items.map((i) => i.slug)).toEqual(["potion", "revive", "tuxeball"]);
+      expect(data.shop.items.find((i) => i.slug === "potion")?.price).toBe(20);
+      gameVariables.remove("economy_spyder_shopkeeper");
+    });
+
+    it("no-ops gracefully when neither form resolves a known shop", async () => {
+      const { createAction } = await import("../game/event/registry");
+      await import("../game/event/actions/openShop");
+      const { scene, launched } = stubShopScene();
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const action = createAction("open_shop", ["nonexistent_npc", "both_item"]);
+      action.start(makeCtx({ scene }));
+      expect(launched).toHaveLength(0);
+      expect(action.done).toBe(true);
+      warn.mockRestore();
+    });
+  });
 });

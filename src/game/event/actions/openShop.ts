@@ -4,25 +4,45 @@ import { getShop } from "../../data/shops";
 
 /**
  * Tuxemon syntax:
- *   open_shop <economy_slug>
+ *   open_shop <economy_slug>            (our legacy back-compat form)
+ *   open_shop <npc_slug>,<menu_flag>    (upstream form; e.g.
+ *                                        `open_shop spyder_shopkeeper,both_item`)
  *
- * Opens the shop UI with the given economy/shop inventory.
+ * Upstream pairs `set_economy <npc>,<economy>` (which stores
+ * `economy_<npc> -> economy_slug` in the variable map) with a later
+ * `open_shop <npc>,both_item` interact event. We mirror that: if a second
+ * positional arg is present, treat the first as an NPC slug and look up the
+ * economy from variables. With no second arg, treat the first as the economy
+ * slug directly.
+ *
+ * The `both_item` flag in upstream toggles whether the shop also sells
+ * monsters (a vendor-of-monsters concept we don't support yet). All current
+ * cotton/paper economies have `monsters: []` anyway, so the flag is accepted
+ * and ignored. Tracked as a known stub for follow-up.
+ *
  * Multi-frame action: stays `done: false` until ShopScene shuts down.
  */
 class OpenShopAction implements EventAction {
   type = "open_shop";
   done = false;
 
-  private shopSlug: string;
+  private firstArg: string;
+  private hasSecondArg: boolean;
 
   constructor(args: string[]) {
-    this.shopSlug = args[0] ?? "";
+    this.firstArg = args[0] ?? "";
+    this.hasSecondArg = args.length > 1 && args[1] !== "";
   }
 
   start(ctx: EventContext): void {
-    const shop = getShop(this.shopSlug);
+    const shopSlug = this.hasSecondArg
+      ? (ctx.variables.get(`economy_${this.firstArg}`) ?? "")
+      : this.firstArg;
+    const shop = shopSlug ? getShop(shopSlug) : undefined;
     if (!shop) {
-      console.warn(`open_shop: no shop found for "${this.shopSlug}"`);
+      console.warn(
+        `open_shop: no shop found for "${shopSlug}" (arg="${this.firstArg}", upstream-form=${this.hasSecondArg})`,
+      );
       this.done = true;
       return;
     }

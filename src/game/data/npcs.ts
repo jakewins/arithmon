@@ -54,8 +54,6 @@ const NPC_REGISTRY: Record<string, NpcSpriteDef> = {
   spyder_papermart_rafael: { spritesheet: "tennisplayer_lapi" },
   spyder_papermanor_princeton: { spritesheet: "maniac_yellow" },
   spyder_healing_center_nurse: { spritesheet: "shopassistant" },
-  spyder_cotton_scoop_keeper: { spritesheet: "shopkeeper" },
-  spyder_cotton_scoop_assistant: { spritesheet: "shopassistant" },
   cotton_town_monk: { spritesheet: "maniac" },
   cotton_town_florist: { spritesheet: "florist" },
   spyder_citypark_ranger: { spritesheet: "tennisplayer_lapi" },

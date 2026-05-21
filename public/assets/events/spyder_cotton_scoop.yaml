@@ -1,4 +1,8 @@
 events:
+  # Verbatim port of upstream `spyder_cotton_scoop.tmx` events.
+  # Where upstream's English msgstr is empty in `base.po`, we use a short
+  # in-character placeholder (per STORY-0061 dialog policy).
+
   # --- Music ---
 
   Play Music:
@@ -7,38 +11,143 @@ events:
     actions:
       - play_music music_cathedral_theme
 
-  # --- NPC spawns ---
+  # --- NPC spawns (one-shot, gated on `not char_exists`) ---
 
   Create Shopkeeper:
     conditions:
-      - not char_exists spyder_cotton_scoop_keeper
+      - not char_exists spyder_shopkeeper
     actions:
-      - create_npc spyder_cotton_scoop_keeper,2,3
-      - char_face spyder_cotton_scoop_keeper,down
+      - create_npc spyder_shopkeeper,1,6
+      - char_face spyder_shopkeeper,right
+      - set_economy spyder_shopkeeper,spyder_cotton_scoop
 
   Create Assistant:
     conditions:
-      - not char_exists spyder_cotton_scoop_assistant
+      - not char_exists spyder_shopassistant
     actions:
-      - create_npc spyder_cotton_scoop_assistant,9,6
-      - char_face spyder_cotton_scoop_assistant,left
+      - create_npc spyder_shopassistant,7,7
 
-  # --- Shop interaction ---
-
-  Talk Shopkeeper:
-    behav: talk spyder_cotton_scoop_keeper
+  Create Tech Shop:
+    conditions:
+      - not char_exists spyder_wayfarer1_norm
     actions:
-      - dialog Welcome to Cotton Scoop! What can I get you?
-      - open_shop spyder_cotton_scoop
+      - create_npc spyder_wayfarer1_norm,1,4
+      - char_face spyder_wayfarer1_norm,right
+      - set_economy spyder_wayfarer1_norm,spyder_cotton_tech
 
-  Talk Assistant:
-    behav: talk spyder_cotton_scoop_assistant
+  # --- Shop interactions (tile-based, button-pressed) ---
+
+  Open Shop A:
+    x: 2
+    y: 6
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-      - dialog We have the best supplies in Cotton Town!
+      - char_face spyder_shopkeeper,right
+      - dialog Welcome!
+      - open_shop spyder_shopkeeper,both_item
 
-  # --- Map connections ---
+  Open Shop B:
+    x: 1
+    y: 7
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+    actions:
+      - char_face spyder_shopkeeper,down
+      - dialog Welcome!
+      - open_shop spyder_shopkeeper,both_item
 
-  Go Outside:
+  Open Tech:
+    x: 2
+    y: 4
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+    actions:
+      - char_face spyder_wayfarer1_norm,right
+      - dialog Welcome!
+      - open_shop spyder_wayfarer1_norm,both_item
+
+  # --- Tuxeball-tutorial cutscene ---
+  # Walking onto the counter row (y=8) for the first time triggers the offer;
+  # `Devices, no/explain` fire on the next tick depending on the yes/no answer.
+
+  Receive capture device:
+    x: 0
+    y: 8
+    width: 13
+    height: 1
+    conditions:
+      - is char_at player
+      - not variable_set visitcottonmart:yes
+    actions:
+      - char_stop player
+      - lock_controls
+      - char_face spyder_shopkeeper,down
+      - dialog Here at Cotton Scoop, every adventurer needs a few capture devices. Want me to walk you through how they work?
+      - translated_dialog_choice yes:no,heardcapture
+      - set_variable visitcottonmart:yes
+      - unlock_controls
+
+  Devices, no explain:
+    conditions:
+      - is variable_set heardcapture:yes
+    actions:
+      - pathfind spyder_shopkeeper,1,6
+      - clear_variable heardcapture
+      - add_item tuxeball
+      - add_item tuxeball
+      - add_item tuxeball
+      - add_item tuxeball
+      - add_item tuxeball
+      - dialog Got 5 Tuxeballs!
+
+  Devices, explain:
+    x: 2
+    y: 3
+    conditions:
+      - is variable_set heardcapture:no
+    actions:
+      - char_stop player
+      - dialog Let my assistant introduce you.
+      - pathfind_to_char player,spyder_shopassistant
+      - char_face spyder_shopassistant,player
+      - char_face player,spyder_shopassistant
+      - dialog A Tuxeball is a capture device. Throw it at a weakened wild Tuxemon to bring them onto your team!
+      - add_item tuxeball
+      - add_item tuxeball
+      - add_item tuxeball
+      - add_item tuxeball
+      - add_item tuxeball
+      - dialog Got 5 Tuxeballs!
+      - clear_variable heardcapture
+
+  # --- Shopassistant idle chatter (after the cutscene) ---
+
+  Assistant Talk:
+    behav: talk spyder_shopassistant
+    conditions:
+      - is variable_set visitcottonmart:yes
+    actions:
+      - dialog Welcome back! The boss runs a tight ship here.
+
+  # --- Map connection: exit to Cotton Town ---
+  # Upstream uses one rect spanning (5..6, 10). We model that as two
+  # adjacent Go Outside A/B events to match our other-scoop convention.
+
+  Go Outside A:
+    x: 5
+    y: 10
+    conditions:
+      - is char_at player
+      - is char_facing player,down
+    actions:
+      - transition_teleport player,spyder_cotton_town.tmx,30,35,0.3
+      - char_face player,down
+
+  Go Outside B:
     x: 6
     y: 10
     conditions:

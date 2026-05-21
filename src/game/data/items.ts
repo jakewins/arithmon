@@ -97,4 +97,60 @@ export const ITEMS: Record<string, ItemDef> = {
     effects: [],
     buyPrice: 0,
   },
+  // --- Cotton Town tech-shop items ---
+  // Upstream marks these as `category: morph` with an `evolve` effect — we
+  // don't model morph items yet, so they're shelved as `other` with empty
+  // effects (purchasable but inert on use). STORY-0226 follow-up wires the
+  // evolve effect. Same for TMs (`category: technique` with `learn_tm`) —
+  // STORY-0227 follow-up.
+  miaow_milk: {
+    slug: "miaow_milk",
+    name: "Miaow Milk",
+    description: "An evolution item for a specific monster line.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 2000,
+  },
+  pyramidion: {
+    slug: "pyramidion",
+    name: "Pyramidion",
+    description: "An evolution item for a specific monster line.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 2000,
+  },
+  ox_stick: {
+    slug: "ox_stick",
+    name: "Ox Stick",
+    description: "An evolution item for a specific monster line.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 2000,
+  },
+  tm_avalanche: {
+    slug: "tm_avalanche",
+    name: "TM Avalanche",
+    description: "Teaches a compatible monster the Avalanche technique.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 2000,
+  },
+  tm_blossom: {
+    slug: "tm_blossom",
+    name: "TM Blossom",
+    description: "Teaches a compatible monster the Blossom technique.",
+    category: "other",
+    sprite: "item/potion",
+    usableIn: [],
+    effects: [],
+    buyPrice: 1000,
+  },
 };
