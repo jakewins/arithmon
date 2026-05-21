@@ -1,0 +1,70 @@
+# STORY-0227 — Implementation Journal
+
+## Summary
+
+Stood up a GitHub Actions workflow (`.github/workflows/deploy.yml`) that
+builds the Vite prod bundle on every push to `main` and publishes it to
+GitHub Pages via the three official Pages actions
+(`actions/configure-pages@v5`, `actions/upload-pages-artifact@v3`,
+`actions/deploy-pages@v4`). Fixed three absolute asset paths so the build
+works under the `/arithmon/` project-site subpath:
+
+- `index.html` favicon: `/favicon.png` → `./favicon.png`
+- `index.html` stylesheet: `/style.css` → `./style.css`
+- `public/style.css` font: `/assets/font/PressStart2P.ttf` → `./assets/font/PressStart2P.ttf`
+
+`vite/config.prod.mjs` already had `base: './'`, so Vite-emitted asset URLs
+(JS chunks, the favicon link Vite would have rewritten, etc.) were already
+correct; the three above were the ones Vite leaves verbatim.
+
+## QA performed
+
+1. **Dev server** (`ARITHMON_PORT=8081 npm run dev` → 8090 due to local port
+   collisions): `curl` against `/`, `/favicon.png`, `/style.css`, and
+   `/assets/font/PressStart2P.ttf` all return 200. The injected
+   `./favicon.png` and `./style.css` hrefs resolve cleanly against the dev
+   document URL.
+
+2. **Subpath simulation** (the critical check): `npm run build`, then `cp -r
+   dist /tmp/arithmon-subpath-test/arithmon`, served the parent with `npx
+   serve@14 . -l 8765`, then drove a real Chromium via Playwright at
+   `http://localhost:8765/arithmon/`. Throwaway script lives at
+   `qa/local/subpath-deploy-check.ts`. Captures every response ≥ 400,
+   `pageerror`, and `console.error`; checks `document.fonts.check('16px
+   "PressStart2P"')`; verifies Phaser mounts a canvas; screenshots.
+   Result: zero failures, font loaded, canvas mounted, title screen renders
+   in PressStart2P (no Arial flash). Note: `window.A` is dev-only
+   (`import.meta.env.DEV` guard in `src/game/main.ts:102`), so we cannot
+   wait on `A.ready` against a prod build.
+
+3. Full gate suite (`format:check`, `lint`, `tsc --noEmit`, `vitest`) all
+   green.
+
+## Notes for reviewer
+
+- `package-lock.json` was already committed, so `npm ci` in CI is fine.
+- `devenv.nix` uses `pkgs.nodejs` with no pinned major; Node 20 in the
+  workflow is a sensible LTS choice and matches what the lockfile resolves
+  against today.
+- No `404.html` or `CNAME` added (out of scope).
+- The dev-server smoke and subpath-sim are local-only; the in-CI build is
+  exercised on push.
+
+## Required one-time GitHub UI step (user)
+
+Before the first workflow run can succeed, in the GitHub repo:
+
+  **Settings → Pages → Build and deployment → Source = "GitHub Actions"**
+
+Without this, the `deploy-pages` step will fail (the environment
+`github-pages` will not yet be configured). After flipping the source the
+next push to `main` (or a manual `workflow_dispatch`) will publish the
+site.
+
+## Live URL
+
+After the first successful workflow run, the game will be reachable at:
+
+  **https://jakewins.github.io/arithmon/**
+
+(Repository: `jakewins/arithmon`, default project-pages URL pattern.)

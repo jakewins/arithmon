@@ -8,7 +8,7 @@
  */
 @font-face {
     font-family: "PressStart2P";
-    src: url("/assets/font/PressStart2P.ttf") format("truetype");
+    src: url("./assets/font/PressStart2P.ttf") format("truetype");
     font-display: block;
 }
 
