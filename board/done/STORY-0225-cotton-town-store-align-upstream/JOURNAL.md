@@ -117,3 +117,18 @@ All gates pass: `npm run format:check && npm run lint && npx tsc --noEmit && npm
 (483/483 tests, all green). New `qa/cotton-scoop-align.ts` passes all 7
 sub-tests; pre-existing `qa/shop-purchase-test.ts` (rewritten for the new
 flow) and `qa/cotton-town-east-road-test.ts` both pass.
+
+## 2026-05-21 — Reviewer findings
+
+- Pre-commit gates (format:check, lint, tsc --noEmit, npm test) all pass.
+- Map JSON verified: 4 tilesets in correct firstgid order, 4 tile layers, 8 collision rects, no event objects leaked in.
+- shops.ts: `spyder_cotton_scoop` prices correct (potion 20G, revive 100G, tuxeball 50G); `spyder_cotton_tech` present with 5 tech items at correct upstream prices.
+- items.ts: 5 tech items (miaow_milk, pyramidion, ox_stick, tm_avalanche, tm_blossom) added with `category: "other"` and `effects: []`.
+- npcs.ts: dead `spyder_cotton_scoop_keeper`/`assistant` entries removed; canonical `spyder_shopkeeper`/`spyder_shopassistant`/`spyder_wayfarer1_norm` slugs used.
+- events YAML: all 11 upstream events ported correctly.
+- openShop.ts: both single-arg economy slug and `npc,both_item` forms work; unit tests added covering both paths plus graceful no-op.
+- QA `qa/cotton-scoop-align.ts`: all 7 tests pass.
+- Screenshots verified: cotton-scoop-overview, cotton-scoop-tuxeball-gift, cotton-scoop-shop-open, cotton-scoop-tech-shop, cotton-scoop-assistant-explain all correct.
+- Round-trip with spyder_cotton_town confirmed working.
+- No regressions in existing QA suite.
+- **Decision: APPROVED.**
