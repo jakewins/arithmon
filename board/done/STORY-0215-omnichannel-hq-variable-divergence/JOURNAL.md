@@ -102,3 +102,21 @@ Also smoke-tested the `Create Screen` event via `qa/local/check-screen.ts`
 
 `npm run format:check && npm run lint && npx tsc --noEmit && npm test` — all
 green (465 tests, 42 files).
+
+---
+
+## 2026-05-21 — Reviewer findings (approve)
+
+### Validated
+
+- All five acceptance criteria met:
+  - `Spot Enforcer` drops `set_variable hospitalcure:yes`; `char_stop player` is first action. Confirmed via diff and upstream TMX (object id 32) cross-check.
+  - `Battle Enforcer` + `Enforcer Post Battle` collapsed into one linear event with `not char_defeated player`; order matches upstream `act01..act60`.
+  - `Set Environment` now uses `set_environment interior` / `not environment_is interior` (was dead `omnichannel1_env:yes` shim).
+  - `Threats` event ported, gated on `omnichannel1wall:yes` + `check_char_parameter player,moving,1`.
+  - `Create Screen` and `Pass1` ported; `Remove Screen` cleanly deferred with TODO — acceptable since `omnichannel1wall:yes` is set nowhere in the codebase yet.
+- Dialog strings cross-checked against `upstream/mods/tuxemon/l18n/en_US/LC_MESSAGES/base.po`: `"Butt out of it, kid, this is private property!"`, `"I told you before - scram!"`, `"It is I who must scram!"` all match verbatim.
+- Encounter table (`dark_robo`, `xeon_2`, L30-31, weight 0.5 each) matches `upstream/mods/tuxemon/db/encounter/spyder_omnichannel.yaml` exactly.
+- `checkCharParameter` `moving` case is minimal and correct — delegates to `ctx.playerMoved`, mirrors upstream per-step poll.
+- Pre-commit gates re-run independently: `format:check`, `lint`, `tsc --noEmit`, `npm test` (465 tests, 42 files) — all green.
+- QA script `qa/cotton-omnichannel-kickout.ts` executed with `ARITHMON_PORT=8082`: first kick-out, `hospitalcure` regression check, second-visit re-encounter assertion — all passed. Screenshot `cotton-omnichannel-kickout-revisit.png` confirms enforcer NPC visible at (3,12) during second-visit dialog.
