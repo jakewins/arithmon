@@ -90,3 +90,29 @@ Pre-saved reference screenshots in this directory:
 - [x] No BitmapText migration needed (hypothesis 1 sufficient).
 - [x] `npm run format:check && npm run lint && npx tsc --noEmit && npm test`
       all pass.
+
+## 2026-05-21 — Reviewer findings
+
+Approved.
+
+- Pre-commit gates re-run clean in reviewer worktree: format, lint, tsc, 465 tests all pass.
+- Root cause analysis confirmed: hypothesis 1 (`Text.setResolution(zoom)`) was
+  the correct fix; well-documented in JOURNAL with upstream reference.
+- `addText()` helper in `textStyle.ts` is clean and well-commented. The
+  tracking set + `refreshCrispResolution()` wired into `snapToIntegerZoom` in
+  `main.ts` handles the resize-during-play case correctly.
+- All 101 `scene.add.text(...)` / `this.add.text(...)` call sites migrated to
+  `addText(...)`. Verified with grep: zero remaining bare `add.text` calls in
+  production scene code (only inside `textStyle.ts` itself, as the underlying
+  implementation).
+- Ran `qa/text-crispness.ts` against the reviewer dev server (port 8082):
+  combat dialog fringe pixel share reported **0.0%** (pre-fix was >25%).
+  Suite output: `text-crispness: OK`.
+- Live visual inspection: "What will Budaye do?" prompt renders as solid pixel
+  blocks, no gray fringe. Matches `upstream-crisp.png` target. Title screen,
+  math quiz, party screen all equally crisp.
+- `after-pairagrin-hud.png` confirms "Pairagrin Lv2" still fits inside the
+  enemy HUD panel — text size unchanged from STORY-0210.
+- Code quality: pragmatic wrapper, well-commented, no over-engineering. The
+  `applyCrispResolution` export is a sensible opt-in for any future non-factory
+  Text construction paths.
