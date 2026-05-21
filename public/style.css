@@ -12,6 +12,23 @@
     font-display: block;
 }
 
+/*
+ * Pizel is upstream Tuxemon's `thin_font_file` — a true 5×7-design pixel font.
+ * We use it for the SMALL / SMALL_HEADING UI styles (combat prompt, HUD names,
+ * monster-info rows) where PressStart2P at 6 px landed off-grid (STORY-0229).
+ * PressStart2P's TTF outlines are designed for 8 px integer multiples; at 5–7
+ * px the browser rasteriser can't hint glyphs onto the pixel grid cleanly and
+ * we got fat, irregular blocks. Pizel's outlines are designed at exactly the
+ * single-digit-pixel sizes our 256×144 viewport needs. `font-display: block`
+ * matches PressStart2P so the browser suppresses paint until the .ttf arrives
+ * — keeps the "no fallback flash" guarantee from STORY-0208.
+ */
+@font-face {
+    font-family: "Pizel";
+    src: url("./assets/font/Pizel.ttf") format("truetype");
+    font-display: block;
+}
+
 body {
     margin: 0;
     padding: 0;

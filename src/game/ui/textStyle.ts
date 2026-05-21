@@ -23,6 +23,18 @@
 
 export const UI_FONT_FAMILY = "PressStart2P";
 
+/**
+ * Pizel — upstream Tuxemon's `thin_font_file` (see `upstream/tuxemon/config.py`).
+ * A true 5×7-design pixel font, vendored from
+ * `upstream/mods/tuxemon/font/Pizel.ttf` with CC0 licensing. Used for
+ * `SMALL` / `SMALL_HEADING` text only — PressStart2P's TTF outlines are
+ * designed for 8 px integer multiples and the browser rasteriser can't hint
+ * 5–7 px PressStart2P onto the pixel grid cleanly (the "fat irregular
+ * blobs" symptom from STORY-0229). Pizel's outlines are native at these
+ * sizes so every glyph snaps to whole pixels.
+ */
+export const UI_FONT_FAMILY_THIN = "Pizel";
+
 /** Body — the default for menus, dialog, HUD labels. 8 px = PressStart2P's native grid. */
 export const BODY: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: UI_FONT_FAMILY,
@@ -39,22 +51,38 @@ export const BODY_LIGHT: Phaser.Types.GameObjects.Text.TextStyle = {
 
 /**
  * Compact body text — combat HUD names, action menu, in-combat prompt.
- * Targets upstream Tuxemon's 5 px FONT_SIZE used by combat_menus.py; at 6 px
- * the glyphs still anti-alias acceptably while fitting inside upstream's
- * tighter HUD-panel rectangles (name+level inside 85×30 / 110×50 boxes).
- * Used anywhere we'd otherwise overflow at the 8 px BODY size.
+ * Targets upstream Tuxemon's 5 px FONT_SIZE used by combat_menus.py.
+ *
+ * Renders in Pizel (upstream's `thin_font_file`) rather than PressStart2P:
+ * PressStart2P's outlines are designed for 8 px integer multiples, and the
+ * 6 px we used to fit upstream's tight HUD rectangles couldn't hint glyphs
+ * onto the pixel grid cleanly — see STORY-0229 for the "fat irregular
+ * blobs" symptom and the H1 sweep that confirmed PressStart2P-at-non-8 is
+ * intrinsically lossy. Pizel is a true 5×7-design face so single-digit-px
+ * renders snap to whole pixels. We use 10 px (not 6) because Pizel is a
+ * proportional thin font — at 10 px "What will Lambert do?" measures
+ * ~118 logical px, comparable to PressStart2P 6 px's 127 px, so the
+ * combat-prompt panel and other SMALL surfaces don't need re-layout.
+ *
+ * Sizing: Pizel 8 px gives ~8 visible-ink-rows (vs PressStart2P 6 px's ~7),
+ * so existing 7-8 px row spacing (combat HUD `infoRowH = 8`, monster-info
+ * 10 px row pitch) absorbs the extra row without overflow. Width on
+ * "What will Lambert do?" comes out ~94 logical px (vs the old 127) — well
+ * inside the 154 px combat-prompt panel.
  */
 export const SMALL: Phaser.Types.GameObjects.Text.TextStyle = {
-  fontFamily: UI_FONT_FAMILY,
-  fontSize: "6px",
+  fontFamily: UI_FONT_FAMILY_THIN,
+  fontSize: "8px",
   color: "#1a1a1a",
 };
 
 /** Bold variant of SMALL — section headings inside compact panels (e.g. the
- * journal/info screen's "Evolution" label). 6 px to match SMALL's body text. */
+ * journal/info screen's "Evolution" label). Pizel ships only one weight so
+ * we set `fontStyle: "bold"` for browser synth-boldening; reads as a slightly
+ * heavier stroke against the regular SMALL rows. */
 export const SMALL_HEADING: Phaser.Types.GameObjects.Text.TextStyle = {
-  fontFamily: UI_FONT_FAMILY,
-  fontSize: "6px",
+  fontFamily: UI_FONT_FAMILY_THIN,
+  fontSize: "8px",
   color: "#1a1a1a",
   fontStyle: "bold",
 };
@@ -215,11 +243,19 @@ export async function ensureUiFontLoaded(): Promise<boolean> {
     return false;
   }
   try {
-    // The 8 px size matches the bitmap glyph data; load() picks the right
-    // @font-face entry based on the requested family + size.
-    await document.fonts.load(`8px "${UI_FONT_FAMILY}"`);
+    // The 8 px size matches PressStart2P's bitmap grid; load() picks the
+    // right @font-face entry based on the requested family + size. We also
+    // pre-load Pizel (the thin SMALL face) at its native 10 px so neither
+    // family flashes its fallback at first paint.
+    await Promise.all([
+      document.fonts.load(`8px "${UI_FONT_FAMILY}"`),
+      document.fonts.load(`8px "${UI_FONT_FAMILY_THIN}"`),
+    ]);
     await document.fonts.ready;
-    return document.fonts.check(`8px "${UI_FONT_FAMILY}"`);
+    return (
+      document.fonts.check(`8px "${UI_FONT_FAMILY}"`) &&
+      document.fonts.check(`8px "${UI_FONT_FAMILY_THIN}"`)
+    );
   } catch {
     return false;
   }
