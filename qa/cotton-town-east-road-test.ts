@@ -327,28 +327,40 @@ async function testCityparkRoute2DestinationFix(): Promise<void> {
   }
 }
 
-/** Walk a few tiles on route2 and verify no NPCs spawn and no battle starts. */
+/** Spawn on a safe tile in the centre of route2 and verify the map settles —
+ *  no battle starts, no scripted cutscene grabs the engine, and we stay on
+ *  route2. The trainers added in STORY-0218 (Roddick, Marion, Graf) DO spawn
+ *  via on-map `create_npc` events, so we just sanity-check that they're the
+ *  only NPCs present and that none of them sight-lined the player. */
 async function testNoEncountersOrNpcs(): Promise<void> {
-  console.log("[route2 quiescence: no NPCs, no encounters] launching...");
+  console.log("[route2 quiescence: no battle, no cutscene] launching...");
   const { page, close } = await launchGame();
   try {
-    await setupGame(page, { map: "spyder_route2", tileX: 5, tileY: 8 });
-    await waitForIdle(page);
-
-    // Take a short walk through what would be encounter-zone tiles upstream.
-    // This story intentionally ships none of those triggers.
-    await walkTo(page, 8, 8, "right").catch(() => undefined);
-    await walkTo(page, 8, 12, "down").catch(() => undefined);
-    await walkTo(page, 5, 12, "left").catch(() => undefined);
+    // Spawn in open grass mid-map — away from Billie's trigger column at x=1
+    // (STORY-0221) *and* away from the trainer sight-lines Roddick (x=5),
+    // Marion (x=22), and Graf (x=29) added in STORY-0218. Setting
+    // `route2billie:yes` keeps us consistent with the other cases in this
+    // file even though our spawn is already clear of the Billie trigger.
+    await setupGame(page, {
+      map: "spyder_route2",
+      tileX: 15,
+      tileY: 12,
+      variables: { route2billie: "yes" },
+    });
     await waitForIdle(page);
 
     const s = (await getState(page)) as PlayerState;
     const npcs = s.npcs ?? [];
-    assert(npcs.length === 0, `expected zero NPCs on route2, got ${JSON.stringify(npcs)}`);
+    const expected = ["spyder_route2_roddick", "spyder_route2_marion", "spyder_route2_graf"];
+    const slugs = npcs.map((n) => n.slug).sort();
+    assert(
+      slugs.length === expected.length && expected.every((slug) => slugs.includes(slug)),
+      `expected route2 trainers [${expected.join(",")}], got ${JSON.stringify(slugs)}`,
+    );
     assert(s.scene !== "BattleScene", `expected to remain in OverworldScene, got scene=${s.scene}`);
     assert(s.mapKey === "spyder_route2", `expected to still be on route2, got mapKey=${s.mapKey}`);
 
-    console.log("[route2 quiescence: no NPCs, no encounters] OK");
+    console.log("[route2 quiescence: no battle, no cutscene] OK");
   } finally {
     await close();
   }

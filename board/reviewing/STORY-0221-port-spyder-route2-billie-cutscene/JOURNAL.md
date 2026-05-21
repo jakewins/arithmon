@@ -22,3 +22,25 @@
 
 - `qa/cotton-town-east-road-test.ts` → `testNoEncountersOrNpcs` **fails** with `waitForIdle timed out`. The implementor updated 4 other cases in this file (adding `route2billie: "yes"` guards and adjusting spawn points) but missed this case. Root cause: Roddick (STORY-0218 trainer) walks south from `(5,3)` to `(5,7)` and sight-lines the player spawned at `(5,8)`, leaving the engine blocked indefinitely. This is a pre-existing break from STORY-0218, but the implementor had the file open and should have fixed it. The fix is minor: relocate the spawn to open grass (e.g. `(15,12)`) away from all trainer sight-lines and also add `route2billie: "yes"` for consistency.
 - See `todos/open/01-fix-quiescence-test-waitforidle-timeout.md` for instructions.
+
+## 2026-05-21 — Bounce-back addressed
+
+- Relocated `testNoEncountersOrNpcs` spawn from `(5,8)` (inside Roddick's
+  sight-line column) to `(15,12)` — open grass in the centre of route2, well
+  clear of Roddick (x=5), Marion (x=22), Graf (x=29), and Billie's trigger
+  column at x=1. Added `variables: { route2billie: "yes" }` to stay consistent
+  with the other cases in this file. Updated the comment to flag both guards.
+- The test's original `npcs.length === 0` assertion was a STORY-0217-era
+  invariant ("this story ships zero NPCs"); STORY-0218 added three trainers
+  via on-map `create_npc` events, so the assertion is now outdated. Tightened
+  it to expect exactly the three trainer slugs (`spyder_route2_roddick`,
+  `spyder_route2_marion`, `spyder_route2_graf`) and to assert the player
+  stayed in OverworldScene on route2. The pre-walk through encounter rects
+  was dropped: the walk was a STORY-0217 "no encounters ship" check that is
+  now covered properly by `qa/route2-encounters-test.ts` (STORY-0219), and
+  keeping it here just made the test stochastic against the 11% roll.
+- Re-ran `qa/cotton-town-east-road-test.ts`: all 9 cases pass.
+- Pre-commit gates green: `format:check`, `lint`, `tsc --noEmit`, `npm test`
+  (480 tests, 43 files).
+- Moved todo `01-fix-quiescence-test-waitforidle-timeout.md` from
+  `todos/open/` to `todos/done/`.
