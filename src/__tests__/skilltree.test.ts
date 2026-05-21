@@ -32,6 +32,7 @@ function makeSession(): GameSession {
     inside: false,
     locationType: "",
     mapKey: "",
+    mapMeta: null,
     timeStage: "day",
     kennels: { Kennel: { monsters: [], visible: true } },
     musicPlaying: null,

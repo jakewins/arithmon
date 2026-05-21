@@ -42,6 +42,40 @@ export interface OverworldInitData {
   spawnFacing?: Direction;
 }
 
+/**
+ * Read the active TMX's `<properties>` (slug + cardinal neighbours) into the
+ * shape we cache on `session.mapMeta` for the text formatter. Phaser's
+ * `tilemap.properties` is either a plain object (`{slug: "route2", ...}`) or
+ * the Tiled-1.2+ array form (`[{name: "slug", value: "route2"}, ...]`); we
+ * accept both. Missing entries default to empty strings so substitution can
+ * still produce a readable (if dashy) result.
+ */
+function readMapMeta(properties: object | object[] | undefined): {
+  slug: string;
+  north: string;
+  south: string;
+  east: string;
+  west: string;
+} {
+  const raw: Record<string, string> = {};
+  if (Array.isArray(properties)) {
+    for (const entry of properties as { name?: string; value?: unknown }[]) {
+      if (typeof entry.name === "string") raw[entry.name] = String(entry.value ?? "");
+    }
+  } else if (properties && typeof properties === "object") {
+    for (const [k, v] of Object.entries(properties as Record<string, unknown>)) {
+      raw[k] = String(v ?? "");
+    }
+  }
+  return {
+    slug: raw.slug ?? "",
+    north: raw.north ?? "",
+    south: raw.south ?? "",
+    east: raw.east ?? "",
+    west: raw.west ?? "",
+  };
+}
+
 export class OverworldScene extends Scene implements DebugStateProvider, DebugCommandHandler {
   // Exposed so char_face action can update player sprite frame
   player!: Phaser.Physics.Arcade.Sprite;
@@ -261,6 +295,7 @@ export class OverworldScene extends Scene implements DebugStateProvider, DebugCo
     session.inside = mapDef.inside ?? false;
     session.locationType = mapDef.locationType ?? "";
     const map = this.make.tilemap({ key: mapDef.jsonKey });
+    session.mapMeta = readMapMeta(map.properties);
 
     const tilesets = mapDef.tilesets.map((t) => map.addTilesetImage(t.name, t.imageKey)!);
 

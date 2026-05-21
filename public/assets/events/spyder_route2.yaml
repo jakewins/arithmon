@@ -626,3 +626,44 @@ events:
     actions:
       - random_encounter spyder_route2,11
       - play_map_animation grass,0.1,noloop,player
+
+  # --- Readable map signs (STORY-0220) ---
+  # Verbatim port of the four `translated_dialog` sign objects from
+  # `upstream/mods/tuxemon/maps/spyder_route2.tmx` <objectgroup id="6">.
+  # Each sign fires when the player faces it and presses INTERACT.
+
+  "Sign: City Park":
+    x: 9
+    y: 2
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+    actions:
+      - translated_dialog here_to_north
+
+  "Sign: Column 1":
+    x: 11
+    y: 7
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+    actions:
+      - translated_dialog spyder_column1_sign
+
+  "Sign: Column 2":
+    x: 15
+    y: 5
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+    actions:
+      - translated_dialog spyder_column2_sign
+
+  "Sign: Route 2":
+    x: 1
+    y: 7
+    conditions:
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+    actions:
+      - translated_dialog welcome_location_route

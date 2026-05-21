@@ -67,6 +67,21 @@ export interface GameSession {
   locationType: string;
   /** Current map key. */
   mapKey: string;
+  /**
+   * Map metadata pulled from the active TMX's top-level `<properties>`
+   * (`slug`, `north`, `south`, `east`, `west`). Backs `${{map_name}}`,
+   * `${{map_desc}}`, and the cardinal-direction placeholders rendered by the
+   * `welcome_location_*` / `here_to_*` map signs. `slug` is the bare upstream
+   * map slug (e.g. `route2`, `paper_town`) — distinct from `mapKey`, which is
+   * the prefixed registry key (`spyder_route2`). `null` outside an active map.
+   */
+  mapMeta: {
+    slug: string;
+    north: string;
+    south: string;
+    east: string;
+    west: string;
+  } | null;
   /** Current time-of-day stage. */
   timeStage: "dawn" | "morning" | "day" | "dusk" | "night";
   /** Named kennels for monster storage. */
@@ -125,6 +140,7 @@ function createSession(): GameSession {
     inside: false,
     locationType: "",
     mapKey: "",
+    mapMeta: null,
     timeStage: "day",
     kennels: { Kennel: { monsters: [], visible: true } },
     musicPlaying: null,

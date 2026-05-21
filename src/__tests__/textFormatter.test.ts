@@ -98,4 +98,56 @@ msgstr "Billie"
     expect(formatText("hi ${{nonsense}}!")).toBe("hi ${{nonsense}}!");
     expect(warnSpy).toHaveBeenCalledTimes(1);
   });
+
+  /**
+   * Map signs use `${{map_name}}` + cardinal placeholders. Upstream resolves
+   * these from the active TMX's `<properties>` (`slug`, `north`, ...) rather
+   * than the registry key; OverworldScene caches them on `session.mapMeta`.
+   * These tests pin the substitution behaviour the route2 / paper_town signs
+   * depend on.
+   */
+  describe("with mapMeta populated", () => {
+    beforeEach(() => {
+      session.mapMeta = {
+        slug: "route2",
+        north: "citypark",
+        south: "brideswood",
+        east: "",
+        west: "cotton_town",
+      };
+      loadPO(`
+msgid "route2"
+msgstr "Route 2"
+
+msgid "route2_description"
+msgstr "The historic path!"
+
+msgid "citypark"
+msgstr "City Park"
+
+msgid "brideswood"
+msgstr "Brideswood"
+
+msgid "cotton_town"
+msgstr "Cotton"
+`);
+    });
+
+    it("renders ${{map_name}} from the slug, not the mapKey", () => {
+      session.mapKey = "spyder_route2";
+      expect(formatText("${{map_name}}")).toBe("Route 2");
+      expect(formatText("${{map_desc}}")).toBe("The historic path!");
+    });
+
+    it("translates cardinal neighbours and renders missing edges as '-'", () => {
+      expect(formatText("N: ${{north}} / S: ${{south}} / E: ${{east}} / W: ${{west}}")).toBe(
+        "N: City Park / S: Brideswood / E: - / W: Cotton",
+      );
+    });
+
+    it("joins comma-separated neighbour slugs with ' - '", () => {
+      session.mapMeta!.north = "citypark,brideswood";
+      expect(formatText("${{north}}")).toBe("City Park - Brideswood");
+    });
+  });
 });

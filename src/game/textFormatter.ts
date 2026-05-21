@@ -45,6 +45,7 @@ function formatMoney(amount: number): string {
  */
 function resolve(body: string): string | null {
   const player = session.player;
+  const meta = session.mapMeta;
 
   // Direct identity lookups first — these are the bulk of placeholders.
   switch (body) {
@@ -59,9 +60,12 @@ function resolve(body: string): string | null {
     case "money_formatted":
       return formatMoney(player.money);
     case "map_name":
-      return t(session.mapKey);
+      // Upstream uses the TMX `slug` property (e.g. "route2", "paper_town"),
+      // not the prefixed registry key. Fall back to mapKey so legacy callers
+      // that haven't set mapMeta yet still get a (less polished) string.
+      return t(meta?.slug || session.mapKey);
     case "map_desc":
-      return t(`${session.mapKey}_description`);
+      return t(`${meta?.slug || session.mapKey}_description`);
     case "today":
       // Tuxemon serialises the in-game date; we don't yet model one. Emit
       // today's calendar date so the string isn't blank — good enough for the
@@ -69,11 +73,19 @@ function resolve(body: string): string | null {
       return new Date().toLocaleDateString("en-US");
   }
 
-  // Cardinal directions — upstream reads them from the TMX <property> set.
-  // Our MapDef registry doesn't carry that metadata yet; warn and leave the
-  // raw placeholder visible so a future map-metadata story can backfill.
+  // Cardinal directions — translated from the slug stored on the active map's
+  // TMX `<property name="north"/>` etc. Empty slug (no neighbour declared)
+  // renders as upstream's "-" sentinel; this matches `MapConfig` in
+  // `upstream/tuxemon/map/tuxemon.py`.
   if (body === "north" || body === "south" || body === "east" || body === "west") {
-    return null;
+    const slug = meta ? meta[body] : "";
+    if (!slug) return "-";
+    // Upstream supports comma-separated slugs (`north: town_a,town_b`) joined
+    // by " - "; mirror that here for parity with any future multi-edge maps.
+    return slug
+      .split(",")
+      .map((s) => t(s.trim()))
+      .join(" - ");
   }
 
   // ${{var:<key>}} — game variable lookup. Missing keys fall through to the
