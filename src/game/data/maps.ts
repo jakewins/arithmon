@@ -217,7 +217,7 @@ export const MAP_REGISTRY: Record<string, MapDef> = {
   spyder_route2: {
     jsonKey: "map-spyder_route2",
     jsonPath: "assets/maps/spyder_route2.json",
-    tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_WATER, CORE_OUTDOOR_NATURE],
+    tilesets: [CORE_OUTDOOR, CORE_SET_PIECES, CORE_OUTDOOR_NATURE],
     environment: "forest",
   },
   spyder_citypark: {

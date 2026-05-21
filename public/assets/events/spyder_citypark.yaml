@@ -61,7 +61,7 @@ events:
     - is char_at player
     - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route2.tmx,26,10,0.3
+    - transition_teleport player,spyder_route2.tmx,10,0,0.3
     - char_face player,left
 
   Go Route 2 12:
@@ -71,7 +71,7 @@ events:
     - is char_at player
     - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route2.tmx,26,11,0.3
+    - transition_teleport player,spyder_route2.tmx,11,0,0.3
     - char_face player,left
 
   Go Route 3 11:

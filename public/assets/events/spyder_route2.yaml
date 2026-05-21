@@ -1,61 +1,41 @@
 events:
   # --- Music ---
 
-  Play Music:
+  Route Music:
     conditions:
     - not music_playing music_the_wild_places
     actions:
     - play_music music_the_wild_places
 
-  # --- NPC spawns ---
+  # --- Map connections: north to City Park ---
+  # City Park is not yet ported — these teleports lead to a placeholder map
+  # until the follow-up story lands. QA does NOT walk off the north edge.
 
-  Create Roddick:
+  Teleport to City Park A:
+    x: 10
+    y: 0
     conditions:
-    - not char_exists spyder_route2_roddick
-    actions:
-    - create_npc spyder_route2_roddick,15,9
-
-  # --- Encounter zones ---
-
-  Encounters:
-    x: 2
-    y: 2
-    width: 26
-    height: 16
-    conditions:
-    - is char_moved player
     - is char_at player
+    - is char_facing player,up
     actions:
-    - random_encounter spyder_route2,11
+    - transition_teleport player,spyder_citypark.tmx,10,39,0.3
+    - char_face player,up
 
-  # --- Trainer battle ---
-
-  Talk Roddick Pre Battle:
+  Teleport to City Park B:
+    x: 11
+    y: 0
     conditions:
-    - is char_facing_char player,spyder_route2_roddick
-    - is button_pressed INTERACT
-    - not battle_outcome player,spyder_route2_roddick,won
+    - is char_at player
+    - is char_facing player,up
     actions:
-    - char_face spyder_route2_roddick,player
-    - lock_controls
-    - dialog Hey! You look like a trainer. Let me test your skills!
-    - start_battle spyder_route2_roddick
-    - unlock_controls
+    - transition_teleport player,spyder_citypark.tmx,11,39,0.3
+    - char_face player,up
 
-  Talk Roddick Post Win:
-    conditions:
-    - is char_facing_char player,spyder_route2_roddick
-    - is button_pressed INTERACT
-    - is battle_outcome player,spyder_route2_roddick,won
-    actions:
-    - char_face spyder_route2_roddick,player
-    - dialog You're pretty strong! Keep heading east to the City Park.
+  # --- Map connections: west back to Cotton Town ---
 
-  # --- Map connections ---
-
-  Go Cotton Town 10:
-    x: 2
-    y: 10
+  Teleport to Cotton Town A:
+    x: 0
+    y: 8
     conditions:
     - is char_at player
     - is char_facing player,left
@@ -63,9 +43,9 @@ events:
     - transition_teleport player,spyder_cotton_town.tmx,39,28,0.3
     - char_face player,left
 
-  Go Cotton Town 11:
-    x: 2
-    y: 11
+  Teleport to Cotton Town B:
+    x: 0
+    y: 9
     conditions:
     - is char_at player
     - is char_facing player,left
@@ -73,42 +53,24 @@ events:
     - transition_teleport player,spyder_cotton_town.tmx,39,29,0.3
     - char_face player,left
 
-  Go City Park 10:
-    x: 27
-    y: 10
+  # --- Map connections: south to Brideswood ---
+
+  Teleport to Brideswood A:
+    x: 36
+    y: 19
     conditions:
     - is char_at player
-    - is char_facing player,right
+    - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_citypark.tmx,2,11,0.3
-    - char_face player,right
+    - transition_teleport player,spyder_brideswood.tmx,36,0,0.3
+    - char_face player,down
 
-  Go City Park 11:
-    x: 27
-    y: 11
+  Teleport to Brideswood B:
+    x: 37
+    y: 19
     conditions:
     - is char_at player
-    - is char_facing player,right
+    - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_citypark.tmx,2,12,0.3
-    - char_face player,right
-
-  # --- Signs ---
-
-  Route Sign West:
-    x: 3
-    y: 9
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog Route 2 — Cotton Town
-
-  Route Sign East:
-    x: 26
-    y: 9
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    actions:
-    - dialog Route 2 — City Park
+    - transition_teleport player,spyder_brideswood.tmx,37,0,0.3
+    - char_face player,down
