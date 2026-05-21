@@ -9,9 +9,9 @@ events:
     x: 0
     y: 0
     conditions:
-    - not music_playing music_home
+      - not music_playing music_home
     actions:
-    - play_music music_home
+      - play_music music_home
 
   # --- Map connections ---
 
@@ -19,20 +19,20 @@ events:
     x: 0
     y: 1
     conditions:
-    - is char_at player
+      - is char_at player
     actions:
-    - transition_teleport player,spyder_bedroom.tmx,8,2,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_bedroom.tmx,8,2,0.3
+      - char_face player,down
 
   Go Outside:
     x: 4
     y: 6
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_paper_town.tmx,10,7,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_paper_town.tmx,10,7,0.3
+      - char_face player,down
 
   # --- Interactable furniture ---
 
@@ -40,20 +40,20 @@ events:
     x: 1
     y: 1
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog spyder_papertown_home
+      - translated_dialog spyder_papertown_home
 
   Watch TV:
     x: 1
     y: 5
     conditions:
-    - is char_at player
-    - is char_facing player,up
-    - is button_pressed INTERACT
+      - is char_at player
+      - is char_facing player,up
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog spyder_papertown_tvwatch
+      - translated_dialog spyder_papertown_tvwatch
 
   # --- NPC spawn ---
   # Upstream spawns mom at (5,5) and bounds her wander to the rect (1,2)-(7,5).
@@ -64,10 +64,10 @@ events:
     x: 4
     y: 4
     conditions:
-    - not char_exists spyder_papertown_mom
+      - not char_exists spyder_papertown_mom
     actions:
-    - create_npc spyder_papertown_mom,5,5
-    - char_wander spyder_papertown_mom,,1,2,7,5
+      - create_npc spyder_papertown_mom,5,5
+      - char_wander spyder_papertown_mom,,1,2,7,5
 
   # --- Mom dialog variants ---
   # behav `talk <npc>` injects `is char_facing_char player,<npc>` and
@@ -78,62 +78,62 @@ events:
     y: 1
     behav: talk spyder_papertown_mom
     conditions:
-    - not variable_set spokenmom:yes
+      - not variable_set spokenmom:yes
     actions:
-    - translated_dialog spyder_papertown_mom1
-    - set_variable spokenmom:yes
+      - translated_dialog spyder_papertown_mom1
+      - set_variable spokenmom:yes
 
   Talk mom2:
     x: 8
     y: 2
     behav: talk spyder_papertown_mom
     conditions:
-    - is party_size player,less_than,1
-    - is variable_set spokenmom:yes
+      - is party_size player,less_than,1
+      - is variable_set spokenmom:yes
     actions:
-    - translated_dialog spyder_papertown_mom2
-    - set_variable spokenmom:yes
+      - translated_dialog spyder_papertown_mom2
+      - set_variable spokenmom:yes
 
   Talk mom3:
     x: 8
     y: 3
     behav: talk spyder_papertown_mom
     conditions:
-    - is party_size player,greater_than,0
-    - is variable_set spokenmom:yes
-    - not battle_outcome player,won,spyder_route3_zoolander
+      - is party_size player,greater_than,0
+      - is variable_set spokenmom:yes
+      - not battle_outcome player,won,spyder_route3_zoolander
     actions:
-    - translated_dialog spyder_papertown_mom3
+      - translated_dialog spyder_papertown_mom3
 
   Talk mom4:
     x: 8
     y: 4
     behav: talk spyder_papertown_mom
     conditions:
-    - is battle_outcome player,won,spyder_route3_zoolander
-    - is variable_set spokenmom:yes
-    - not variable_set captainreturns:yes
+      - is battle_outcome player,won,spyder_route3_zoolander
+      - is variable_set spokenmom:yes
+      - not variable_set captainreturns:yes
     actions:
-    - translated_dialog spyder_papertown_mom4
+      - translated_dialog spyder_papertown_mom4
 
   Talk mom5:
     x: 8
     y: 5
     behav: talk spyder_papertown_mom
     conditions:
-    - is variable_set captainreturns:yes
-    - is variable_set spokenmom:yes
-    - not variable_set omnichannelradioannounce:yes
+      - is variable_set captainreturns:yes
+      - is variable_set spokenmom:yes
+      - not variable_set omnichannelradioannounce:yes
     actions:
-    - translated_dialog spyder_papertown_mom5
+      - translated_dialog spyder_papertown_mom5
 
   Talk mom6:
     x: 8
     y: 6
     behav: talk spyder_papertown_mom
     conditions:
-    - is variable_set captainreturns:yes
-    - is variable_set spokenmom:yes
-    - is variable_set omnichannelradioannounce:yes
+      - is variable_set captainreturns:yes
+      - is variable_set spokenmom:yes
+      - is variable_set omnichannelradioannounce:yes
     actions:
-    - translated_dialog spyder_papertown_mom6
+      - translated_dialog spyder_papertown_mom6

@@ -3,9 +3,9 @@ events:
 
   Play Music:
     conditions:
-    - not music_playing music_town_theme
+      - not music_playing music_town_theme
     actions:
-    - play_music music_town_theme
+      - play_music music_town_theme
 
   # --- Map connections: south to Route 1 (x=21-27, y=39) ---
 
@@ -13,71 +13,71 @@ events:
     x: 21
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,21,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,21,0,0.3
+      - char_face player,down
 
   Go Route 1 22:
     x: 22
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,22,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,22,0,0.3
+      - char_face player,down
 
   Go Route 1 23:
     x: 23
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,23,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,23,0,0.3
+      - char_face player,down
 
   Go Route 1 24:
     x: 24
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,24,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,24,0,0.3
+      - char_face player,down
 
   Go Route 1 25:
     x: 25
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,25,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,25,0,0.3
+      - char_face player,down
 
   Go Route 1 26:
     x: 26
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,26,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,26,0,0.3
+      - char_face player,down
 
   Go Route 1 27:
     x: 27
     y: 39
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_route1.tmx,27,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_route1.tmx,27,0,0.3
+      - char_face player,down
 
   # --- Map connections: east to Route 2 (x=39, y=28-29) ---
 
@@ -85,21 +85,21 @@ events:
     x: 39
     y: 28
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_route2.tmx,0,8,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_route2.tmx,0,8,0.3
+      - char_face player,right
 
   Go Route 2 29:
     x: 39
     y: 29
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_route2.tmx,0,9,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_route2.tmx,0,9,0.3
+      - char_face player,right
 
   # --- Map connections: west to Dryad's Grove (x=0, y=7-8) ---
 
@@ -107,21 +107,21 @@ events:
     x: 0
     y: 7
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_dryadsgrove.tmx,39,7,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_dryadsgrove.tmx,39,7,0.3
+      - char_face player,left
 
   Go Dryads Grove 8:
     x: 0
     y: 8
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_dryadsgrove.tmx,39,8,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_dryadsgrove.tmx,39,8,0.3
+      - char_face player,left
 
   # --- Map connections: doors ---
 
@@ -129,190 +129,190 @@ events:
     x: 30
     y: 34
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_scoop.tmx,5,10,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_scoop.tmx,5,10,0.3
+      - char_face player,up
 
   Enter Healing Center:
     x: 20
     y: 26
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_healing_center.tmx,6,10,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_healing_center.tmx,6,10,0.3
+      - char_face player,up
 
   Enter Cotton Cafe:
     x: 31
     y: 16
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_cafe.tmx,8,11,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_cafe.tmx,8,11,0.3
+      - char_face player,up
 
   Enter Cotton Art Shop:
     x: 16
     y: 16
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_artshop.tmx,2,10,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_artshop.tmx,2,10,0.3
+      - char_face player,up
 
   Enter Cotton House 1:
     x: 27
     y: 26
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_house1.tmx,6,6,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_house1.tmx,6,6,0.3
+      - char_face player,up
 
   Enter Cotton House 2:
     x: 25
     y: 8
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_house2.tmx,6,6,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_house2.tmx,6,6,0.3
+      - char_face player,up
 
   Enter Cotton House 2 Back:
     x: 27
     y: 5
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_cotton_house2.tmx,5,2,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_cotton_house2.tmx,5,2,0.3
+      - char_face player,down
 
   Enter Omnichannel HQ:
     x: 17
     y: 9
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_omnichannel1.tmx,2,12,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_omnichannel1.tmx,2,12,0.3
+      - char_face player,up
 
   Enter Cotton Tunnel:
     x: 2
     y: 35
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_tunnel.tmx,35,3,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_cotton_tunnel.tmx,35,3,0.3
+      - char_face player,down
 
   # --- NPC spawns ---
 
   Create Monk:
     conditions:
-    - not char_exists spyder_cottontown_monk
-    - not battle_outcome player,won,spyder_dragonscave_benden
+      - not char_exists spyder_cottontown_monk
+      - not battle_outcome player,won,spyder_dragonscave_benden
     actions:
-    - create_npc spyder_cottontown_monk,5,7,wander
+      - create_npc spyder_cottontown_monk,5,7,wander
 
   Create Statue Orange:
     conditions:
-    - not char_exists spyder_statue_orange
-    - not battle_outcome player,won,spyder_dragonscave_benden
+      - not char_exists spyder_statue_orange
+      - not battle_outcome player,won,spyder_dragonscave_benden
     actions:
-    - create_npc spyder_statue_orange,3,7
+      - create_npc spyder_statue_orange,3,7
 
   Create Statue Blue:
     conditions:
-    - not char_exists spyder_statue_blue
-    - not battle_outcome player,won,spyder_dragonscave_benden
+      - not char_exists spyder_statue_blue
+      - not battle_outcome player,won,spyder_dragonscave_benden
     actions:
-    - create_npc spyder_statue_blue,4,9
+      - create_npc spyder_statue_blue,4,9
 
   Create Statue Red:
     conditions:
-    - not char_exists spyder_statue_red
-    - not battle_outcome player,won,spyder_dragonscave_benden
+      - not char_exists spyder_statue_red
+      - not battle_outcome player,won,spyder_dragonscave_benden
     actions:
-    - create_npc spyder_statue_red,6,9
+      - create_npc spyder_statue_red,6,9
 
   Create Statue Grey:
     conditions:
-    - not char_exists spyder_statue_grey
-    - not battle_outcome player,won,spyder_dragonscave_benden
+      - not char_exists spyder_statue_grey
+      - not battle_outcome player,won,spyder_dragonscave_benden
     actions:
-    - create_npc spyder_statue_grey,7,7
+      - create_npc spyder_statue_grey,7,7
 
   Create Statue Green:
     conditions:
-    - not char_exists spyder_statue_green
-    - not battle_outcome player,won,spyder_dragonscave_benden
+      - not char_exists spyder_statue_green
+      - not battle_outcome player,won,spyder_dragonscave_benden
     actions:
-    - create_npc spyder_statue_green,5,5
+      - create_npc spyder_statue_green,5,5
 
   Create Brute:
     conditions:
-    - not char_exists spyder_dragonscave_lazybrute
-    - not variable_set dragonscavedrokoro:yes
+      - not char_exists spyder_dragonscave_lazybrute
+      - not variable_set dragonscavedrokoro:yes
     actions:
-    - create_npc spyder_dragonscave_lazybrute,3,36
-    - char_face spyder_dragonscave_lazybrute,right
+      - create_npc spyder_dragonscave_lazybrute,3,36
+      - char_face spyder_dragonscave_lazybrute,right
 
   Create Confused:
     conditions:
-    - not char_exists spyder_confusedperson
-    - not variable_set dragonscavedrokoro:yes
+      - not char_exists spyder_confusedperson
+      - not variable_set dragonscavedrokoro:yes
     actions:
-    - create_npc spyder_confusedperson,6,33
-    - char_face spyder_confusedperson,player
+      - create_npc spyder_confusedperson,6,33
+      - char_face spyder_confusedperson,player
 
   # --- NPC dialogs ---
 
   Talk Monk:
     behav: talk spyder_cottontown_monk
     actions:
-    - translated_dialog spyder_cottontown_monk
+      - translated_dialog spyder_cottontown_monk
 
   Talk Brute:
     behav: talk spyder_dragonscave_lazybrute
     actions:
-    - translated_dialog spyder_cotton_lazybrute
+      - translated_dialog spyder_cotton_lazybrute
 
   Talk Confused Pre Battle:
     conditions:
-    - not battle_outcome player,won,spyder_confusedperson
+      - not battle_outcome player,won,spyder_confusedperson
     behav: talk spyder_confusedperson
     actions:
-    - translated_dialog spyder_confused1
-    - translated_dialog_choice yes:no,confusedchoice
+      - translated_dialog spyder_confused1
+      - translated_dialog_choice yes:no,confusedchoice
 
   Talk Confused Post Battle:
     conditions:
-    - is battle_outcome player,won,spyder_confusedperson
+      - is battle_outcome player,won,spyder_confusedperson
     behav: talk spyder_confusedperson
     actions:
-    - translated_dialog spyder_confused2
+      - translated_dialog spyder_confused2
 
   Battle Confused:
     x: 8
     y: 36
     conditions:
-    - not battle_outcome player,won,spyder_confusedperson
-    - is variable_set confusedchoice:yes
+      - not battle_outcome player,won,spyder_confusedperson
+      - is variable_set confusedchoice:yes
     actions:
-    - add_monster pairagrin,2,spyder_confusedperson,5,10
-    - add_monster capiti,2,spyder_confusedperson,5,10
-    - start_battle player,spyder_confusedperson
-    - translated_dialog spyder_confused2
+      - add_monster pairagrin,2,spyder_confusedperson,5,10
+      - add_monster capiti,2,spyder_confusedperson,5,10
+      - start_battle player,spyder_confusedperson
+      - translated_dialog spyder_confused2
 
   # --- Hacker intro ---
 
@@ -322,19 +322,19 @@ events:
     width: 3
     height: 1
     conditions:
-    - is char_at player
-    - not variable_set spokencottonhacker:yes
+      - is char_at player
+      - not variable_set spokencottonhacker:yes
     actions:
-    - char_stop player
-    - lock_controls
-    - create_npc spyder_cottontown_hacker,25,30
-    - pathfind spyder_cottontown_hacker,25,36
-    - char_face player,up
-    - translated_dialog spyder_cottontown_hackerintro
-    - pathfind spyder_cottontown_hacker,25,29
-    - remove_npc spyder_cottontown_hacker
-    - set_variable spokencottonhacker:yes
-    - unlock_controls
+      - char_stop player
+      - lock_controls
+      - create_npc spyder_cottontown_hacker,25,30
+      - pathfind spyder_cottontown_hacker,25,36
+      - char_face player,up
+      - translated_dialog spyder_cottontown_hackerintro
+      - pathfind spyder_cottontown_hacker,25,29
+      - remove_npc spyder_cottontown_hacker
+      - set_variable spokencottonhacker:yes
+      - unlock_controls
 
   # --- Stop hacker (route 2 gate) ---
 
@@ -344,25 +344,25 @@ events:
     width: 1
     height: 2
     conditions:
-    - is char_at player
-    - not variable_set visitedcottoncafe:yes
+      - is char_at player
+      - not variable_set visitedcottoncafe:yes
     actions:
-    - char_stop player
-    - lock_controls
-    - create_npc spyder_cottontown_hacker,31,23
-    - pathfind_to_char player,spyder_cottontown_hacker,left
-    - char_face spyder_cottontown_hacker,right
-    - translated_dialog spyder_cottontown_stopthere
-    - pathfind player,36,28
-    - wait 0.5
-    - pathfind_to_char player,spyder_cottontown_hacker,left
-    - char_face spyder_cottontown_hacker,right
-    - wait 0.5
-    - translated_dialog spyder_cottontown_followme
-    - wait 0.5
-    - pathfind spyder_cottontown_hacker,31,23
-    - remove_npc spyder_cottontown_hacker
-    - unlock_controls
+      - char_stop player
+      - lock_controls
+      - create_npc spyder_cottontown_hacker,31,23
+      - pathfind_to_char player,spyder_cottontown_hacker,left
+      - char_face spyder_cottontown_hacker,right
+      - translated_dialog spyder_cottontown_stopthere
+      - pathfind player,36,28
+      - wait 0.5
+      - pathfind_to_char player,spyder_cottontown_hacker,left
+      - char_face spyder_cottontown_hacker,right
+      - wait 0.5
+      - translated_dialog spyder_cottontown_followme
+      - wait 0.5
+      - pathfind spyder_cottontown_hacker,31,23
+      - remove_npc spyder_cottontown_hacker
+      - unlock_controls
 
   # --- Mom encounter ---
 
@@ -370,29 +370,29 @@ events:
     x: 31
     y: 17
     conditions:
-    - is char_at player
-    - not variable_set spokenmomcotton:yes
-    - not has_item player,nu_phone
-    - not has_item player,app_banking
-    - not has_item player,app_map
+      - is char_at player
+      - not variable_set spokenmomcotton:yes
+      - not has_item player,nu_phone
+      - not has_item player,app_banking
+      - not has_item player,app_map
     actions:
-    - char_stop player
-    - lock_controls
-    - create_npc spyder_papertown_mom,22,18
-    - pathfind spyder_papertown_mom,31,18
-    - unlock_controls
-    - char_face spyder_papertown_mom,player
-    - char_face player,spyder_papertown_mom
-    - translated_dialog spyder_cottontown_mom
-    - add_item nu_phone
-    - translated_dialog nu_phone,,center,center,center
-    - add_item app_banking
-    - translated_dialog app_banking,,center,center,center
-    - add_item app_map
-    - translated_dialog app_map,,center,center,center
-    - pathfind spyder_papertown_mom,22,18
-    - set_variable spokenmomcotton:yes
-    - remove_npc spyder_papertown_mom
+      - char_stop player
+      - lock_controls
+      - create_npc spyder_papertown_mom,22,18
+      - pathfind spyder_papertown_mom,31,18
+      - unlock_controls
+      - char_face spyder_papertown_mom,player
+      - char_face player,spyder_papertown_mom
+      - translated_dialog spyder_cottontown_mom
+      - add_item nu_phone
+      - translated_dialog nu_phone,,center,center,center
+      - add_item app_banking
+      - translated_dialog app_banking,,center,center,center
+      - add_item app_map
+      - translated_dialog app_map,,center,center,center
+      - pathfind spyder_papertown_mom,22,18
+      - set_variable spokenmomcotton:yes
+      - remove_npc spyder_papertown_mom
 
   # --- Kernel Quest ---
 
@@ -400,38 +400,38 @@ events:
     x: 20
     y: 27
     conditions:
-    - is char_at player
-    - not variable_set kernelquestbegin:yes
-    - is variable_set bumpintomom:yes
+      - is char_at player
+      - not variable_set kernelquestbegin:yes
+      - is variable_set bumpintomom:yes
     actions:
-    - char_stop player
-    - lock_controls
-    - create_npc spyder_papertown_mom,18,33
-    - create_npc spyder_cottontown_hacker,24,33
-    - pathfind_to_char player,spyder_papertown_mom,down
-    - pathfind_to_char player,spyder_cottontown_hacker,right
-    - wait 0.5
-    - translated_dialog spyder_cottontown_mom1
-    - wait 0.5
-    - char_face player,right
-    - wait 0.5
-    - translated_dialog spyder_cottontown_hacker1
-    - wait 0.5
-    - char_face player,down
-    - wait 0.5
-    - translated_dialog spyder_cottontown_mom2
-    - wait 0.5
-    - char_face player,right
-    - wait 0.5
-    - translated_dialog spyder_cottontown_hacker2
-    - wait 0.5
-    - char_face player,down
-    - pathfind spyder_papertown_mom,18,33
-    - pathfind spyder_cottontown_hacker,24,33
-    - set_variable kernelquestbegin:yes
-    - remove_npc spyder_papertown_mom
-    - remove_npc spyder_cottontown_hacker
-    - unlock_controls
+      - char_stop player
+      - lock_controls
+      - create_npc spyder_papertown_mom,18,33
+      - create_npc spyder_cottontown_hacker,24,33
+      - pathfind_to_char player,spyder_papertown_mom,down
+      - pathfind_to_char player,spyder_cottontown_hacker,right
+      - wait 0.5
+      - translated_dialog spyder_cottontown_mom1
+      - wait 0.5
+      - char_face player,right
+      - wait 0.5
+      - translated_dialog spyder_cottontown_hacker1
+      - wait 0.5
+      - char_face player,down
+      - wait 0.5
+      - translated_dialog spyder_cottontown_mom2
+      - wait 0.5
+      - char_face player,right
+      - wait 0.5
+      - translated_dialog spyder_cottontown_hacker2
+      - wait 0.5
+      - char_face player,down
+      - pathfind spyder_papertown_mom,18,33
+      - pathfind spyder_cottontown_hacker,24,33
+      - set_variable kernelquestbegin:yes
+      - remove_npc spyder_papertown_mom
+      - remove_npc spyder_cottontown_hacker
+      - unlock_controls
 
   # --- Signs ---
 
@@ -439,37 +439,37 @@ events:
     x: 24
     y: 37
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog welcome_location_town
+      - translated_dialog welcome_location_town
 
   Cathedral Center Sign:
     x: 17
     y: 26
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog Cathedral_Center
+      - translated_dialog Cathedral_Center
 
   Cotton Scoop Sign:
     x: 27
     y: 35
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog spyder_multi_martsign
+      - translated_dialog spyder_multi_martsign
 
   Omnichannel HQ Sign:
     x: 22
     y: 9
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog spyder_omnichannel_sign
+      - translated_dialog spyder_omnichannel_sign
 
   Fountain:
     x: 8
@@ -477,10 +477,10 @@ events:
     width: 3
     height: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog cotton_town_fountain
+      - translated_dialog cotton_town_fountain
 
   # --- Locked doors ---
 
@@ -488,16 +488,16 @@ events:
     x: 20
     y: 34
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog spyder_door_locked
+      - translated_dialog spyder_door_locked
 
   Locked Door 2:
     x: 35
     y: 26
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - translated_dialog spyder_door_locked
+      - translated_dialog spyder_door_locked

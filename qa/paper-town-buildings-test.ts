@@ -72,9 +72,7 @@ async function checkTeleport(page: Page, expect: ExpectedTeleport): Promise<void
     teleport!.data.x === expect.destX && teleport!.data.y === expect.destY,
     `[${expect.label}] expected dest (${expect.destX},${expect.destY}), got (${teleport!.data.x},${teleport!.data.y})`,
   );
-  console.log(
-    `[${expect.label}] OK -> ${expect.destMap} (${expect.destX},${expect.destY})`,
-  );
+  console.log(`[${expect.label}] OK -> ${expect.destMap} (${expect.destX},${expect.destY})`);
 }
 
 /**

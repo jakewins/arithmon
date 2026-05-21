@@ -3,152 +3,152 @@ events:
 
   Play Music:
     conditions:
-    - not music_playing music_cathedral_theme
+      - not music_playing music_cathedral_theme
     actions:
-    - play_music music_cathedral_theme
+      - play_music music_cathedral_theme
 
   # --- NPC spawns ---
 
   Create Hacker:
     conditions:
-    - not char_exists spyder_cottontown_hacker
+      - not char_exists spyder_cottontown_hacker
     actions:
-    - create_npc spyder_cottontown_hacker,10,4
+      - create_npc spyder_cottontown_hacker,10,4
 
   Create Barmaid:
     conditions:
-    - not char_exists spyder_cottontown_barmaid
+      - not char_exists spyder_cottontown_barmaid
     actions:
-    - create_npc spyder_cottontown_barmaid,0,4
+      - create_npc spyder_cottontown_barmaid,0,4
 
   Create Lotus:
     conditions:
-    - not char_exists spyder_cottoncafe_lotus
+      - not char_exists spyder_cottoncafe_lotus
     actions:
-    - create_npc spyder_cottoncafe_lotus,3,7
-    - char_face spyder_cottoncafe_lotus,right
+      - create_npc spyder_cottoncafe_lotus,3,7
+      - char_face spyder_cottoncafe_lotus,right
 
   Create Cayden:
     conditions:
-    - not char_exists spyder_cottoncafe_cayden
+      - not char_exists spyder_cottoncafe_cayden
     actions:
-    - create_npc spyder_cottoncafe_cayden,2,6,wander
+      - create_npc spyder_cottoncafe_cayden,2,6,wander
 
   Create Wilford:
     conditions:
-    - not char_exists spyder_cottoncafe_wilford
+      - not char_exists spyder_cottoncafe_wilford
     actions:
-    - create_npc spyder_cottoncafe_wilford,10,7
+      - create_npc spyder_cottoncafe_wilford,10,7
 
   Create Hillary:
     conditions:
-    - not char_exists spyder_cottoncafe_hillary
+      - not char_exists spyder_cottoncafe_hillary
     actions:
-    - create_npc spyder_cottoncafe_hillary,11,6
-    - char_face spyder_cottoncafe_hillary,left
+      - create_npc spyder_cottoncafe_hillary,11,6
+      - char_face spyder_cottoncafe_hillary,left
 
   Create Juliana:
     conditions:
-    - not char_exists spyder_cottoncafe_juliana
+      - not char_exists spyder_cottoncafe_juliana
     actions:
-    - create_npc spyder_cottoncafe_juliana,8,9
+      - create_npc spyder_cottoncafe_juliana,8,9
 
   # --- NPC interactions ---
 
   First Visit Cutscene:
     behav: talk spyder_cottontown_hacker
     conditions:
-    - not variable_set visitedcottoncafe:yes
+      - not variable_set visitedcottoncafe:yes
     actions:
-    - lock_controls
-    - pathfind spyder_cottontown_hacker,6,5
-    - char_face spyder_cottontown_hacker,player
-    - dialog Good to see you. You're just in time.
-    - dialog Ahem.
-    - dialog I've been working on something called the Tuxepedia. It catalogs every tuxemon species we've discovered. Here — take a copy.
-    - add_item app_tuxepedia
-    - translated_dialog app_tuxepedia,,center,center,center
-    - set_variable visitedcottoncafe:yes
-    - pathfind spyder_cottontown_hacker,10,4
-    - unlock_controls
+      - lock_controls
+      - pathfind spyder_cottontown_hacker,6,5
+      - char_face spyder_cottontown_hacker,player
+      - dialog Good to see you. You're just in time.
+      - dialog Ahem.
+      - dialog I've been working on something called the Tuxepedia. It catalogs every tuxemon species we've discovered. Here — take a copy.
+      - add_item app_tuxepedia
+      - translated_dialog app_tuxepedia,,center,center,center
+      - set_variable visitedcottoncafe:yes
+      - pathfind spyder_cottontown_hacker,10,4
+      - unlock_controls
 
   Talk Hacker:
     behav: talk spyder_cottontown_hacker
     conditions:
-    - is variable_set visitedcottoncafe:yes
+      - is variable_set visitedcottoncafe:yes
     actions:
-    - dialog Ah, the Tuxepedia! Have you been cataloging your finds?
+      - dialog Ah, the Tuxepedia! Have you been cataloging your finds?
 
   Talk Barmaid:
     x: 0
     y: 5
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_cottontown_barmaid,player
-    - dialog Welcome back. Shall I chuck your tuxemon in the healing unit?
-    - translated_dialog_choice yes:no,healchoice
+      - char_face spyder_cottontown_barmaid,player
+      - dialog Welcome back. Shall I chuck your tuxemon in the healing unit?
+      - translated_dialog_choice yes:no,healchoice
 
   Heal Party:
     conditions:
-    - is variable_set healchoice:yes
+      - is variable_set healchoice:yes
     actions:
-    - dialog Okay! Just give me a second and I'll heal your Tuxemon!
-    - screen_transition 1
-    - wait 0.5
-    - set_monster_health
-    - set_monster_status
-    - set_teleport_faint player,spyder_cotton_cafe.tmx,1,10
-    - set_variable healchoice:done
-    - dialog There you go! All healed up.
+      - dialog Okay! Just give me a second and I'll heal your Tuxemon!
+      - screen_transition 1
+      - wait 0.5
+      - set_monster_health
+      - set_monster_status
+      - set_teleport_faint player,spyder_cotton_cafe.tmx,1,10
+      - set_variable healchoice:done
+      - dialog There you go! All healed up.
 
   Talk Lotus:
     behav: talk spyder_cottoncafe_lotus
     actions:
-    - "dialog Hmm, I'm not sure I fancy this coffee."
+      - "dialog Hmm, I'm not sure I fancy this coffee."
 
   Ask Battle Cayden:
     conditions:
-    - is char_facing_char player,spyder_cottoncafe_cayden
-    - is button_pressed INTERACT
-    - not battle_outcome player,spyder_cottoncafe_cayden,won
+      - is char_facing_char player,spyder_cottoncafe_cayden
+      - is button_pressed INTERACT
+      - not battle_outcome player,spyder_cottoncafe_cayden,won
     actions:
-    - char_face spyder_cottoncafe_cayden,player
-    - dialog Do you want a quick battle?
-    - translated_dialog_choice yes:no,cafebattle
+      - char_face spyder_cottoncafe_cayden,player
+      - dialog Do you want a quick battle?
+      - translated_dialog_choice yes:no,cafebattle
 
   Battle Cayden:
     conditions:
-    - is variable_set cafebattle:yes
-    - not battle_outcome player,spyder_cottoncafe_cayden,won
+      - is variable_set cafebattle:yes
+      - not battle_outcome player,spyder_cottoncafe_cayden,won
     actions:
-    - set_variable cafebattle:done
-    - start_battle spyder_cottoncafe_cayden
+      - set_variable cafebattle:done
+      - start_battle spyder_cottoncafe_cayden
 
   Talk Cayden Post Win:
     conditions:
-    - is char_facing_char player,spyder_cottoncafe_cayden
-    - is button_pressed INTERACT
-    - is battle_outcome player,spyder_cottoncafe_cayden,won
+      - is char_facing_char player,spyder_cottoncafe_cayden
+      - is button_pressed INTERACT
+      - is battle_outcome player,spyder_cottoncafe_cayden,won
     actions:
-    - char_face spyder_cottoncafe_cayden,player
-    - "dialog Don't look at me. I'm just here for the free canapes and heals."
+      - char_face spyder_cottoncafe_cayden,player
+      - "dialog Don't look at me. I'm just here for the free canapes and heals."
 
   Talk Wilford:
     behav: talk spyder_cottoncafe_wilford
     actions:
-    - dialog I come here every day. The atmosphere is just perfect for thinking.
+      - dialog I come here every day. The atmosphere is just perfect for thinking.
 
   Talk Hillary:
     behav: talk spyder_cottoncafe_hillary
     actions:
-    - dialog Did you know flowers can help tuxemon recover faster? It's true!
+      - dialog Did you know flowers can help tuxemon recover faster? It's true!
 
   Talk Juliana:
     behav: talk spyder_cottoncafe_juliana
     actions:
-    - dialog This cafe has the best pastries in town.
+      - dialog This cafe has the best pastries in town.
 
   # --- Map connections ---
 
@@ -157,8 +157,8 @@ events:
     y: 11
     width: 3
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,31,17,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_cotton_town.tmx,31,17,0.3
+      - char_face player,down

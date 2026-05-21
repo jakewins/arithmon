@@ -145,13 +145,13 @@ async function checkInteriorMenus(page: Page): Promise<void> {
         const game = (
           window.A as unknown as {
             getActiveScene: () => {
-            scene: {
-              pause: (k?: string) => void;
-              launch: (k: string) => void;
-              stop: (k: string) => void;
-              resume: (k: string) => void;
-            };
-          } | null;
+              scene: {
+                pause: (k?: string) => void;
+                launch: (k: string) => void;
+                stop: (k: string) => void;
+                resume: (k: string) => void;
+              };
+            } | null;
           }
         ).getActiveScene()!.scene;
         // game is a ScenePlugin pinned to the previously-active scene.
@@ -168,13 +168,13 @@ async function checkInteriorMenus(page: Page): Promise<void> {
         const game = (
           window.A as unknown as {
             getActiveScene: () => {
-            scene: {
-              pause: (k?: string) => void;
-              launch: (k: string) => void;
-              stop: (k: string) => void;
-              resume: (k: string) => void;
-            };
-          } | null;
+              scene: {
+                pause: (k?: string) => void;
+                launch: (k: string) => void;
+                stop: (k: string) => void;
+                resume: (k: string) => void;
+              };
+            } | null;
           }
         ).getActiveScene()!.scene;
         game.stop(s);

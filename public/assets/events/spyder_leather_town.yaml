@@ -1,123 +1,123 @@
 events:
   Play Music:
     conditions:
-    - not music_playing music_town_theme
+      - not music_playing music_town_theme
     actions:
-    - play_music music_town_theme
+      - play_music music_town_theme
 
   Go Route 6 11:
     x: 0
     y: 11
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route6.tmx,26,10,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_route6.tmx,26,10,0.3
+      - char_face player,left
 
   Go Route 6 12:
     x: 0
     y: 12
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route6.tmx,26,11,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_route6.tmx,26,11,0.3
+      - char_face player,left
 
   Enter Center:
     x: 10
     y: 7
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_leather_center.tmx,6,9,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_leather_center.tmx,6,9,0.3
+      - char_face player,up
 
   Enter Gym:
     x: 20
     y: 7
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_leather_gym.tmx,7,11,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_leather_gym.tmx,7,11,0.3
+      - char_face player,up
 
   Enter Museum:
     x: 15
     y: 15
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_leather_museum.tmx,7,10,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_leather_museum.tmx,7,10,0.3
+      - char_face player,up
 
   Enter Shaft 1:
     x: 25
     y: 15
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_leather_shaft1.tmx,5,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_leather_shaft1.tmx,5,4,0.3
+      - char_face player,down
 
   Enter Shaft 2:
     x: 30
     y: 15
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_leather_shaft2.tmx,5,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_leather_shaft2.tmx,5,4,0.3
+      - char_face player,down
 
   Go Flower City 11:
     x: 32
     y: 11
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_flower_city.tmx,2,13,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_flower_city.tmx,2,13,0.3
+      - char_face player,right
 
   Go Flower City 12:
     x: 32
     y: 12
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_flower_city.tmx,2,14,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_flower_city.tmx,2,14,0.3
+      - char_face player,right
 
   Town Sign:
     x: 5
     y: 10
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Welcome to Leather Town — Mining Capital of Fondent!
+      - dialog Welcome to Leather Town — Mining Capital of Fondent!
 
   Gym Sign:
     x: 22
     y: 7
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Leather Gym — Test Your Skills!
+      - dialog Leather Gym — Test Your Skills!
 
   Museum Sign:
     x: 17
     y: 15
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Leather Museum — Admission 50g
+      - dialog Leather Museum — Admission 50g

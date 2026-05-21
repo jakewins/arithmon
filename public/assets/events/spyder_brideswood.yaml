@@ -3,9 +3,9 @@ events:
 
   Route Music:
     conditions:
-    - not music_playing music_the_wild_places
+      - not music_playing music_the_wild_places
     actions:
-    - play_music music_the_wild_places
+      - play_music music_the_wild_places
 
   # --- Map connections: west back to Paper Town ---
 
@@ -13,21 +13,21 @@ events:
     x: 0
     y: 26
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_paper_town.tmx,39,6,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_paper_town.tmx,39,6,0.3
+      - char_face player,left
 
   Teleport to Paper Town B:
     x: 0
     y: 27
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_paper_town.tmx,39,7,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_paper_town.tmx,39,7,0.3
+      - char_face player,left
 
   # --- Map connections: west to Route 1 ---
 
@@ -35,21 +35,21 @@ events:
     x: 0
     y: 4
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route1.tmx,39,4,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_route1.tmx,39,4,0.3
+      - char_face player,left
 
   Teleport to Route 1B:
     x: 0
     y: 5
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route1.tmx,39,5,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_route1.tmx,39,5,0.3
+      - char_face player,left
 
   # --- Map connections: north to Route 2 ---
   # Route 2 is not yet ported — these teleports lead to a garbled map until
@@ -59,18 +59,18 @@ events:
     x: 36
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_route2.tmx,36,19,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_route2.tmx,36,19,0.3
+      - char_face player,up
 
   Teleport to Route 2B:
     x: 37
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_route2.tmx,37,19,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_route2.tmx,37,19,0.3
+      - char_face player,up

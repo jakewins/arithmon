@@ -173,7 +173,10 @@ async function testFrontDoorEntry(): Promise<void> {
       meta.width === 11 && meta.height === 12,
       `expected 11x12 downstairs, got ${meta.width}x${meta.height}`,
     );
-    assert(meta.slug === "rival_downstairs", `expected slug "rival_downstairs", got "${meta.slug}"`);
+    assert(
+      meta.slug === "rival_downstairs",
+      `expected slug "rival_downstairs", got "${meta.slug}"`,
+    );
     assert(meta.hasCollisions, `expected Collisions objectgroup; got ${meta.layerNames.join(",")}`);
     assert(
       meta.tilesetCount === 4,
@@ -702,10 +705,7 @@ async function testCollisionSamples(): Promise<void> {
     await walkTo(page, 5, 5, "right").catch(() => undefined);
     await waitForIdle(page);
     s = (await getState(page)) as RivalState;
-    assert(
-      !(s.player?.tileX === 5 && s.player?.tileY === 5),
-      "expected (5,5) blocked on bedroom",
-    );
+    assert(!(s.player?.tileX === 5 && s.player?.tileY === 5), "expected (5,5) blocked on bedroom");
 
     // Office: sample (2,4) — within the (1,4,4,1) desk rect. Stand at (2,5).
     await page.evaluate(() => window.A!.teleport!("spyder_paper_rival_office", 2, 5));
@@ -713,10 +713,7 @@ async function testCollisionSamples(): Promise<void> {
     await walkTo(page, 2, 4, "up").catch(() => undefined);
     await waitForIdle(page);
     s = (await getState(page)) as RivalState;
-    assert(
-      !(s.player?.tileX === 2 && s.player?.tileY === 4),
-      "expected (2,4) blocked on office",
-    );
+    assert(!(s.player?.tileX === 2 && s.player?.tileY === 4), "expected (2,4) blocked on office");
 
     console.log("[collision sanity] OK");
   } finally {

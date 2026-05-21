@@ -3,17 +3,17 @@ events:
 
   Play Music:
     conditions:
-    - not music_playing music_the_wild_places
+      - not music_playing music_the_wild_places
     actions:
-    - play_music music_the_wild_places
+      - play_music music_the_wild_places
 
   # --- NPC spawns ---
 
   Create Bjorn:
     conditions:
-    - not char_exists spyder_route1_bjorn
+      - not char_exists spyder_route1_bjorn
     actions:
-    - create_npc spyder_route1_bjorn,13,11
+      - create_npc spyder_route1_bjorn,13,11
 
   # --- Map connections: south to Paper Town ---
 
@@ -21,19 +21,19 @@ events:
     x: 13
     y: 19
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_paper_town.tmx,13,1,0.3
+      - transition_teleport player,spyder_paper_town.tmx,13,1,0.3
 
   Go Paper Town East:
     x: 14
     y: 19
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_paper_town.tmx,14,1,0.3
+      - transition_teleport player,spyder_paper_town.tmx,14,1,0.3
 
   # --- Map connections: north to Cotton Town ---
   # Route 1 north edge (x=21-27) maps to cotton_town south (x=10-16)
@@ -42,71 +42,71 @@ events:
     x: 21
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,21,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,21,39,0.3
+      - char_face player,up
 
   Go Cotton Town 22:
     x: 22
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,22,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,22,39,0.3
+      - char_face player,up
 
   Go Cotton Town 23:
     x: 23
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,23,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,23,39,0.3
+      - char_face player,up
 
   Go Cotton Town 24:
     x: 24
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,24,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,24,39,0.3
+      - char_face player,up
 
   Go Cotton Town 25:
     x: 25
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,25,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,25,39,0.3
+      - char_face player,up
 
   Go Cotton Town 26:
     x: 26
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,26,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,26,39,0.3
+      - char_face player,up
 
   Go Cotton Town 27:
     x: 27
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,27,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_town.tmx,27,39,0.3
+      - char_face player,up
 
   # --- Map connections: east to Brideswood (STORY-0216) ---
   # Route 1 east edge at (39, 4..5) — upstream `Teleport to Brideswood A/B`.
@@ -115,21 +115,21 @@ events:
     x: 39
     y: 4
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_brideswood.tmx,0,4,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_brideswood.tmx,0,4,0.3
+      - char_face player,right
 
   Teleport to Brideswood B:
     x: 39
     y: 5
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_brideswood.tmx,0,5,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_brideswood.tmx,0,5,0.3
+      - char_face player,right
 
   # --- Encounter zones (from upstream Tuxemon) ---
 
@@ -139,10 +139,10 @@ events:
     width: 8
     height: 4
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route1,11
+      - random_encounter spyder_route1,11
 
   Encounters 2:
     x: 10
@@ -150,10 +150,10 @@ events:
     width: 6
     height: 4
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route1,11
+      - random_encounter spyder_route1,11
 
   Encounters 3:
     x: 13
@@ -161,10 +161,10 @@ events:
     width: 7
     height: 3
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route1,11
+      - random_encounter spyder_route1,11
 
   Encounters 4:
     x: 10
@@ -172,10 +172,10 @@ events:
     width: 9
     height: 3
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route1,11
+      - random_encounter spyder_route1,11
 
   Encounters West:
     x: 4
@@ -183,10 +183,10 @@ events:
     width: 4
     height: 3
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route1,11
+      - random_encounter spyder_route1,11
 
   Encounters East:
     x: 32
@@ -194,35 +194,35 @@ events:
     width: 6
     height: 4
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route1,11
+      - random_encounter spyder_route1,11
 
   # --- NPC dialogs ---
 
   Talk Bjorn Pre Battle:
     conditions:
-    - is char_facing_char player,spyder_route1_bjorn
-    - is button_pressed INTERACT
-    - not battle_outcome player,spyder_route1_bjorn,won
+      - is char_facing_char player,spyder_route1_bjorn
+      - is button_pressed INTERACT
+      - not battle_outcome player,spyder_route1_bjorn,won
     actions:
-    - char_face spyder_route1_bjorn,player
-    - lock_controls
-    - dialog Hey there! The name's Bjorn. I've been training out here.
-    - dialog Let me show you what I've learned!
-    - start_battle spyder_route1_bjorn
-    - unlock_controls
+      - char_face spyder_route1_bjorn,player
+      - lock_controls
+      - dialog Hey there! The name's Bjorn. I've been training out here.
+      - dialog Let me show you what I've learned!
+      - start_battle spyder_route1_bjorn
+      - unlock_controls
 
   Talk Bjorn Post Win:
     conditions:
-    - is char_facing_char player,spyder_route1_bjorn
-    - is button_pressed INTERACT
-    - is battle_outcome player,spyder_route1_bjorn,won
+      - is char_facing_char player,spyder_route1_bjorn
+      - is button_pressed INTERACT
+      - is battle_outcome player,spyder_route1_bjorn,won
     actions:
-    - char_face spyder_route1_bjorn,player
-    - dialog Watch out for wild monsters in the tall grass!
-    - dialog I heard there are some tough ones further north.
+      - char_face spyder_route1_bjorn,player
+      - dialog Watch out for wild monsters in the tall grass!
+      - dialog I heard there are some tough ones further north.
 
   # --- Signs ---
 
@@ -230,7 +230,7 @@ events:
     x: 24
     y: 17
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Route 1 — Paper Town to Cotton Town
+      - dialog Route 1 — Paper Town to Cotton Town

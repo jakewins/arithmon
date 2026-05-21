@@ -1,31 +1,31 @@
 events:
   Create Nurse:
     conditions:
-    - not char_exists spyder_leather_nurse
+      - not char_exists spyder_leather_nurse
     actions:
-    - create_npc spyder_leather_nurse,6,4
-    - char_face spyder_leather_nurse,down
+      - create_npc spyder_leather_nurse,6,4
+      - char_face spyder_leather_nurse,down
 
   Talk Nurse:
     conditions:
-    - is char_facing_char player,spyder_leather_nurse
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_leather_nurse
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_leather_nurse,player
-    - dialog Welcome to Leather Healing Center. Let me restore your monsters.
-    - screen_transition 1
-    - wait 0.5
-    - set_monster_health
-    - set_monster_status
-    - dialog Your monsters are all healed up!
-    - set_teleport_faint player,spyder_leather_center.tmx,6,7
+      - char_face spyder_leather_nurse,player
+      - dialog Welcome to Leather Healing Center. Let me restore your monsters.
+      - screen_transition 1
+      - wait 0.5
+      - set_monster_health
+      - set_monster_status
+      - dialog Your monsters are all healed up!
+      - set_teleport_faint player,spyder_leather_center.tmx,6,7
 
   Go Outside:
     x: 6
     y: 10
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_leather_town.tmx,10,8,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_leather_town.tmx,10,8,0.3
+      - char_face player,down

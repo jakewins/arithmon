@@ -1,15 +1,15 @@
 events:
   Play Music:
     conditions:
-    - not music_playing music_the_wild_places
+      - not music_playing music_the_wild_places
     actions:
-    - play_music music_the_wild_places
+      - play_music music_the_wild_places
 
   Create Hiker:
     conditions:
-    - not char_exists spyder_route4_hiker
+      - not char_exists spyder_route4_hiker
     actions:
-    - create_npc spyder_route4_hiker,15,9
+      - create_npc spyder_route4_hiker,15,9
 
   # --- Encounter zones ---
 
@@ -19,77 +19,77 @@ events:
     width: 26
     height: 16
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_route4,11
+      - random_encounter spyder_route4,11
 
   Talk Hiker Pre Battle:
     conditions:
-    - is char_facing_char player,spyder_route4_hiker
-    - is button_pressed INTERACT
-    - not battle_outcome player,spyder_route4_hiker,won
+      - is char_facing_char player,spyder_route4_hiker
+      - is button_pressed INTERACT
+      - not battle_outcome player,spyder_route4_hiker,won
     actions:
-    - char_face spyder_route4_hiker,player
-    - lock_controls
-    - dialog I've been hiking these routes for years. Let's see how tough you are!
-    - start_battle spyder_route4_hiker
-    - unlock_controls
+      - char_face spyder_route4_hiker,player
+      - lock_controls
+      - dialog I've been hiking these routes for years. Let's see how tough you are!
+      - start_battle spyder_route4_hiker
+      - unlock_controls
 
   Talk Hiker Post Win:
     conditions:
-    - is char_facing_char player,spyder_route4_hiker
-    - is button_pressed INTERACT
-    - is battle_outcome player,spyder_route4_hiker,won
+      - is char_facing_char player,spyder_route4_hiker
+      - is button_pressed INTERACT
+      - is battle_outcome player,spyder_route4_hiker,won
     actions:
-    - char_face spyder_route4_hiker,player
-    - dialog Good fight! Timber Town is just ahead to the east.
+      - char_face spyder_route4_hiker,player
+      - dialog Good fight! Timber Town is just ahead to the east.
 
   Go Route 3 10:
     x: 2
     y: 10
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route3.tmx,21,10,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_route3.tmx,21,10,0.3
+      - char_face player,left
 
   Go Route 3 11:
     x: 2
     y: 11
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_route3.tmx,21,11,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_route3.tmx,21,11,0.3
+      - char_face player,left
 
   Go Timber Town 10:
     x: 27
     y: 10
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_timber_town.tmx,2,11,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_timber_town.tmx,2,11,0.3
+      - char_face player,right
 
   Go Timber Town 11:
     x: 27
     y: 11
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_timber_town.tmx,2,12,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_timber_town.tmx,2,12,0.3
+      - char_face player,right
 
   Route Sign:
     x: 3
     y: 9
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Route 4 — Route 3 / Timber Town
+      - dialog Route 4 — Route 3 / Timber Town

@@ -60,9 +60,7 @@ async function setupBattleWithEmptyDP(page: Page) {
   });
   await setupGame(page, {});
 
-  await page.evaluate(() =>
-    window.A!.spawnBattle("rockitten", "rockitten", 10, 10, "grass"),
-  );
+  await page.evaluate(() => window.A!.spawnBattle("rockitten", "rockitten", 10, 10, "grass"));
   await page.waitForFunction(
     () => {
       const s = window.A!.getState() as { combat?: { menuMode?: string } };
@@ -268,9 +266,7 @@ async function main() {
 
     combat = await getCombatState(page);
     if (combat.darkPower !== 0) {
-      throw new Error(
-        `Wrong answer should leave DP at 0, got ${combat.darkPower}`,
-      );
+      throw new Error(`Wrong answer should leave DP at 0, got ${combat.darkPower}`);
     }
     console.log("Wrong answer -> DP stays at 0");
 

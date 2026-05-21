@@ -1,25 +1,25 @@
 events:
   Create Shopkeeper:
     conditions:
-    - not char_exists spyder_timber_shopkeeper
+      - not char_exists spyder_timber_shopkeeper
     actions:
-    - create_npc spyder_timber_shopkeeper,6,5
-    - char_face spyder_timber_shopkeeper,down
+      - create_npc spyder_timber_shopkeeper,6,5
+      - char_face spyder_timber_shopkeeper,down
 
   Talk Shopkeeper:
     conditions:
-    - is char_facing_char player,spyder_timber_shopkeeper
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_timber_shopkeeper
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_timber_shopkeeper,player
-    - open_shop spyder_timber_shopkeeper
+      - char_face spyder_timber_shopkeeper,player
+      - open_shop spyder_timber_shopkeeper
 
   Go Outside:
     x: 6
     y: 10
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_timber_town.tmx,15,16,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_timber_town.tmx,15,16,0.3
+      - char_face player,down

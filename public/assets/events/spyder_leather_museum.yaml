@@ -1,96 +1,96 @@
 events:
   Create Guide:
     conditions:
-    - not char_exists spyder_leather_guide
+      - not char_exists spyder_leather_guide
     actions:
-    - create_npc spyder_leather_guide,7,5
-    - char_face spyder_leather_guide,down
+      - create_npc spyder_leather_guide,7,5
+      - char_face spyder_leather_guide,down
 
   Museum Entry Paid:
     x: 7
     y: 9
     conditions:
-    - is char_at player
-    - not variable_set museum_paid:yes
-    - is money_is player,greater_or_equal,50
+      - is char_at player
+      - not variable_set museum_paid:yes
+      - is money_is player,greater_or_equal,50
     actions:
-    - modify_money player,-50
-    - set_variable museum_paid:yes
-    - dialog Welcome to the Leather Museum! Admission of 50g has been charged.
+      - modify_money player,-50
+      - set_variable museum_paid:yes
+      - dialog Welcome to the Leather Museum! Admission of 50g has been charged.
 
   Museum Entry Poor:
     x: 7
     y: 9
     conditions:
-    - is char_at player
-    - not variable_set museum_paid:yes
-    - not money_is player,greater_or_equal,50
+      - is char_at player
+      - not variable_set museum_paid:yes
+      - not money_is player,greater_or_equal,50
     actions:
-    - dialog Admission is 50g. You don't have enough gold right now.
-    - transition_teleport player,spyder_leather_town.tmx,15,16,0.3
-    - char_face player,down
+      - dialog Admission is 50g. You don't have enough gold right now.
+      - transition_teleport player,spyder_leather_town.tmx,15,16,0.3
+      - char_face player,down
 
   Talk Guide:
     conditions:
-    - is char_facing_char player,spyder_leather_guide
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_leather_guide
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_leather_guide,player
-    - dialog Welcome! This museum chronicles the mining history of Leather Town.
-    - dialog The minerals on display were found deep in the mine shafts nearby.
+      - char_face spyder_leather_guide,player
+      - dialog Welcome! This museum chronicles the mining history of Leather Town.
+      - dialog The minerals on display were found deep in the mine shafts nearby.
 
   Plaque 1:
     x: 3
     y: 3
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog "Fondent Crystal — Found at 200m depth. Believed to amplify monster energy."
+      - dialog "Fondent Crystal — Found at 200m depth. Believed to amplify monster energy."
 
   Plaque 2:
     x: 5
     y: 3
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog "Dark Ore — Used by the Spyder organization in early experiments."
+      - dialog "Dark Ore — Used by the Spyder organization in early experiments."
 
   Plaque 3:
     x: 7
     y: 3
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog "Nimrod Fragment — Origin unknown. Connected to the data center project."
+      - dialog "Nimrod Fragment — Origin unknown. Connected to the data center project."
 
   Plaque 4:
     x: 9
     y: 3
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog "Evolution Stone — Rare mineral that triggers monster transformation."
+      - dialog "Evolution Stone — Rare mineral that triggers monster transformation."
 
   Plaque 5:
     x: 11
     y: 3
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog "Ancient Fossil — Petrified remains of a prehistoric monster species."
+      - dialog "Ancient Fossil — Petrified remains of a prehistoric monster species."
 
   Go Outside:
     x: 7
     y: 11
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - set_variable museum_paid:no
-    - transition_teleport player,spyder_leather_town.tmx,15,16,0.3
-    - char_face player,down
+      - set_variable museum_paid:no
+      - transition_teleport player,spyder_leather_town.tmx,15,16,0.3
+      - char_face player,down

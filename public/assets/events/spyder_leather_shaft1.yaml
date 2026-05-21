@@ -7,35 +7,35 @@ events:
     width: 10
     height: 10
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_leather_shaft1,8
+      - random_encounter spyder_leather_shaft1,8
 
   Go Outside:
     x: 10
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_leather_town.tmx,25,16,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_leather_town.tmx,25,16,0.3
+      - char_face player,down
 
   Go Shaft 2:
     x: 1
     y: 10
     conditions:
-    - is char_at player
+      - is char_at player
     actions:
-    - transition_teleport player,spyder_leather_shaft2.tmx,10,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_leather_shaft2.tmx,10,4,0.3
+      - char_face player,down
 
   Old Equipment:
     x: 5
     y: 7
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Rusted mining equipment. The mines have been abandoned for years.
+      - dialog Rusted mining equipment. The mines have been abandoned for years.

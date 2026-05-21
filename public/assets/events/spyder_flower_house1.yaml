@@ -1,26 +1,26 @@
 events:
   Create Soldier:
     conditions:
-    - not char_exists spyder_flower_soldier
+      - not char_exists spyder_flower_soldier
     actions:
-    - create_npc spyder_flower_soldier,4,4
-    - char_face spyder_flower_soldier,down
+      - create_npc spyder_flower_soldier,4,4
+      - char_face spyder_flower_soldier,down
 
   Talk Soldier:
     conditions:
-    - is char_facing_char player,spyder_flower_soldier
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_flower_soldier
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_flower_soldier,player
-    - dialog I used to guard the Greenwash facility. Strange things happened there...
-    - dialog They were experimenting on monsters. I couldn't stand to watch.
+      - char_face spyder_flower_soldier,player
+      - dialog I used to guard the Greenwash facility. Strange things happened there...
+      - dialog They were experimenting on monsters. I couldn't stand to watch.
 
   Go Outside:
     x: 4
     y: 7
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_flower_city.tmx,10,19,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_flower_city.tmx,10,19,0.3
+      - char_face player,down

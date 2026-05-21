@@ -1,36 +1,36 @@
 events:
   Create Xiang:
     conditions:
-    - not char_exists spyder_dojo_xiang
+      - not char_exists spyder_dojo_xiang
     actions:
-    - create_npc spyder_dojo_xiang,6,5
-    - char_face spyder_dojo_xiang,down
+      - create_npc spyder_dojo_xiang,6,5
+      - char_face spyder_dojo_xiang,down
 
   Talk Xiang:
     conditions:
-    - is char_facing_char player,spyder_dojo_xiang
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_dojo_xiang
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_dojo_xiang,player
-    - dialog I am Master Xiang. I teach new techniques to monsters.
-    - dialog For 200 gold, I can teach your monster a new move, replacing an old one.
+      - char_face spyder_dojo_xiang,player
+      - dialog I am Master Xiang. I teach new techniques to monsters.
+      - dialog For 200 gold, I can teach your monster a new move, replacing an old one.
 
   Go Floor 2:
     x: 1
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_dojo2.tmx,10,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_dojo2.tmx,10,4,0.3
+      - char_face player,down
 
   Go Floor 4:
     x: 10
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_dojo4.tmx,1,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_dojo4.tmx,1,4,0.3
+      - char_face player,down

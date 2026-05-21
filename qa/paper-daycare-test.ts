@@ -178,10 +178,7 @@ async function testGrannyIntroduceDaycarePostTimber(): Promise<void> {
 
     const text = await pressUntilDialog(page);
     // grannypiper3 is a longer 357-char monologue introducing the daycare.
-    assert(
-      text.length > 120,
-      `expected long introduce-daycare monologue, got short: ${text}`,
-    );
+    assert(text.length > 120, `expected long introduce-daycare monologue, got short: ${text}`);
     await dismissDialogs(page);
 
     const s = (await getState(page)) as DaycareState;

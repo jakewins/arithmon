@@ -151,7 +151,8 @@ async function testIntroCutscene(): Promise<void> {
     await screenshot(page, "paper-scoop-choice");
 
     // The Choice event lists all 5 upstream starters.
-    const options = ((choicePresented as { data: { options?: string[] } }).data.options ?? []) as string[];
+    const options = ((choicePresented as { data: { options?: string[] } }).data.options ??
+      []) as string[];
     assert(
       options.length === 5,
       `expected 5 choice options, got ${options.length}: ${JSON.stringify(options)}`,

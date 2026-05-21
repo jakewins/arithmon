@@ -1,121 +1,121 @@
 events:
   Play Music:
     conditions:
-    - not music_playing music_town_theme
+      - not music_playing music_town_theme
     actions:
-    - play_music music_town_theme
+      - play_music music_town_theme
 
   Set Seen Candy:
     conditions:
-    - not variable_set seencandy:yes
+      - not variable_set seencandy:yes
     actions:
-    - set_variable seencandy:yes
+      - set_variable seencandy:yes
 
   Go Flower City 13:
     x: 0
     y: 13
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_flower_city.tmx,37,13,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_flower_city.tmx,37,13,0.3
+      - char_face player,left
 
   Go Flower City 14:
     x: 0
     y: 14
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_flower_city.tmx,37,14,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_flower_city.tmx,37,14,0.3
+      - char_face player,left
 
   Enter Port:
     x: 8
     y: 9
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_candy_port.tmx,7,10,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_candy_port.tmx,7,10,0.3
+      - char_face player,up
 
   Enter Inn:
     x: 15
     y: 9
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_candy_inn1.tmx,5,7,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_candy_inn1.tmx,5,7,0.3
+      - char_face player,up
 
   Enter Cafe:
     x: 22
     y: 9
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_candy_cafe.tmx,5,7,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_candy_cafe.tmx,5,7,0.3
+      - char_face player,up
 
   Enter Center:
     x: 29
     y: 9
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_candy_center.tmx,6,9,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_candy_center.tmx,6,9,0.3
+      - char_face player,up
 
   Enter Hospital:
     x: 15
     y: 18
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_candy_hospital1.tmx,6,9,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_candy_hospital1.tmx,6,9,0.3
+      - char_face player,up
 
   Go Greenwash:
     x: 37
     y: 13
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_greenwash.tmx,7,11,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_greenwash.tmx,7,11,0.3
+      - char_face player,right
 
   Go Greenwash 14:
     x: 37
     y: 14
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_greenwash.tmx,7,11,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_greenwash.tmx,7,11,0.3
+      - char_face player,right
 
   Go Diamond Hill:
     x: 20
     y: 27
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_diamond_hill.tmx,10,2,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_diamond_hill.tmx,10,2,0.3
+      - char_face player,down
 
   Town Sign:
     x: 5
     y: 12
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Welcome to Candy Town — Hub of the Fondent Region!
+      - dialog Welcome to Candy Town — Hub of the Fondent Region!

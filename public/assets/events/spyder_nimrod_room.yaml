@@ -1,51 +1,51 @@
 events:
   Create Enforcer:
     conditions:
-    - not char_exists spyder_nimrod_enforcer
+      - not char_exists spyder_nimrod_enforcer
     actions:
-    - create_npc spyder_nimrod_enforcer,6,5
-    - char_face spyder_nimrod_enforcer,down
+      - create_npc spyder_nimrod_enforcer,6,5
+      - char_face spyder_nimrod_enforcer,down
 
   Talk Enforcer:
     conditions:
-    - is char_facing_char player,spyder_nimrod_enforcer
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_nimrod_enforcer
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_nimrod_enforcer,player
-    - dialog You've made it to the top. But the Data Center... that's where it all ends.
+      - char_face spyder_nimrod_enforcer,player
+      - dialog You've made it to the top. But the Data Center... that's where it all ends.
 
   Go Top:
     x: 1
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_nimrod_top.tmx,13,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_nimrod_top.tmx,13,4,0.3
+      - char_face player,down
 
   Go Datacenter:
     x: 10
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_datacenter.tmx,10,13,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_datacenter.tmx,10,13,0.3
+      - char_face player,down
 
   Nimrod Flashback:
     x: 6
     y: 7
     conditions:
-    - is char_at player
-    - not variable_set nimrod_flashback:done
+      - is char_at player
+      - not variable_set nimrod_flashback:done
     actions:
-    - lock_controls
-    - set_layer 102,51,0,128
-    - dialog [Flashback] Zircon and Argon stood before the terminal...
-    - dialog [Flashback] "The enforcers are coming," Argon whispered.
-    - dialog [Flashback] They activated the emergency protocol.
-    - set_layer
-    - set_variable nimrod_flashback:done
-    - unlock_controls
+      - lock_controls
+      - set_layer 102,51,0,128
+      - dialog [Flashback] Zircon and Argon stood before the terminal...
+      - dialog [Flashback] "The enforcers are coming," Argon whispered.
+      - dialog [Flashback] They activated the emergency protocol.
+      - set_layer
+      - set_variable nimrod_flashback:done
+      - unlock_controls

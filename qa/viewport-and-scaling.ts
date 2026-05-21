@@ -360,9 +360,7 @@ async function checkChoiceOverlay() {
         choicePresented = true;
         break;
       }
-      const scene = await page.evaluate(
-        () => (window.A!.getState() as { scene?: string }).scene,
-      );
+      const scene = await page.evaluate(() => (window.A!.getState() as { scene?: string }).scene);
       if (scene === "MonsterInfoScene") {
         // B closes the journal viewer (66 = "B").
         await page.evaluate(() => {

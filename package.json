@@ -8,8 +8,8 @@
     "dev": "vite --config vite/config.dev.mjs",
     "build": "vite build --config vite/config.prod.mjs",
     "lint": "eslint src/",
-    "format": "prettier --write 'src/**/*.ts'",
-    "format:check": "prettier --check 'src/**/*.ts'",
+    "format": "prettier --write 'src/**/*.ts' 'qa/*.ts' 'public/assets/events/**/*.yaml' 'tsconfig.json'",
+    "format:check": "prettier --check 'src/**/*.ts' 'qa/*.ts' 'public/assets/events/**/*.yaml' 'tsconfig.json'",
     "test": "vitest run",
     "qa": "tsx"
   },

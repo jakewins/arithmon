@@ -138,8 +138,7 @@ async function main() {
     for (let i = 0; i < 100; i++) {
       const state = (await getState(page)) as OverworldState;
       const enforcerAtPost = state.npcs?.find(
-        (n) =>
-          n.slug === "spyder_omnichannel_enforcer" && n.tileX === 3 && n.tileY === 12,
+        (n) => n.slug === "spyder_omnichannel_enforcer" && n.tileX === 3 && n.tileY === 12,
       );
       if (state.blocking && enforcerAtPost && !dialogShot) {
         await screenshot(page, "cotton-omnichannel-kickout-revisit");

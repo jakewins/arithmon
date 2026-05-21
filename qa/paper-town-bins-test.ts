@@ -221,10 +221,7 @@ async function testBinPickRockitten(): Promise<void> {
     const due = await getVar(page, "firstfightdue");
     const choice = await getVar(page, "mymonchoice");
     assert(due === "yes", `expected firstfightdue:yes, got ${JSON.stringify(due)}`);
-    assert(
-      choice === "rockitten",
-      `expected mymonchoice:rockitten, got ${JSON.stringify(choice)}`,
-    );
+    assert(choice === "rockitten", `expected mymonchoice:rockitten, got ${JSON.stringify(choice)}`);
 
     const state = (await getState(page)) as unknown as PaperTownState;
     const party = state.session?.monsters ?? [];

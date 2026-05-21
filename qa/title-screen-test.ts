@@ -60,11 +60,9 @@ async function main() {
   // the title screen routes into the cutscene rather than the overworld.
   await pressKey(page, KEY_ENTER);
 
-  await page.waitForFunction(
-    () => window.A?.getState().scene === "CutsceneScene",
-    null,
-    { timeout: 10_000 },
-  );
+  await page.waitForFunction(() => window.A?.getState().scene === "CutsceneScene", null, {
+    timeout: 10_000,
+  });
   state = (await getState(page)) as unknown as TitleState;
   await expect(
     state.scene === "CutsceneScene",
@@ -119,11 +117,9 @@ async function main() {
 
   // Press Enter to confirm Load Game.
   await pressKey(session2.page, KEY_ENTER);
-  await session2.page.waitForFunction(
-    () => window.A?.getState().scene === "OverworldScene",
-    null,
-    { timeout: 10_000 },
-  );
+  await session2.page.waitForFunction(() => window.A?.getState().scene === "OverworldScene", null, {
+    timeout: 10_000,
+  });
   state = (await getState(session2.page)) as unknown as TitleState;
   await expect(
     state.scene === "OverworldScene",

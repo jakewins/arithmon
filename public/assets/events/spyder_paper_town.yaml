@@ -4,7 +4,6 @@
 # file is regenerated whenever upstream changes — see the story journal
 # for the conversion script.
 events:
-
   "Mart Sign":
     x: 16
     y: 12

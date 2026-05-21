@@ -68,11 +68,9 @@ async function runPath(spec: PathSpec): Promise<void> {
   let state = (await getState(page)) as unknown as FullState;
   assert(state.scene === "TitleScene", `expected TitleScene, got ${state.scene}`);
   await pressKey(page, KEY_ENTER);
-  await page.waitForFunction(
-    () => window.A?.getState().scene === "CutsceneScene",
-    null,
-    { timeout: 10_000 },
-  );
+  await page.waitForFunction(() => window.A?.getState().scene === "CutsceneScene", null, {
+    timeout: 10_000,
+  });
 
   // Walk the three choices. We assert the variable is set after each
   // selection so a regression in any single step is easy to localize.
@@ -100,11 +98,9 @@ async function runPath(spec: PathSpec): Promise<void> {
 
   // Final step in start_tuxemon: Spyder event fires transition_teleport
   // to spyder_bedroom (4,4). Wait for OverworldScene + fade to settle.
-  await page.waitForFunction(
-    () => window.A?.getState().scene === "OverworldScene",
-    null,
-    { timeout: 10_000 },
-  );
+  await page.waitForFunction(() => window.A?.getState().scene === "OverworldScene", null, {
+    timeout: 10_000,
+  });
   await page.waitForTimeout(600);
 
   state = (await getState(page)) as unknown as FullState;

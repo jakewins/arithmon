@@ -133,12 +133,21 @@ async function testFrontDoorEntryAndPrinceton(): Promise<void> {
       layerNames: string[];
       hasCollisions: boolean;
     };
-    assert(meta.width === 10 && meta.height === 8, `expected 10x8 map, got ${meta.width}x${meta.height}`);
+    assert(
+      meta.width === 10 && meta.height === 8,
+      `expected 10x8 map, got ${meta.width}x${meta.height}`,
+    );
     assert(meta.slug === "manor", `expected slug "manor", got "${meta.slug}"`);
-    assert(meta.hasCollisions, `expected a Collisions objectgroup layer, got ${meta.layerNames.join(",")}`);
+    assert(
+      meta.hasCollisions,
+      `expected a Collisions objectgroup layer, got ${meta.layerNames.join(",")}`,
+    );
     // Verbatim upstream tile-layer names (note lowercase 'p' in 'Above player').
     for (const want of ["Tile Layer 1", "Tile Layer 2", "Tile Layer 3", "Above player"]) {
-      assert(meta.layerNames.includes(want), `expected layer "${want}", got ${meta.layerNames.join(",")}`);
+      assert(
+        meta.layerNames.includes(want),
+        `expected layer "${want}", got ${meta.layerNames.join(",")}`,
+      );
     }
 
     await waitForIdle(page);

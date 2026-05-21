@@ -3,38 +3,38 @@ events:
 
   Play Music:
     conditions:
-    - not music_playing music_cathedral_theme
+      - not music_playing music_cathedral_theme
     actions:
-    - play_music music_cathedral_theme
+      - play_music music_cathedral_theme
 
   # --- NPC spawns ---
 
   Create Shopkeeper:
     conditions:
-    - not char_exists spyder_cotton_scoop_keeper
+      - not char_exists spyder_cotton_scoop_keeper
     actions:
-    - create_npc spyder_cotton_scoop_keeper,2,3
-    - char_face spyder_cotton_scoop_keeper,down
+      - create_npc spyder_cotton_scoop_keeper,2,3
+      - char_face spyder_cotton_scoop_keeper,down
 
   Create Assistant:
     conditions:
-    - not char_exists spyder_cotton_scoop_assistant
+      - not char_exists spyder_cotton_scoop_assistant
     actions:
-    - create_npc spyder_cotton_scoop_assistant,9,6
-    - char_face spyder_cotton_scoop_assistant,left
+      - create_npc spyder_cotton_scoop_assistant,9,6
+      - char_face spyder_cotton_scoop_assistant,left
 
   # --- Shop interaction ---
 
   Talk Shopkeeper:
     behav: talk spyder_cotton_scoop_keeper
     actions:
-    - dialog Welcome to Cotton Scoop! What can I get you?
-    - open_shop spyder_cotton_scoop
+      - dialog Welcome to Cotton Scoop! What can I get you?
+      - open_shop spyder_cotton_scoop
 
   Talk Assistant:
     behav: talk spyder_cotton_scoop_assistant
     actions:
-    - dialog We have the best supplies in Cotton Town!
+      - dialog We have the best supplies in Cotton Town!
 
   # --- Map connections ---
 
@@ -42,8 +42,8 @@ events:
     x: 6
     y: 10
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,30,35,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_cotton_town.tmx,30,35,0.3
+      - char_face player,down

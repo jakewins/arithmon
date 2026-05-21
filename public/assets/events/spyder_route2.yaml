@@ -3,9 +3,9 @@ events:
 
   Route Music:
     conditions:
-    - not music_playing music_the_wild_places
+      - not music_playing music_the_wild_places
     actions:
-    - play_music music_the_wild_places
+      - play_music music_the_wild_places
 
   # --- Map connections: north to City Park ---
   # City Park is not yet ported — these teleports lead to a placeholder map
@@ -15,21 +15,21 @@ events:
     x: 10
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_citypark.tmx,10,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_citypark.tmx,10,39,0.3
+      - char_face player,up
 
   Teleport to City Park B:
     x: 11
     y: 0
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_citypark.tmx,11,39,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_citypark.tmx,11,39,0.3
+      - char_face player,up
 
   # --- Map connections: west back to Cotton Town ---
 
@@ -37,21 +37,21 @@ events:
     x: 0
     y: 8
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,39,28,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_cotton_town.tmx,39,28,0.3
+      - char_face player,left
 
   Teleport to Cotton Town B:
     x: 0
     y: 9
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,39,29,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_cotton_town.tmx,39,29,0.3
+      - char_face player,left
 
   # --- Map connections: south to Brideswood ---
 
@@ -59,18 +59,18 @@ events:
     x: 36
     y: 19
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_brideswood.tmx,36,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_brideswood.tmx,36,0,0.3
+      - char_face player,down
 
   Teleport to Brideswood B:
     x: 37
     y: 19
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_brideswood.tmx,37,0,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_brideswood.tmx,37,0,0.3
+      - char_face player,down

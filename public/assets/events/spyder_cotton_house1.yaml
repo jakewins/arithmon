@@ -3,35 +3,35 @@ events:
 
   Play Music:
     conditions:
-    - not music_playing music_cathedral_theme
+      - not music_playing music_cathedral_theme
     actions:
-    - play_music music_cathedral_theme
+      - play_music music_cathedral_theme
 
   # --- NPC spawns ---
 
   Create Homemaker:
     conditions:
-    - not char_exists spyder_cottoncafe_juliana
+      - not char_exists spyder_cottoncafe_juliana
     actions:
-    - create_npc spyder_cottoncafe_juliana,3,5,wander
+      - create_npc spyder_cottoncafe_juliana,3,5,wander
 
   Create Firefighter:
     conditions:
-    - not char_exists spyder_cottonhouse1_rodger
+      - not char_exists spyder_cottonhouse1_rodger
     actions:
-    - create_npc spyder_cottonhouse1_rodger,7,2
+      - create_npc spyder_cottonhouse1_rodger,7,2
 
   # --- NPC interactions ---
 
   Talk Homemaker:
     behav: talk spyder_cottoncafe_juliana
     actions:
-    - dialog I feel so safe seeing all the Enforcers around. You can never be too careful. The newspapers are always reporting terrible crimes in this very region!
+      - dialog I feel so safe seeing all the Enforcers around. You can never be too careful. The newspapers are always reporting terrible crimes in this very region!
 
   Talk Firefighter:
     behav: talk spyder_cottonhouse1_rodger
     actions:
-    - dialog Did you know it's possible for tuxemon to have two elements? Even a technique can belong to two elements at once.
+      - dialog Did you know it's possible for tuxemon to have two elements? Even a technique can belong to two elements at once.
 
   # --- Interactions ---
 
@@ -39,10 +39,10 @@ events:
     x: 9
     y: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - "dialog It's the latest reality show: people and their tuxemon complete challenges on a remote island."
+      - "dialog It's the latest reality show: people and their tuxemon complete challenges on a remote island."
 
   # --- Map connections ---
 
@@ -51,8 +51,8 @@ events:
     y: 7
     width: 2
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,27,27,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_cotton_town.tmx,27,27,0.3
+      - char_face player,down

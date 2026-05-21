@@ -1,9 +1,9 @@
 events:
   Play Music:
     conditions:
-    - not music_playing music_the_wild_places
+      - not music_playing music_the_wild_places
     actions:
-    - play_music music_the_wild_places
+      - play_music music_the_wild_places
 
   # --- Encounter zones ---
 
@@ -13,17 +13,17 @@ events:
     width: 13
     height: 13
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_dryads_grove,8
+      - random_encounter spyder_dryads_grove,8
 
   Go Cotton Tunnel:
     x: 7
     y: 2
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_cotton_tunnel.tmx,27,14,0.3
-    - char_face player,up
+      - transition_teleport player,spyder_cotton_tunnel.tmx,27,14,0.3
+      - char_face player,up

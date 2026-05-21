@@ -3,42 +3,42 @@ events:
 
   Play Music:
     conditions:
-    - not music_playing music_cathedral_theme
+      - not music_playing music_cathedral_theme
     actions:
-    - play_music music_cathedral_theme
+      - play_music music_cathedral_theme
 
   # --- NPC spawns ---
 
   Create Barmaid:
     conditions:
-    - not char_exists spyder_cottontown_barmaid
+      - not char_exists spyder_cottontown_barmaid
     actions:
-    - create_npc spyder_cottontown_barmaid,10,5,wander
+      - create_npc spyder_cottontown_barmaid,10,5,wander
 
   Create Luvinia:
     conditions:
-    - not char_exists spyder_cottonartshop_luvinia
+      - not char_exists spyder_cottonartshop_luvinia
     actions:
-    - create_npc spyder_cottonartshop_luvinia,1,6,wander
+      - create_npc spyder_cottonartshop_luvinia,1,6,wander
 
   Create Philis:
     conditions:
-    - not char_exists spyder_cottonartshop_philis
+      - not char_exists spyder_cottonartshop_philis
     actions:
-    - create_npc spyder_cottonartshop_philis,15,8,wander
+      - create_npc spyder_cottonartshop_philis,15,8,wander
 
   Create Phoenix:
     conditions:
-    - not char_exists spyder_cottonartshop_phoenix
+      - not char_exists spyder_cottonartshop_phoenix
     actions:
-    - create_npc spyder_cottonartshop_phoenix,17,8,wander
+      - create_npc spyder_cottonartshop_phoenix,17,8,wander
 
   Create Carter:
     conditions:
-    - not char_exists spyder_cottonartshop_carter
+      - not char_exists spyder_cottonartshop_carter
     actions:
-    - create_npc spyder_cottonartshop_carter,4,9
-    - char_face spyder_cottonartshop_carter,left
+      - create_npc spyder_cottonartshop_carter,4,9
+      - char_face spyder_cottonartshop_carter,left
 
   # --- NPC interactions ---
 
@@ -46,88 +46,88 @@ events:
   Barmaid Sell Bundle Offer:
     behav: talk spyder_cottontown_barmaid
     conditions:
-    - is money_is player,greater_or_equal,3000
-    - not has_item player,p_starry_night
-    - not has_item player,p_monsters_eyes
-    - not has_item player,p_trepidation
-    - not variable_set has_sold_paintings:yes
+      - is money_is player,greater_or_equal,3000
+      - not has_item player,p_starry_night
+      - not has_item player,p_monsters_eyes
+      - not has_item player,p_trepidation
+      - not variable_set has_sold_paintings:yes
     actions:
-    - "dialog Do you like my set? They capture my early days... I call them: 'Monsters' Eyes Meet', 'Starry, Starry, Starry Night' and 'Trepidation'. They're for sale! Get them while they're hot! Just 1,000 each."
-    - "dialog Do you want to buy all three paintings for 3,000 gold?"
-    - translated_dialog_choice yes:no,barmaid_sell_bundle
+      - "dialog Do you like my set? They capture my early days... I call them: 'Monsters' Eyes Meet', 'Starry, Starry, Starry Night' and 'Trepidation'. They're for sale! Get them while they're hot! Just 1,000 each."
+      - "dialog Do you want to buy all three paintings for 3,000 gold?"
+      - translated_dialog_choice yes:no,barmaid_sell_bundle
 
   Barmaid Sell Bundle:
     conditions:
-    - is variable_set barmaid_sell_bundle:yes
-    - not variable_set bought_bundle:yes
+      - is variable_set barmaid_sell_bundle:yes
+      - not variable_set bought_bundle:yes
     actions:
-    - set_variable has_sold_paintings:yes
-    - add_item p_starry_night
-    - "dialog You received Starry Night!"
-    - add_item p_trepidation
-    - "dialog You received Trepidation!"
-    - add_item p_monsters_eyes
-    - "dialog You received Eyes Meet!"
-    - modify_money player,-3000
-    - set_variable bought_bundle:yes
-    - set_variable bought_starry:yes
-    - set_variable bought_trepidation:yes
-    - set_variable bought_monsters_eyes:yes
+      - set_variable has_sold_paintings:yes
+      - add_item p_starry_night
+      - "dialog You received Starry Night!"
+      - add_item p_trepidation
+      - "dialog You received Trepidation!"
+      - add_item p_monsters_eyes
+      - "dialog You received Eyes Meet!"
+      - modify_money player,-3000
+      - set_variable bought_bundle:yes
+      - set_variable bought_starry:yes
+      - set_variable bought_trepidation:yes
+      - set_variable bought_monsters_eyes:yes
 
   Barmaid Decline Bundle:
     conditions:
-    - is variable_set barmaid_sell_bundle:no
+      - is variable_set barmaid_sell_bundle:no
     actions:
-    - set_variable barmaid_sell_bundle:null
+      - set_variable barmaid_sell_bundle:null
 
   # Barmaid normal talk: not enough for bundle or already owns some
   Barmaid Talk No Bundle:
     behav: talk spyder_cottontown_barmaid
     conditions:
-    - is money_is player,less_than,3000
-    - not has_item player,p_starry_night
-    - not has_item player,p_monsters_eyes
-    - not has_item player,p_trepidation
+      - is money_is player,less_than,3000
+      - not has_item player,p_starry_night
+      - not has_item player,p_monsters_eyes
+      - not has_item player,p_trepidation
     actions:
-    - "dialog Do you like my set? They capture my early days... I call them: 'Monsters' Eyes Meet', 'Starry, Starry, Starry Night' and 'Trepidation'. They're for sale! Get them while they're hot! Just 1,000 each."
+      - "dialog Do you like my set? They capture my early days... I call them: 'Monsters' Eyes Meet', 'Starry, Starry, Starry Night' and 'Trepidation'. They're for sale! Get them while they're hot! Just 1,000 each."
 
   # Barmaid sold-out dialogue: player owns all 3
   Barmaid Sold Out:
     behav: talk spyder_cottontown_barmaid
     conditions:
-    - is has_item player,p_starry_night
-    - is has_item player,p_monsters_eyes
-    - is has_item player,p_trepidation
+      - is has_item player,p_starry_night
+      - is has_item player,p_monsters_eyes
+      - is has_item player,p_trepidation
     actions:
-    - "dialog All my paintings have been sold. I hope they bring you as much joy as they brought me!"
+      - "dialog All my paintings have been sold. I hope they bring you as much joy as they brought me!"
 
   # Barmaid partial: owns some but not all
   Barmaid Talk Partial:
     behav: talk spyder_cottontown_barmaid
     conditions:
-    - is variable_set has_sold_painting:yes
+      - is variable_set has_sold_painting:yes
     actions:
-    - "dialog Do you like my set? They capture my early days as a professional tuxemon trainer, before I retired on my winnings. Some are still for sale!"
+      - "dialog Do you like my set? They capture my early days as a professional tuxemon trainer, before I retired on my winnings. Some are still for sale!"
 
   Talk Luvinia:
     behav: talk spyder_cottonartshop_luvinia
     actions:
-    - dialog What are we supposed to do?
+      - dialog What are we supposed to do?
 
   Talk Philis:
     behav: talk spyder_cottonartshop_philis
     actions:
-    - "dialog I must be getting nostalgic. I almost said \"Back in my day, things were better!\""
+      - 'dialog I must be getting nostalgic. I almost said "Back in my day, things were better!"'
 
   Talk Phoenix:
     behav: talk spyder_cottonartshop_phoenix
     actions:
-    - "dialog I used to enjoy coming here every weekend to look at the paintings. Now all the best ones have been sold and the tickets are too expensive."
+      - "dialog I used to enjoy coming here every weekend to look at the paintings. Now all the best ones have been sold and the tickets are too expensive."
 
   Talk Carter:
     behav: talk spyder_cottonartshop_carter
     actions:
-    - "dialog Welcome to the Cotton Town Art Gallery. Ah - I mean Art Shop! Ever since they cut our funding, we've had to sell the artworks instead of just displaying them."
+      - "dialog Welcome to the Cotton Town Art Gallery. Ah - I mean Art Shop! Ever since they cut our funding, we've had to sell the artworks instead of just displaying them."
 
   # --- Painting sales (tile interactions) ---
 
@@ -137,31 +137,31 @@ events:
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not has_item player,p_monsters_eyes
-    - is money_is player,greater_or_equal,1000
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not has_item player,p_monsters_eyes
+      - is money_is player,greater_or_equal,1000
     actions:
-    - "dialog Painting 'Monsters' Eyes Meet', medium: oil on canvas. Hand-signed by the artist."
-    - "dialog Do you want to buy this painting for 1,000 gold?"
-    - translated_dialog_choice yes:no,barmaid_monsters
+      - "dialog Painting 'Monsters' Eyes Meet', medium: oil on canvas. Hand-signed by the artist."
+      - "dialog Do you want to buy this painting for 1,000 gold?"
+      - translated_dialog_choice yes:no,barmaid_monsters
 
   Sell Monsters Eyes Op:
     conditions:
-    - is variable_set barmaid_monsters:yes
-    - not variable_set bought_monsters_eyes:yes
+      - is variable_set barmaid_monsters:yes
+      - not variable_set bought_monsters_eyes:yes
     actions:
-    - set_variable has_sold_painting:yes
-    - add_item p_monsters_eyes
-    - "dialog You received Eyes Meet!"
-    - set_variable bought_monsters_eyes:yes
-    - modify_money player,-1000
+      - set_variable has_sold_painting:yes
+      - add_item p_monsters_eyes
+      - "dialog You received Eyes Meet!"
+      - set_variable bought_monsters_eyes:yes
+      - modify_money player,-1000
 
   Sell Monsters Eyes Decline:
     conditions:
-    - is variable_set barmaid_monsters:no
+      - is variable_set barmaid_monsters:no
     actions:
-    - set_variable barmaid_monsters:null
+      - set_variable barmaid_monsters:null
 
   # Starry Night at tile (9,2)
   Sell Starry Night:
@@ -169,31 +169,31 @@ events:
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not has_item player,p_starry_night
-    - is money_is player,greater_or_equal,1000
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not has_item player,p_starry_night
+      - is money_is player,greater_or_equal,1000
     actions:
-    - "dialog Painting 'Starry, Starry, Starry Night', medium: oil on canvas. Hand-signed by the artist."
-    - "dialog Do you want to buy this painting for 1,000 gold?"
-    - translated_dialog_choice yes:no,barmaid_starry
+      - "dialog Painting 'Starry, Starry, Starry Night', medium: oil on canvas. Hand-signed by the artist."
+      - "dialog Do you want to buy this painting for 1,000 gold?"
+      - translated_dialog_choice yes:no,barmaid_starry
 
   Sell Starry Night Op:
     conditions:
-    - is variable_set barmaid_starry:yes
-    - not variable_set bought_starry:yes
+      - is variable_set barmaid_starry:yes
+      - not variable_set bought_starry:yes
     actions:
-    - set_variable has_sold_painting:yes
-    - add_item p_starry_night
-    - "dialog You received Starry Night!"
-    - set_variable bought_starry:yes
-    - modify_money player,-1000
+      - set_variable has_sold_painting:yes
+      - add_item p_starry_night
+      - "dialog You received Starry Night!"
+      - set_variable bought_starry:yes
+      - modify_money player,-1000
 
   Sell Starry Night Decline:
     conditions:
-    - is variable_set barmaid_starry:no
+      - is variable_set barmaid_starry:no
     actions:
-    - set_variable barmaid_starry:null
+      - set_variable barmaid_starry:null
 
   # Trepidation at tile (11,2)
   Sell Trepidation:
@@ -201,31 +201,31 @@ events:
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not has_item player,p_trepidation
-    - is money_is player,greater_or_equal,1000
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not has_item player,p_trepidation
+      - is money_is player,greater_or_equal,1000
     actions:
-    - "dialog Painting 'Trepidation', medium: oil on canvas. Hand-signed by the artist."
-    - "dialog Do you want to buy this painting for 1,000 gold?"
-    - translated_dialog_choice yes:no,barmaid_trepidation
+      - "dialog Painting 'Trepidation', medium: oil on canvas. Hand-signed by the artist."
+      - "dialog Do you want to buy this painting for 1,000 gold?"
+      - translated_dialog_choice yes:no,barmaid_trepidation
 
   Sell Trepidation Op:
     conditions:
-    - is variable_set barmaid_trepidation:yes
-    - not variable_set bought_trepidation:yes
+      - is variable_set barmaid_trepidation:yes
+      - not variable_set bought_trepidation:yes
     actions:
-    - set_variable has_sold_painting:yes
-    - add_item p_trepidation
-    - "dialog You received Trepidation!"
-    - set_variable bought_trepidation:yes
-    - modify_money player,-1000
+      - set_variable has_sold_painting:yes
+      - add_item p_trepidation
+      - "dialog You received Trepidation!"
+      - set_variable bought_trepidation:yes
+      - modify_money player,-1000
 
   Sell Trepidation Decline:
     conditions:
-    - is variable_set barmaid_trepidation:no
+      - is variable_set barmaid_trepidation:no
     actions:
-    - set_variable barmaid_trepidation:null
+      - set_variable barmaid_trepidation:null
 
   # Can't afford painting interaction
   Painting Too Expensive Monsters:
@@ -233,39 +233,39 @@ events:
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not has_item player,p_monsters_eyes
-    - not money_is player,greater_or_equal,1000
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not has_item player,p_monsters_eyes
+      - not money_is player,greater_or_equal,1000
     actions:
-    - "dialog Painting 'Monsters' Eyes Meet', medium: oil on canvas. Hand-signed by the artist."
-    - "dialog This painting costs 1,000 gold. You can't afford it right now."
+      - "dialog Painting 'Monsters' Eyes Meet', medium: oil on canvas. Hand-signed by the artist."
+      - "dialog This painting costs 1,000 gold. You can't afford it right now."
 
   Painting Too Expensive Starry:
     x: 9
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not has_item player,p_starry_night
-    - not money_is player,greater_or_equal,1000
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not has_item player,p_starry_night
+      - not money_is player,greater_or_equal,1000
     actions:
-    - "dialog Painting 'Starry, Starry, Starry Night', medium: oil on canvas. Hand-signed by the artist."
-    - "dialog This painting costs 1,000 gold. You can't afford it right now."
+      - "dialog Painting 'Starry, Starry, Starry Night', medium: oil on canvas. Hand-signed by the artist."
+      - "dialog This painting costs 1,000 gold. You can't afford it right now."
 
   Painting Too Expensive Trepidation:
     x: 11
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - not has_item player,p_trepidation
-    - not money_is player,greater_or_equal,1000
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - not has_item player,p_trepidation
+      - not money_is player,greater_or_equal,1000
     actions:
-    - "dialog Painting 'Trepidation', medium: oil on canvas. Hand-signed by the artist."
-    - "dialog This painting costs 1,000 gold. You can't afford it right now."
+      - "dialog Painting 'Trepidation', medium: oil on canvas. Hand-signed by the artist."
+      - "dialog This painting costs 1,000 gold. You can't afford it right now."
 
   # Already purchased painting interaction
   Painting Sold Monsters:
@@ -273,33 +273,33 @@ events:
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - is has_item player,p_monsters_eyes
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - is has_item player,p_monsters_eyes
     actions:
-    - "dialog The spot where 'Monsters' Eyes Meet' used to hang. You own this one now."
+      - "dialog The spot where 'Monsters' Eyes Meet' used to hang. You own this one now."
 
   Painting Sold Starry:
     x: 9
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - is has_item player,p_starry_night
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - is has_item player,p_starry_night
     actions:
-    - "dialog The spot where 'Starry, Starry, Starry Night' used to hang. You own this one now."
+      - "dialog The spot where 'Starry, Starry, Starry Night' used to hang. You own this one now."
 
   Painting Sold Trepidation:
     x: 11
     y: 3
     width: 2
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
-    - is has_item player,p_trepidation
+      - is char_facing_tile player
+      - is button_pressed INTERACT
+      - is has_item player,p_trepidation
     actions:
-    - "dialog The spot where 'Trepidation' used to hang. You own this one now."
+      - "dialog The spot where 'Trepidation' used to hang. You own this one now."
 
   # --- Entry fee gate ---
 
@@ -308,38 +308,38 @@ events:
     y: 9
     width: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
-    - not variable_set paygallery:yes
-    - not variable_set paygallery:no
+      - is char_at player
+      - is char_facing player,up
+      - not variable_set paygallery:yes
+      - not variable_set paygallery:no
     actions:
-    - "dialog Entry is 50 gold. It goes toward the company's annual dividend."
-    - translated_dialog_choice yes:no,paygallery
+      - "dialog Entry is 50 gold. It goes toward the company's annual dividend."
+      - translated_dialog_choice yes:no,paygallery
 
   Afford Pay:
     conditions:
-    - is variable_set paygallery:yes
-    - is money_is player,greater_or_equal,50
+      - is variable_set paygallery:yes
+      - is money_is player,greater_or_equal,50
     actions:
-    - modify_money player,-50
-    - pathfind player,2,8
-    - set_variable paygallery:null
+      - modify_money player,-50
+      - pathfind player,2,8
+      - set_variable paygallery:null
 
   Cannot Afford:
     conditions:
-    - is variable_set paygallery:yes
-    - not money_is player,greater_or_equal,50
+      - is variable_set paygallery:yes
+      - not money_is player,greater_or_equal,50
     actions:
-    - dialog You don't have enough gold.
-    - pathfind player,2,10
-    - set_variable paygallery:null
+      - dialog You don't have enough gold.
+      - pathfind player,2,10
+      - set_variable paygallery:null
 
   No Pay:
     conditions:
-    - is variable_set paygallery:no
+      - is variable_set paygallery:no
     actions:
-    - pathfind player,2,10
-    - set_variable paygallery:null
+      - pathfind player,2,10
+      - set_variable paygallery:null
 
   # --- Map connections ---
 
@@ -348,8 +348,8 @@ events:
     y: 10
     width: 2
     conditions:
-    - is char_at player
-    - is char_facing player,down
+      - is char_at player
+      - is char_facing player,down
     actions:
-    - transition_teleport player,spyder_cotton_town.tmx,16,17,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_cotton_town.tmx,16,17,0.3
+      - char_face player,down

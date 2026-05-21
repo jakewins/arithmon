@@ -1,9 +1,9 @@
 events:
   Play Music:
     conditions:
-    - not music_playing music_the_wild_places
+      - not music_playing music_the_wild_places
     actions:
-    - play_music music_the_wild_places
+      - play_music music_the_wild_places
 
   # --- Encounter zones ---
 
@@ -13,36 +13,36 @@ events:
     width: 21
     height: 16
     conditions:
-    - is char_moved player
-    - is char_at player
+      - is char_moved player
+      - is char_at player
     actions:
-    - random_encounter spyder_routeA,11
+      - random_encounter spyder_routeA,11
 
   Go Route 4 10:
     x: 22
     y: 10
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_route4.tmx,15,5,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_route4.tmx,15,5,0.3
+      - char_face player,right
 
   Go Route 4 11:
     x: 22
     y: 11
     conditions:
-    - is char_at player
-    - is char_facing player,right
+      - is char_at player
+      - is char_facing player,right
     actions:
-    - transition_teleport player,spyder_route4.tmx,15,6,0.3
-    - char_face player,right
+      - transition_teleport player,spyder_route4.tmx,15,6,0.3
+      - char_face player,right
 
   Route Sign:
     x: 3
     y: 9
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     actions:
-    - dialog Route A — A quiet side path
+      - dialog Route A — A quiet side path

@@ -1,10 +1,10 @@
 events:
   Bed:
     actions:
-    - translated_dialog spyder_rivalbedroom_bed
+      - translated_dialog spyder_rivalbedroom_bed
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     height: 2
     type: event
     width: 2
@@ -12,10 +12,10 @@ events:
     y: 5
   Bookshelf:
     actions:
-    - translated_dialog spyder_rivalbedroom_bookshelf
+      - translated_dialog spyder_rivalbedroom_bookshelf
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     height: 1
     type: event
     width: 2
@@ -23,44 +23,44 @@ events:
     y: 2
   Go Downstairs:
     actions:
-    - transition_teleport player,spyder_paper_rival_downstairs.tmx,3,3,0.3
-    - char_face player,left
+      - transition_teleport player,spyder_paper_rival_downstairs.tmx,3,3,0.3
+      - char_face player,left
     conditions:
-    - is char_at player
-    - is char_facing player,left
+      - is char_at player
+      - is char_facing player,left
     type: event
     x: 0
     y: 3
   Radio:
     actions:
-    - tune_radio player,94.7
+      - tune_radio player,94.7
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     type: event
     x: 0
     y: 5
   Route Music:
     actions:
-    - play_music music_home
+      - play_music music_home
     conditions:
-    - not music_playing music_home
+      - not music_playing music_home
     type: event
   Use Computer:
     actions:
-    - access_pc player
+      - access_pc player
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     type: event
     x: 2
     y: 3
   Weights:
     actions:
-    - translated_dialog spyder_rivalbedroom_weights
+      - translated_dialog spyder_rivalbedroom_weights
     conditions:
-    - is char_facing_tile player
-    - is button_pressed INTERACT
+      - is char_facing_tile player
+      - is button_pressed INTERACT
     type: event
     x: 1
     y: 6

@@ -1,36 +1,36 @@
 events:
   Create Yin:
     conditions:
-    - not char_exists spyder_dojo_yin
+      - not char_exists spyder_dojo_yin
     actions:
-    - create_npc spyder_dojo_yin,6,5
-    - char_face spyder_dojo_yin,down
+      - create_npc spyder_dojo_yin,6,5
+      - char_face spyder_dojo_yin,down
 
   Talk Yin:
     conditions:
-    - is char_facing_char player,spyder_dojo_yin
-    - is button_pressed INTERACT
+      - is char_facing_char player,spyder_dojo_yin
+      - is button_pressed INTERACT
     actions:
-    - char_face spyder_dojo_yin,player
-    - dialog I am Master Yin. I can change your monster's taste preferences.
-    - dialog Taste affects which foods your monster prefers. It costs 50 gold per change.
+      - char_face spyder_dojo_yin,player
+      - dialog I am Master Yin. I can change your monster's taste preferences.
+      - dialog Taste affects which foods your monster prefers. It costs 50 gold per change.
 
   Go Floor 1:
     x: 1
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_dojo1.tmx,10,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_dojo1.tmx,10,4,0.3
+      - char_face player,down
 
   Go Floor 3:
     x: 10
     y: 3
     conditions:
-    - is char_at player
-    - is char_facing player,up
+      - is char_at player
+      - is char_facing player,up
     actions:
-    - transition_teleport player,spyder_dojo3.tmx,1,4,0.3
-    - char_face player,down
+      - transition_teleport player,spyder_dojo3.tmx,1,4,0.3
+      - char_face player,down

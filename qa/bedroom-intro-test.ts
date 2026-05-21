@@ -42,11 +42,9 @@ async function bootIntoBedroom(): Promise<{ page: Page; close: () => Promise<voi
   await page.waitForFunction(() => window.A?.ready, null, { timeout: 30_000 });
 
   await pressKey(page, KEY_ENTER); // confirm "New Game" → CutsceneScene
-  await page.waitForFunction(
-    () => window.A?.getState().scene === "CutsceneScene",
-    null,
-    { timeout: 10_000 },
-  );
+  await page.waitForFunction(() => window.A?.getState().scene === "CutsceneScene", null, {
+    timeout: 10_000,
+  });
 
   // Walk the three start_tuxemon choices: campaign → gender → race. The
   // cutscene transitions to OverworldScene on the final choice via
@@ -63,19 +61,15 @@ async function bootIntoBedroom(): Promise<{ page: Page; close: () => Promise<voi
     await page.waitForTimeout(150);
   }
 
-  await page.waitForFunction(
-    () => window.A?.getState().scene === "OverworldScene",
-    null,
-    { timeout: 10_000 },
-  );
+  await page.waitForFunction(() => window.A?.getState().scene === "OverworldScene", null, {
+    timeout: 10_000,
+  });
 
   // The bedroom's "Intro Question" event fires on first update tick and opens
   // a dialog. Wait for it to appear in the event log.
-  await page.waitForFunction(
-    () => window.A!.events.some((e) => e.type === "dialog_opened"),
-    null,
-    { timeout: 5_000 },
-  );
+  await page.waitForFunction(() => window.A!.events.some((e) => e.type === "dialog_opened"), null, {
+    timeout: 5_000,
+  });
 
   return session;
 }
@@ -124,7 +118,10 @@ async function testSkipPath(): Promise<void> {
     initial.player?.tileX === 4 && initial.player?.tileY === 4,
     `expected player at (4,4), got (${initial.player?.tileX},${initial.player?.tileY})`,
   );
-  assert(initial.mapKey === "spyder_bedroom", `expected mapKey=spyder_bedroom, got ${initial.mapKey}`);
+  assert(
+    initial.mapKey === "spyder_bedroom",
+    `expected mapKey=spyder_bedroom, got ${initial.mapKey}`,
+  );
 
   // Screenshot mid-prompt — should show bedroom with player on rug + dialog.
   await page.waitForTimeout(300);
